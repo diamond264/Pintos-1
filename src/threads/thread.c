@@ -28,6 +28,7 @@
    that are ready to run but not actually running. */
 static struct list ready_list;
 
+// Edited
 /* list of processes in THREAD_SLEEP state */
 static struct list sleep_list;
 
@@ -74,6 +75,8 @@ static void schedule (void);
 void schedule_tail (struct thread *prev);
 static tid_t allocate_tid (void);
 
+
+// Edited
 /* we need some variables for awake threads */
 static int64_t wakeup_ticks;
 
@@ -97,6 +100,8 @@ time_to_wakeup (void)
 
    It is not safe to call thread_current() until this function
    finishes. */
+
+// Edited
 void
 thread_init (void) 
 {
@@ -248,6 +253,8 @@ thread_block (void)
    be important: if the caller had disabled interrupts itself,
    it may expect that it can atomically unblock a thread and
    update other data. */
+
+// Edited
 void
 thread_unblock (struct thread *t) 
 {
@@ -344,6 +351,7 @@ thread_yield (void)
   intr_set_level (old_level);
 }
 
+// Edited
 /* the comparison function for inserting threads in ready_list */
 bool
 ready_comp (const struct list_elem *x,
@@ -353,6 +361,7 @@ ready_comp (const struct list_elem *x,
     > list_entry (y, struct thread, elem)->priority;
 }
 
+// Edited
 /* the comparison function for inserting threads in sleep_list */
 bool
 sleep_comp (const struct list_elem *x,
@@ -362,6 +371,8 @@ sleep_comp (const struct list_elem *x,
     <= list_entry (y, struct thread, elem)->terminate_sleep;
 }
 
+
+// Edited
 /* Make threads sleep for the given ticks */
 void
 thread_sleep (int64_t start, int64_t ticks)
@@ -383,6 +394,8 @@ thread_sleep (int64_t start, int64_t ticks)
   intr_set_level(old_level);
 }
 
+
+// Edited
 /* Wakeups threads after deadline */
 void
 thread_wakeup (void)
@@ -401,6 +414,7 @@ thread_wakeup (void)
   }
 }
 
+// Edited
 /* Sets the current thread's priority to NEW_PRIORITY. */
 void
 thread_set_priority (int new_priority) 
