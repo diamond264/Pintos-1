@@ -269,13 +269,12 @@ thread_unblock (struct thread *t)
   t->status = THREAD_READY;
   //intr_set_level (old_level);
 
-  if (thread_current () != idle_thread)
-  {
-    struct thread *race = list_entry (list_front (&ready_list),
-    struct thread, elem);
-    if (thread_get_priority () < race->priority)
-      thread_yield ();
-  }
+    if (thread_current () != idle_thread)
+    {
+        struct thread *race = list_entry (list_front (&ready_list), struct thread, elem);
+        if (thread_get_priority () < race->priority)
+            thread_yield ();
+    }
   
   intr_set_level (old_level);
 }
@@ -352,6 +351,7 @@ thread_yield (void)
 }
 
 // Edited
+// x > y면 true.
 /* the comparison function for inserting threads in ready_list */
 bool
 priority_comp (const struct list_elem *x,

@@ -92,6 +92,7 @@ timer_elapsed (int64_t then)
   return timer_ticks () - then;
 }
 
+// Edited
 /* Suspends execution for approximately TICKS timer ticks. */
 void
 timer_sleep (int64_t ticks) 
@@ -136,6 +137,7 @@ timer_print_stats (void)
   printf ("Timer: %"PRId64" ticks\n", timer_ticks ());
 }
 
+// Edited
 /* Timer interrupt handler. */
 static void
 timer_interrupt (struct intr_frame *args UNUSED)
