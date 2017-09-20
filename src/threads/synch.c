@@ -70,13 +70,10 @@ sema_down (struct semaphore *sema)
   while (sema->value == 0) 
     {
       //list_push_back (&sema->waiters, &thread_current ()->elem);
-      if (list_empty (&sema->waiters))
-        thread_current ()->real_priority = thread_current ()->priority;
       list_insert_ordered(&sema->waiters, &thread_current ()->elem, priority_comp, 0);
-      ASSERT (!list_empty (&sema->waiters));
       thread_block ();
     }
-  if(sema->value != 0) sema->value--;
+  sema->value--;
   intr_set_level (old_level);
 }
 
@@ -102,9 +99,6 @@ sema_try_down (struct semaphore *sema)
   else
   {
     success = false;
-
-    if (list_empty (&sema->waiters))
-      thread_current ()->real_priority = thread_current ()->priority;
     list_insert_ordered(&sema->waiters, &thread_current ()->elem, priority_comp, 0);
     ASSERT (!list_empty (&sema->waiters));
   }
@@ -125,10 +119,13 @@ sema_up (struct semaphore *sema)
   ASSERT (sema != NULL);
 
   old_level = intr_disable ();
-  if (!list_empty (&sema->waiters)) 
-    thread_unblock (list_entry (list_pop_front (&sema->waiters),
-                                struct thread, elem));
   sema->value++;
+  if (!list_empty (&sema->waiters))
+  {
+    struct list_elem *first = list_pop_front (&sema->waiters);
+    struct thread *t = list_entry (first, struct thread, elem);
+    thread_unblock (t);
+  }
   intr_set_level (old_level);
 }
 
@@ -203,7 +200,7 @@ donate (struct lock *lock)
   {
     lender->priority = thread_current ()->priority;
 
-    if (lender->locked) 
+    if (lender->locked != NULL) 
       donate (lender->locked);
   }
 }
@@ -307,10 +304,9 @@ lock_release (struct lock *lock)
     struct thread *first_waiter = list_entry (list_front (&lock->semaphore.waiters), struct thread, elem);
     first_waiter->locked = NULL;
   }
-  if (thread_current ()->priority > thread_current ()->real_priority)
-    ASSERT (!list_empty (&lock->semaphore.waiters));
-  thread_current ()->priority = thread_current ()->real_priority;
   
+  thread_current ()->priority = thread_current ()->real_priority;
+
   sema_up (&lock->semaphore);
   /*
   if (!list_empty (&lock->semaphore.waiters) &&
