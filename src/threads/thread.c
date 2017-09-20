@@ -28,6 +28,7 @@
    that are ready to run but not actually running. */
 static struct list ready_list;
 
+// Edited
 /* list of processes in THREAD_SLEEP state */
 static struct list sleep_list;
 
@@ -74,6 +75,8 @@ static void schedule (void);
 void schedule_tail (struct thread *prev);
 static tid_t allocate_tid (void);
 
+
+// Edited
 /* we need some variables for awake threads */
 static int64_t wakeup_ticks;
 
@@ -97,6 +100,8 @@ time_to_wakeup (void)
 
    It is not safe to call thread_current() until this function
    finishes. */
+
+// Edited
 void
 thread_init (void) 
 {
@@ -248,6 +253,8 @@ thread_block (void)
    be important: if the caller had disabled interrupts itself,
    it may expect that it can atomically unblock a thread and
    update other data. */
+
+// Edited
 void
 thread_unblock (struct thread *t) 
 {
@@ -258,7 +265,7 @@ thread_unblock (struct thread *t)
   old_level = intr_disable ();
   ASSERT (t->status == THREAD_BLOCKED);
   //list_push_back (&ready_list, &t->elem);
-  list_insert_ordered (&ready_list, &t->elem, ready_comp, 0);
+  list_insert_ordered (&ready_list, &t->elem, priority_comp, 0);
   t->status = THREAD_READY;
   //intr_set_level (old_level);
 
@@ -337,22 +344,24 @@ thread_yield (void)
 
   old_level = intr_disable ();
   if (curr != idle_thread)
-    list_insert_ordered (&ready_list, &curr->elem, ready_comp, 0);
+    list_insert_ordered (&ready_list, &curr->elem, priority_comp, 0);
     //list_push_back (&ready_list, &curr->elem);
   curr->status = THREAD_READY;
   schedule ();
   intr_set_level (old_level);
 }
 
+// Edited
 /* the comparison function for inserting threads in ready_list */
 bool
-ready_comp (const struct list_elem *x,
+priority_comp (const struct list_elem *x,
     const struct list_elem *y, void *aux UNUSED)
 {
   return list_entry (x, struct thread, elem)->priority
     > list_entry (y, struct thread, elem)->priority;
 }
 
+// Edited
 /* the comparison function for inserting threads in sleep_list */
 bool
 sleep_comp (const struct list_elem *x,
@@ -362,6 +371,8 @@ sleep_comp (const struct list_elem *x,
     <= list_entry (y, struct thread, elem)->terminate_sleep;
 }
 
+
+// Edited
 /* Make threads sleep for the given ticks */
 void
 thread_sleep (int64_t start, int64_t ticks)
@@ -383,6 +394,8 @@ thread_sleep (int64_t start, int64_t ticks)
   intr_set_level(old_level);
 }
 
+
+// Edited
 /* Wakeups threads after deadline */
 void
 thread_wakeup (void)
@@ -401,10 +414,12 @@ thread_wakeup (void)
   }
 }
 
+// Edited
 /* Sets the current thread's priority to NEW_PRIORITY. */
 void
 thread_set_priority (int new_priority) 
 {
+  thread_current ()->real_priority = new_priority;
   thread_current ()->priority = new_priority;
  
   if (thread_current () != idle_thread && !list_empty(&ready_list))
@@ -537,8 +552,11 @@ init_thread (struct thread *t, const char *name, int priority)
   t->status = THREAD_BLOCKED;
   strlcpy (t->name, name, sizeof t->name);
   t->stack = (uint8_t *) t + PGSIZE;
+  t->real_priority = priority;
   t->priority = priority;
   t->magic = THREAD_MAGIC;
+  t->locked = NULL;
+  list_init (&t->acquired_locks);
 }
 
 /* Allocates a SIZE-byte frame at the top of thread T's stack and

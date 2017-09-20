@@ -1,5 +1,6 @@
-Writing command line to /tmp/8jacepg0va.dsk...
-squish-pty bochs -q
+Writing command line to /tmp/0oeGaeIKEz.dsk...
+warning: can't find squish-pty, so terminal input will fail
+bochs -q
 Kernel command line: -q run priority-donate-one
 Pintos booting with 4,096 kB RAM...
 374 pages available in kernel pool.
@@ -8,14 +9,13 @@ Calibrating timer...  204,600 loops/s.
 Boot complete.
 Executing 'priority-donate-one':
 (priority-donate-one) begin
-(priority-donate-one) This thread should have priority 32.  Actual priority: 31.
-(priority-donate-one) This thread should have priority 33.  Actual priority: 31.
-(priority-donate-one) acquire2, acquire1 must already have finished, in that order.
-(priority-donate-one) This should be the last line before finishing this test.
-(priority-donate-one) end
-Execution of 'priority-donate-one' complete.
-Timer: 82 ticks
-Thread: 0 idle ticks, 85 kernel ticks, 0 user ticks
-Console: 733 characters output
+(priority-donate-one) Kernel PANIC at ../../threads/synch.c:302 in lock_release(): assertion `!list_empty (&sema->waiters)' failed.
+Call stack: 0xc010748c 0xc0102a54 0xc01091bf 0xc0109299 0xc01062b7 0xc0109318 0xc0109dde 0xc01093db 0xc01000a7 0xc010064f.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 30 ticks
+Thread: 0 idle ticks, 30 kernel ticks, 0 user ticks
+Console: 746 characters output
 Keyboard: 0 keys pressed
 Powering off...

@@ -1,31 +1,14 @@
 FAIL
-Test output failed to match any acceptable form.
-
-Acceptable output:
-  (priority-donate-nest) begin
-  (priority-donate-nest) Low thread should have priority 32.  Actual priority: 32.
-  (priority-donate-nest) Low thread should have priority 33.  Actual priority: 33.
-  (priority-donate-nest) Medium thread should have priority 33.  Actual priority: 33.
-  (priority-donate-nest) Medium thread got the lock.
-  (priority-donate-nest) High thread got the lock.
-  (priority-donate-nest) High thread finished.
-  (priority-donate-nest) High thread should have just finished.
-  (priority-donate-nest) Middle thread finished.
-  (priority-donate-nest) Medium thread should just have finished.
-  (priority-donate-nest) Low thread should have priority 31.  Actual priority: 31.
-  (priority-donate-nest) end
-Differences in `diff -u' format:
-  (priority-donate-nest) begin
-- (priority-donate-nest) Low thread should have priority 32.  Actual priority: 32.
-- (priority-donate-nest) Low thread should have priority 33.  Actual priority: 33.
-- (priority-donate-nest) Medium thread should have priority 33.  Actual priority: 33.
-- (priority-donate-nest) Medium thread got the lock.
-- (priority-donate-nest) High thread got the lock.
-- (priority-donate-nest) High thread finished.
-- (priority-donate-nest) High thread should have just finished.
-- (priority-donate-nest) Middle thread finished.
-+ (priority-donate-nest) Low thread should have priority 32.  Actual priority: 31.
-+ (priority-donate-nest) Low thread should have priority 33.  Actual priority: 31.
-  (priority-donate-nest) Medium thread should just have finished.
-  (priority-donate-nest) Low thread should have priority 31.  Actual priority: 31.
-  (priority-donate-nest) end
+Kernel panic in run: PANIC at ../../threads/synch.c:302 in lock_release(): assertion `!list_empty (&sema->waiters)' failed.
+Call stack: 0xc010748c 0xc0102a54 0xc01091bf 0xc0109299 0xc01062b7 0xc0109318 0xc010a3e1 0xc01093db 0xc01000a7 0xc010064f
+Translation of call stack:
+0xc010748c: debug_panic (.../../lib/kernel/debug.c:34)
+0xc0102a54: lock_release (...../../threads/synch.c:303)
+0xc01091bf: release_console (.../lib/kernel/console.c:110)
+0xc0109299: vprintf (.../lib/kernel/console.c:132)
+0xc01062b7: printf (...uild/../../lib/stdio.c:89)
+0xc0109318: msg (.../tests/threads/tests.c:72)
+0xc010a3e1: test_priority_donate_nest (...priority-donate-nest.c:51)
+0xc01093db: run_test (.../tests/threads/tests.c:57)
+0xc01000a7: run_task (.../../../threads/init.c:270)
+0xc010064f: run_actions (.../../../threads/init.c:319)
