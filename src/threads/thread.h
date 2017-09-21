@@ -98,8 +98,10 @@ struct thread
 
     /* Edited : Variables for donation */
     struct list acquired_locks;
+    struct list lost_locks;
     struct lock *locked;
     int real_priority;
+    struct thread *donated;
 
 #ifdef USERPROG
     /* Owned by userprog/process.c. */

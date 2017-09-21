@@ -32,6 +32,15 @@
 #include "threads/interrupt.h"
 #include "threads/thread.h"
 
+/* One semaphore in a list. */
+struct semaphore_elem 
+  {
+    struct list_elem elem;              /* List element. */
+    struct semaphore semaphore;         /* This semaphore. */
+
+    int thread_priority;
+  };
+
 /* Initializes semaphore SEMA to VALUE.  A semaphore is a
    nonnegative integer along with two atomic operators for
    manipulating it:
@@ -71,7 +80,21 @@ sema_down (struct semaphore *sema)
     {
       //list_push_back (&sema->waiters, &thread_current ()->elem);
       list_insert_ordered(&sema->waiters, &thread_current ()->elem, priority_comp, 0);
+      while (!list_empty (&thread_current ()->acquired_locks))
+      {
+        struct lock *lost_lock = list_entry (list_pop_front (&thread_current ()->acquired_locks),
+          struct lock, elem);
+        lost_lock->holder == NULL;
+        list_insert_ordered (&(thread_current ()->lost_locks),
+          &lost_lock->elem, lock_comp, 0);
+      }
       thread_block ();
+      while (!list_empty (&thread_current ()->lost_locks))
+      {
+        struct lock *lost_lock = list_entry (list_pop_front (&thread_current ()->lost_locks),
+          struct lock, elem);
+        lost_lock->holder == thread_current ();
+      }
     }
   sema->value--;
   intr_set_level (old_level);
@@ -199,6 +222,7 @@ donate (struct lock *lock)
   if (lender->priority < thread_current ()->priority)
   {
     lender->priority = thread_current ()->priority;
+    lender->donated = thread_current ();
 
     if (lender->locked != NULL) 
       donate (lender->locked);
@@ -223,6 +247,16 @@ lock_comp (const struct list_elem *x,
 
     return t_x->priority > t_y->priority;
   }
+}
+
+bool
+sema_comp (const struct list_elem *x,
+    const struct list_elem *y, void *aux UNUSED)
+{
+  int x_priority = list_entry (x, struct semaphore_elem, elem)->thread_priority;
+  int y_priority = list_entry (y, struct semaphore_elem, elem)->thread_priority;
+
+  return x_priority > y_priority;
 }
 
 /* Acquires LOCK, sleeping until it becomes available if
@@ -251,8 +285,8 @@ lock_acquire (struct lock *lock)
   thread_current ()->locked = NULL;
 
   /* Edited : append to acquired list */
-  // list_insert_ordered (&(thread_current ()->acquired_locks),
-  //   &lock->elem, lock_comp, 0);
+  list_insert_ordered (&(thread_current ()->acquired_locks),
+    &lock->elem, lock_comp, 0);
 }
 
 /* Tries to acquires LOCK and returns true if successful or false
@@ -277,8 +311,8 @@ lock_try_acquire (struct lock *lock)
   if (success)
   {
     lock->holder = thread_current ();
-    // list_insert_ordered (&(thread_current ()->acquired_locks),
-    //   &lock->elem, priority_comp, 0);
+    list_insert_ordered (&(thread_current ()->acquired_locks),
+      &lock->elem, priority_comp, 0);
   }
   return success;
 }
@@ -296,7 +330,6 @@ lock_release (struct lock *lock)
   ASSERT (lock_held_by_current_thread (lock));
 
   lock->holder = NULL;
-  //list_remove (&lock->elem);
 
   // Edited
   if (!list_empty (&lock->semaphore.waiters))
@@ -305,9 +338,7 @@ lock_release (struct lock *lock)
     first_waiter->locked = NULL;
   }
   
-  thread_current ()->priority = thread_current ()->real_priority;
-
-  sema_up (&lock->semaphore);
+  //thread_current ()->priority = thread_current ()->real_priority;
   /*
   if (!list_empty (&lock->semaphore.waiters) &&
     !list_empty (&(thread_current ()->acquired_locks)))
@@ -327,7 +358,29 @@ lock_release (struct lock *lock)
     }
   }
   */
-  //thread_current ()->priority = thread_current ()->real_priority;
+  thread_current ()->priority = thread_current ()->real_priority;
+  thread_current ()->donated = NULL;
+  list_remove (&lock->elem);
+
+  if (!list_empty (&thread_current ()->acquired_locks))
+  {
+    struct lock *has_highest = list_entry (list_front (&thread_current ()->acquired_locks),
+      struct lock, elem);
+
+    if (!list_empty (&has_highest->semaphore.waiters))
+    {
+      struct thread *race = list_entry (list_front (&has_highest->semaphore.waiters),
+        struct thread, elem);
+
+      if (thread_current ()->priority < race->priority)
+      {
+        thread_current ()->priority = race->priority;
+        thread_current ()->donated = race;
+      }
+    }
+  }
+
+  sema_up (&lock->semaphore);
 }
 
 /* Returns true if the current thread holds LOCK, false
@@ -341,12 +394,6 @@ lock_held_by_current_thread (const struct lock *lock)
   return lock->holder == thread_current ();
 }
 
-/* One semaphore in a list. */
-struct semaphore_elem 
-  {
-    struct list_elem elem;              /* List element. */
-    struct semaphore semaphore;         /* This semaphore. */
-  };
 
 /* Initializes condition variable COND.  A condition variable
    allows one piece of code to signal a condition and cooperating
@@ -383,6 +430,7 @@ void
 cond_wait (struct condition *cond, struct lock *lock) 
 {
   struct semaphore_elem waiter;
+  waiter.thread_priority = thread_current ()->priority;
 
   ASSERT (cond != NULL);
   ASSERT (lock != NULL);
@@ -390,8 +438,8 @@ cond_wait (struct condition *cond, struct lock *lock)
   ASSERT (lock_held_by_current_thread (lock));
   
   sema_init (&waiter.semaphore, 0);
-  list_push_back (&cond->waiters, &waiter.elem);
-  //list_insert_ordered (&cond->waiters, &waiter.elem, priority_comp, 0);
+  //list_push_back (&cond->waiters, &waiter.elem);
+  list_insert_ordered (&cond->waiters, &waiter.elem, sema_comp, 0);
   lock_release (lock);
   sema_down (&waiter.semaphore);
   lock_acquire (lock);

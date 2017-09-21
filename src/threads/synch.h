@@ -18,6 +18,7 @@ void sema_up (struct semaphore *);
 void sema_self_test (void);
 
 bool lock_comp (const struct list_elem *, const struct list_elem *, void *aux);
+bool sema_comp (const struct list_elem *, const struct list_elem *, void *aux);
 
 /* Lock. */
 struct lock 

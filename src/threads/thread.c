@@ -241,6 +241,14 @@ thread_block (void)
   ASSERT (!intr_context ());
   ASSERT (intr_get_level () == INTR_OFF);
 
+  // while (!list_empty (&thread_current ()->acquired_locks))
+  // {
+  //   struct lock *lost_lock = list_entry (list_pop_front (&thread_current ()->acquired_locks),
+  //     struct lock, elem);
+  //   lock_release (lost_lock);
+  //   list_insert_ordered (&(thread_current ()->lost_locks),
+  //     &lost_lock->elem, lock_comp, 0);
+  // }
   thread_current ()->status = THREAD_BLOCKED;
   schedule ();
 }
@@ -264,6 +272,14 @@ thread_unblock (struct thread *t)
 
   old_level = intr_disable ();
   ASSERT (t->status == THREAD_BLOCKED);
+
+  // while (!list_empty (&t->lost_locks))
+  // {
+  //   struct lock *lost_lock = list_entry (list_pop_front (&t->lost_locks),
+  //     struct lock, elem);
+  //   lock_acquire (lost_lock);
+  // }
+
   //list_push_back (&ready_list, &t->elem);
   list_insert_ordered (&ready_list, &t->elem, priority_comp, 0);
   t->status = THREAD_READY;
@@ -421,6 +437,11 @@ thread_set_priority (int new_priority)
 {
   thread_current ()->real_priority = new_priority;
   thread_current ()->priority = new_priority;
+
+  if (thread_current ()->donated)
+  {
+    thread_current ()->priority = (thread_current ()->donated)->priority;
+  }
  
   if (thread_current () != idle_thread && !list_empty(&ready_list))
   {
@@ -554,9 +575,11 @@ init_thread (struct thread *t, const char *name, int priority)
   t->stack = (uint8_t *) t + PGSIZE;
   t->real_priority = priority;
   t->priority = priority;
+  t->donated = NULL;
   t->magic = THREAD_MAGIC;
   t->locked = NULL;
   list_init (&t->acquired_locks);
+  list_init (&t->lost_locks);
 }
 
 /* Allocates a SIZE-byte frame at the top of thread T's stack and
