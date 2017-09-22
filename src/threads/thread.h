@@ -102,6 +102,7 @@ struct thread
     struct lock *locked;
     int real_priority;
     struct thread *donated;
+    struct semaphore *sema_block;
 
 #ifdef USERPROG
     /* Owned by userprog/process.c. */

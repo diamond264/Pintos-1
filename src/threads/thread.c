@@ -578,6 +578,7 @@ init_thread (struct thread *t, const char *name, int priority)
   t->donated = NULL;
   t->magic = THREAD_MAGIC;
   t->locked = NULL;
+  t->sema_block = NULL;
   list_init (&t->acquired_locks);
   list_init (&t->lost_locks);
 }

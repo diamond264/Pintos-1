@@ -80,21 +80,9 @@ sema_down (struct semaphore *sema)
     {
       //list_push_back (&sema->waiters, &thread_current ()->elem);
       list_insert_ordered(&sema->waiters, &thread_current ()->elem, priority_comp, 0);
-      while (!list_empty (&thread_current ()->acquired_locks))
-      {
-        struct lock *lost_lock = list_entry (list_pop_front (&thread_current ()->acquired_locks),
-          struct lock, elem);
-        lost_lock->holder == NULL;
-        list_insert_ordered (&(thread_current ()->lost_locks),
-          &lost_lock->elem, lock_comp, 0);
-      }
+      thread_current ()->sema_block = sema;
       thread_block ();
-      while (!list_empty (&thread_current ()->lost_locks))
-      {
-        struct lock *lost_lock = list_entry (list_pop_front (&thread_current ()->lost_locks),
-          struct lock, elem);
-        lost_lock->holder == thread_current ();
-      }
+      thread_current ()->sema_block = NULL;
     }
   sema->value--;
   intr_set_level (old_level);
@@ -224,8 +212,11 @@ donate (struct lock *lock)
     lender->priority = thread_current ()->priority;
     lender->donated = thread_current ();
 
-    if (lender->locked != NULL) 
-      donate (lender->locked);
+    if (lender->locked != NULL)
+    {
+      list_sort (&((lender->locked)->semaphore.waiters), priority_comp, 0);
+      donate(lender->locked);
+    }
   }
 }
 
@@ -278,7 +269,16 @@ lock_acquire (struct lock *lock)
   thread_current ()->locked = lock;
 
   if (lock->holder != NULL)
+  {
+    if (lock->holder->status == THREAD_BLOCKED)
+      {
+        struct semaphore *sema = lock->holder->sema_block;
+        struct list_elem *first = list_pop_front (&sema->waiters);
+        struct thread *t = list_entry (first, struct thread, elem);
+        thread_unblock (t);
+      }
     donate (lock);
+  }
 
   sema_down (&lock->semaphore);
   lock->holder = thread_current ();
@@ -378,6 +378,11 @@ lock_release (struct lock *lock)
         thread_current ()->donated = race;
       }
     }
+  }
+
+  if (thread_current ()->locked != NULL)
+  {
+    list_sort (&((thread_current ()->locked)->semaphore.waiters), priority_comp, 0);
   }
 
   sema_up (&lock->semaphore);
