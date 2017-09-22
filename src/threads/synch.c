@@ -78,6 +78,7 @@ sema_down (struct semaphore *sema)
   old_level = intr_disable ();
   while (sema->value == 0) 
     {
+      /* Edited : insert element ordered */
       //list_push_back (&sema->waiters, &thread_current ()->elem);
       list_insert_ordered(&sema->waiters, &thread_current ()->elem, priority_comp, 0);
       thread_current ()->sema_block = sema;
@@ -206,6 +207,9 @@ donate (struct lock *lock)
 {
   struct thread *lender = lock->holder;
   ASSERT (lender != NULL);
+  enum intr_level old_level;
+
+  old_level = intr_disable ();
 
   if (lender->priority < thread_current ()->priority)
   {
@@ -218,6 +222,8 @@ donate (struct lock *lock)
       donate(lender->locked);
     }
   }
+
+  intr_set_level (old_level);
 }
 
 bool
@@ -337,27 +343,7 @@ lock_release (struct lock *lock)
     struct thread *first_waiter = list_entry (list_front (&lock->semaphore.waiters), struct thread, elem);
     first_waiter->locked = NULL;
   }
-  
-  //thread_current ()->priority = thread_current ()->real_priority;
-  /*
-  if (!list_empty (&lock->semaphore.waiters) &&
-    !list_empty (&(thread_current ()->acquired_locks)))
-  {
-    // Edited
-    struct thread *first_waiter = list_entry (list_front (&lock->semaphore.waiters),
-      struct thread, elem);
-    ASSERT (first_waiter->priority == thread_current ()->priority);
 
-    struct lock *has_highest = list_entry (list_front (&thread_current ()->acquired_locks),
-      struct lock, elem);
-    if (has_highest)
-    {
-      int highest_priority = list_entry (list_front (&has_highest->semaphore.waiters), struct thread, elem)->priority;
-      thread_current ()->priority = (highest_priority 
-        > thread_current ()->real_priority)?highest_priority:thread_current ()->real_priority;
-    }
-  }
-  */
   thread_current ()->priority = thread_current ()->real_priority;
   thread_current ()->donated = NULL;
   list_remove (&lock->elem);
