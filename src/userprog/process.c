@@ -28,6 +28,11 @@ static bool load (const char *cmdline, void (**eip) (void), void **esp);
 tid_t
 process_execute (const char *file_name) 
 {
+  //EDITED
+  struct process *p_parent;
+  p_parent = thread_current ()->process;
+  sema_init (&p_parent->sema, 0);
+
   char *fn_copy;
   tid_t tid;
 
@@ -38,10 +43,38 @@ process_execute (const char *file_name)
     return TID_ERROR;
   strlcpy (fn_copy, file_name, PGSIZE);
 
+  //EDITED
+  struct process *p_child;
+  p_chlid = malloc (sizeof *p_child);
+  list_init (&p_child->child_thread);
+  p_child->pid = tid;
+  p_child->parent = p_parent->pid;
+  p_child->loaded = false;
+
   /* Create a new thread to execute FILE_NAME. */
   tid = thread_create (file_name, PRI_DEFAULT, start_process, fn_copy);
-  if (tid == TID_ERROR)
+
+  if (tid == TID_ERROR) {
     palloc_free_page (fn_copy); 
+    free (p_child);
+  }
+
+  //EDITED
+  else {
+    sema_down (&p_parent->sema);
+
+    if (p_child->loaded) {
+      struct thread_id child_id;
+      child_id = malloc (sizeof *child_id);
+      child_id->tid = tid;
+      child_id->process = p_child;
+      list_push_back (&p->child_thread, &child_id->elem);
+    } else {
+      free (p_child);
+      return -1;
+    }
+  }
+
   return tid;
 }
 
@@ -88,7 +121,21 @@ start_process (void *f_name)
 int
 process_wait (tid_t child_tid UNUSED) 
 {
-  return -1;
+  struct process p_parent;
+  struct process p_child;
+
+  p_parent = thread_current ()->process;
+  p_child = find_child (p_parent, child_tid);
+
+  if (p_child == NULL)
+    return -1;
+
+  if (!p_child->dead) 
+    sema_down (&p_parent->sema);
+
+  int status = p_child->status;
+  free(p_child);
+  return status;
 }
 
 /* Free the current process's resources. */
