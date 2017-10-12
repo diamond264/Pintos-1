@@ -196,6 +196,11 @@ thread_create (const char *name, int priority,
 
   ASSERT (function != NULL);
 
+  // EDITED
+  struct thread *t_parent;
+  t_parent = thread_current ();
+  sema_init (&t_parent->sema_parent, 0);
+
   /* Allocate thread. */
   t = palloc_get_page (PAL_ZERO);
   if (t == NULL)
@@ -219,13 +224,13 @@ thread_create (const char *name, int priority,
   sf = alloc_frame (t, sizeof *sf);
   sf->eip = switch_entry;
 
+  // EDITED
+  t->parent = t_parent;
+  list_push_back (&t_parent->child_thread, &t->child_elem);
+
   /* Add to run queue. */
   thread_unblock (t);
-  /*
-  if (thread_current () != idle_thread &&
-      thread_get_priority () < priority)
-    thread_yield ();
-  */
+
   return tid;
 }
 

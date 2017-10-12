@@ -28,11 +28,6 @@ static bool load (const char *cmdline, void (**eip) (void), void **esp);
 tid_t
 process_execute (const char *file_name) 
 {
-  //EDITED
-  struct process *p_parent;
-  p_parent = thread_current ()->process;
-  sema_init (&p_parent->sema, 0);
-
   char *fn_copy;
   tid_t tid;
 
@@ -44,12 +39,12 @@ process_execute (const char *file_name)
   strlcpy (fn_copy, file_name, PGSIZE);
 
   //EDITED
-  struct process *p_child;
-  p_chlid = malloc (sizeof *p_child);
-  list_init (&p_child->child_thread);
-  p_child->pid = tid;
-  p_child->parent = p_parent->pid;
-  p_child->loaded = false;
+  // struct process *p_child;
+  // p_chlid = malloc (sizeof *p_child);
+  // list_init (&p_child->child_thread);
+  // p_child->pid = tid;
+  // p_child->parent = p_parent->pid;
+  // p_child->loaded = false;
 
   /* Create a new thread to execute FILE_NAME. */
   tid = thread_create (file_name, PRI_DEFAULT, start_process, fn_copy);
@@ -60,20 +55,20 @@ process_execute (const char *file_name)
   }
 
   //EDITED
-  else {
-    sema_down (&p_parent->sema);
+  // else {
+  //   sema_down (&p_parent->sema);
 
-    if (p_child->loaded) {
-      struct thread_id child_id;
-      child_id = malloc (sizeof *child_id);
-      child_id->tid = tid;
-      child_id->process = p_child;
-      list_push_back (&p->child_thread, &child_id->elem);
-    } else {
-      free (p_child);
-      return -1;
-    }
-  }
+  //   if (p_child->loaded) {
+  //     struct thread_id child_id;
+  //     child_id = malloc (sizeof *child_id);
+  //     child_id->tid = tid;
+  //     child_id->process = p_child;
+  //     list_push_back (&p->child_thread, &child_id->elem);
+  //   } else {
+  //     free (p_child);
+  //     return -1;
+  //   }
+  // }
 
   return tid;
 }
@@ -121,20 +116,21 @@ start_process (void *f_name)
 int
 process_wait (tid_t child_tid UNUSED) 
 {
-  struct process p_parent;
-  struct process p_child;
+  struct thread *t_parent;
+  struct thread *t_child;
 
-  p_parent = thread_current ()->process;
-  p_child = find_child (p_parent, child_tid);
+  t_parent = thread_current ();
+  t_child = find_child (t_parent, child_tid);
 
-  if (p_child == NULL)
+  if (t_child == NULL)
     return -1;
 
-  if (!p_child->dead) 
-    sema_down (&p_parent->sema);
+  //if (!t_child->dead) 
+  sema_down (&t_parent->sema);
 
-  int status = p_child->status;
-  free(p_child);
+  int status = t_child->exit_status;
+  t_child->parent = NULL;
+  list_remove (&t_child->child_elem);
   return status;
 }
 
@@ -160,6 +156,12 @@ process_exit (void)
       curr->pagedir = NULL;
       pagedir_activate (NULL);
       pagedir_destroy (pd);
+
+      // EDITED
+      struct thread *t_parent = curr->parent;
+      if (!t_parent->sema_parent.value) {
+        sema_up (t_parent->sema_parent);
+      }
     }
 }
 

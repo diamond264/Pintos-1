@@ -82,7 +82,11 @@ typedef int tid_t;
    ready state is on the run queue, whereas only a thread in the
    blocked state is on a semaphore wait list. */
 
-// Edited
+struct file_elem {
+  struct file *file;
+  struct list_elem elem;
+}
+
 struct thread
   {
     /* Owned by thread.c. */
@@ -107,7 +111,16 @@ struct thread
 #ifdef USERPROG
     /* Owned by userprog/process.c. */
     uint32_t *pagedir;                  /* Page directory. */
-    struct process process;
+
+    int exit_status;
+    bool loaded;
+    bool dead;
+    struct thread *parent;
+    struct list child_thread;
+    struct list_elem child_elem;
+    struct semaphore *sema_parent;
+
+    struct list files;
 #endif
 
     /* Owned by thread.c. */

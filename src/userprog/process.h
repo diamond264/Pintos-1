@@ -9,16 +9,16 @@ struct thread_id {
 	struct list_elem elem;
 }
 
-struct process {
-	pid_t pid;
-	int status;
-	bool loaded;
-	bool dead;
+// struct process {
+// 	pid_t pid;
+// 	int status;
+// 	bool loaded;
+// 	bool dead;
 
-	pid_t parent;
-	struct list child_thread;
-	struct semaphore sema;
-}
+// 	pid_t parent;
+// 	struct list child_thread;
+// 	struct semaphore sema;
+// }
 
 tid_t process_execute (const char *file_name);
 int process_wait (tid_t);
