@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <list.h>
 #include "userprog/gdt.h"
 #include "userprog/pagedir.h"
 #include "userprog/tss.h"
@@ -21,6 +22,33 @@
 static thread_func start_process NO_RETURN;
 static bool load (const char *cmdline, void (**eip) (void), void **esp);
 
+struct thread* get_child(struct thread *parent, tid_t child_tid)
+{
+  //printf("get child by %s\n", parent->name);
+  struct list_elem *iter;
+  if (list_empty (&parent->children)) return NULL;
+  for(iter = list_begin(&parent->children); iter != list_end(&parent->children); iter = list_next(iter))
+  {
+    struct thread *t = list_entry(iter, struct thread, child_elem);
+    if (t == NULL) return NULL;
+    //printf("iter %s\n",t->name);
+    if(t->tid == child_tid)
+    {
+      //printf("iter end1\n");
+      return t;
+    }
+  }
+  //printf("iter end2\n");
+
+  return NULL;
+}
+
+void remove_child(struct thread *child)
+{
+  list_remove(&child->child_elem);
+  child->parent = NULL;
+}
+
 /* Starts a new thread running a user program loaded from
    FILENAME.  The new thread may be scheduled (and may even exit)
    before process_execute() returns.  Returns the new process's
@@ -30,6 +58,8 @@ process_execute (const char *file_name)
 {
   char *fn_copy;
   tid_t tid;
+
+  struct thread *curr = thread_current();
 
   /* Make a copy of FILE_NAME.
      Otherwise there's a race between the caller and load(). */
@@ -62,11 +92,23 @@ process_execute (const char *file_name)
   tid = thread_create (rf_name, PRI_DEFAULT, start_process, fn_copy);
 
   if (tid == TID_ERROR) {
+    //printf("TID ERROR\n");
     palloc_free_page (fn_copy);
     palloc_free_page(fn_copy2);
     free(rf_name);
     //free (p_child);
   }
+
+  sema_down(&curr->sema_start);
+  //printf("curr name %s\n", curr->name);
+  struct thread *child = get_child(curr, tid);
+  //printf("what zzzz");
+  // if(!child->loaded)
+  // {
+  //   //printf("not loaded \n");
+  //   remove_child(child);
+  //   return -1;
+  // }
 
   //EDITED
   // else {
@@ -84,6 +126,8 @@ process_execute (const char *file_name)
   //   }
   // }
 
+  //printf("Maybe?\n");
+
   return tid;
 }
 
@@ -96,17 +140,101 @@ start_process (void *f_name)
   struct intr_frame if_;
   bool success;
 
+  // Argument Passing
+
+  // file_name parse with spliting space
+  char args[100][100] = {0,}; // arguments를 저장할 array
+  char *args_addr[100] = {0,}; // args의 pointer를 저장할 array
+  //memset(args, 0, sizeof(args));
+  //memset(args_addr, 0, sizeof(args_addr));
+
+  int argc = 0;
+  char *token, *save_ptr;
+  token = strtok_r(file_name, " ", &save_ptr);
+  /*
+  for(token = strtok_r(file_name, " ", &save_ptr); token != NULL; token = strtok_r(NULL, " ", &save_ptr))
+  {
+    //memcpy(args[argc], token, strlen(token)+1);
+    ////printf("%s\n", token);
+    sn//printf(args[argc], strlen(token), "%s", token);
+    argc++;
+  }*/
+
   /* Initialize interrupt frame and load executable. */
+
+  // File Deny Write를 먼저 해준다.
+  struct file *userprog = filesys_open(token);
+  if(userprog != NULL)
+    file_deny_write(userprog);
+
   memset (&if_, 0, sizeof if_);
   if_.gs = if_.fs = if_.es = if_.ds = if_.ss = SEL_UDSEG;
   if_.cs = SEL_UCSEG;
   if_.eflags = FLAG_IF | FLAG_MBS;
-  success = load (file_name, &if_.eip, &if_.esp);
+  success = load (token, &if_.eip, &if_.esp);
+
+  if(!success)
+  {
+    //file_close(userprog);
+    palloc_free_page(file_name);
+    file_close(userprog);
+    syscall_exit(-1);
+  }
+
+  struct thread *curr = thread_current();
+  curr->loaded = true;
+
+  // load 끝나면 sema up 해준다.
+  sema_up(&curr->parent->sema_start);
+
+  int i;
+  /*
+  for(i=argc-1; i>=0; i--)
+  {
+    // Null 문자를 포함해 +1 해준다.
+    int len = strlen(args[i]) + 1;
+    if_.esp -= len;
+    memcpy(if_.esp, args[i], len);
+    args_addr[i] = if_.esp;
+  }*/
+
+  for(; token != NULL; token = strtok_r(NULL, " ", &save_ptr))
+  {
+    int len = strlen(token) + 1;
+    if_.esp -= len;
+    memcpy(if_.esp, token, len);
+    args_addr[argc++] = if_.esp;
+  }
+
+  // Offset
+  if_.esp -= (uint32_t)if_.esp % 4;
+
+  // args[argc]
+  if_.esp -= 4;
+  *(int*)if_.esp = 0;
+
+  // args[0~argc-1]
+  for(i = argc - 1; i >= 0; i--)
+  {
+    if_.esp -= 4;
+    *(void**)if_.esp = args_addr[i];
+  }
+
+  // args 주소를 넣어준다.
+  if_.esp -= 4;
+  *(void**)if_.esp = if_.esp + 4;
+
+  // 그 다음 argc를 넣어준다.
+  if_.esp -= 4;
+  *(int*)if_.esp = argc;
+
+  // 마지막으로 return address를 넣어준다.
+  if_.esp -= 4;
+  *(int*)if_.esp = 0;
+
 
   /* If load failed, quit. */
   palloc_free_page (file_name);
-  if (!success) 
-    thread_exit ();
 
   /* Start the user process by simulating a return from an
      interrupt, implemented by intr_exit (in
@@ -128,23 +256,26 @@ start_process (void *f_name)
    This function will be implemented in problem 2-2.  For now, it
    does nothing. */
 int
-process_wait (tid_t child_tid UNUSED) 
+process_wait (tid_t child_tid) 
 {
+  //printf("test1\n");
   struct thread *t_parent;
   struct thread *t_child;
 
   t_parent = thread_current ();
-  t_child = NULL;//find_child (t_parent, child_tid);
+  t_child = get_child (t_parent, child_tid);
 
   if (t_child == NULL)
     return -1;
 
   //if (!t_child->dead) 
-  sema_down (&t_parent->sema_parent);
+  sema_down (&t_parent->sema_exit);
+  //printf("test!!!!\n");
 
   int status = t_child->exit_status;
-  t_child->parent = NULL;
-  list_remove (&t_child->child_elem);
+  remove_child(t_child);
+  //list_remove (&t_child->child_elem);
+  //printf("do return\n");
   return status;
 }
 
@@ -159,24 +290,24 @@ process_exit (void)
      to the kernel-only page directory. */
   pd = curr->pagedir;
   if (pd != NULL) 
-    {
-      /* Correct ordering here is crucial.  We must set
-         cur->pagedir to NULL before switching page directories,
-         so that a timer interrupt can't switch back to the
-         process page directory.  We must activate the base page
-         directory before destroying the process's page
-         directory, or our active page directory will be one
-         that's been freed (and cleared). */
-      curr->pagedir = NULL;
-      pagedir_activate (NULL);
-      pagedir_destroy (pd);
+  {
+    /* Correct ordering here is crucial.  We must set
+       cur->pagedir to NULL before switching page directories,
+       so that a timer interrupt can't switch back to the
+       process page directory.  We must activate the base page
+       directory before destroying the process's page
+       directory, or our active page directory will be one
+       that's been freed (and cleared). */
+    curr->pagedir = NULL;
+    pagedir_activate (NULL);
+    pagedir_destroy (pd);
 
-      // EDITED
-      struct thread *t_parent = curr->parent;
-      if (!(t_parent->sema_parent->value)) {
-        sema_up (t_parent->sema_parent);
-      }
-    }
+    // EDITED
+    struct thread *t_parent = curr->parent;
+    printf("%s: exit(%d)\n", curr->name, curr->exit_status);
+
+    sema_up (&t_parent->sema_exit);
+  }
 }
 
 /* Sets up the CPU for running user code in the current
@@ -202,7 +333,7 @@ process_activate (void)
 typedef uint32_t Elf32_Word, Elf32_Addr, Elf32_Off;
 typedef uint16_t Elf32_Half;
 
-/* For use with ELF types in printf(). */
+/* For use with ELF types in //printf(). */
 #define PE32Wx PRIx32   /* Print Elf32_Word in hexadecimal. */
 #define PE32Ax PRIx32   /* Print Elf32_Addr in hexadecimal. */
 #define PE32Ox PRIx32   /* Print Elf32_Off in hexadecimal. */
@@ -288,7 +419,7 @@ load (const char *file_name, void (**eip) (void), void **esp)
   file = filesys_open (file_name);
   if (file == NULL) 
     {
-      printf ("load: %s: open failed\n", file_name);
+      //printf ("load: %s: open failed\n", file_name);
       goto done; 
     }
 
@@ -301,7 +432,7 @@ load (const char *file_name, void (**eip) (void), void **esp)
       || ehdr.e_phentsize != sizeof (struct Elf32_Phdr)
       || ehdr.e_phnum > 1024) 
     {
-      printf ("load: %s: error loading executable\n", file_name);
+      //printf ("load: %s: error loading executable\n", file_name);
       goto done; 
     }
 
@@ -525,4 +656,17 @@ install_page (void *upage, void *kpage, bool writable)
      address, then map our page there. */
   return (pagedir_get_page (t->pagedir, upage) == NULL
           && pagedir_set_page (t->pagedir, upage, kpage, writable));
+}
+
+void* validate_addr (void *addr)
+{
+  struct thread *curr = thread_current();
+
+  if (addr == NULL || is_kernel_vaddr(addr) || pagedir_get_page (curr->pagedir, addr) == NULL)
+  {
+    syscall_exit(-1);
+    return NULL;
+  }
+  else 
+    return addr;
 }

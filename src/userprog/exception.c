@@ -150,7 +150,7 @@ page_fault (struct intr_frame *f)
   user = (f->error_code & PF_U) != 0;
 
   if (!is_user_vaddr (fault_addr))
-    exit (-1);
+    syscall_exit (-1);
 
   /* To implement virtual memory, delete the rest of the function
      body, and replace it with code that brings in the page to

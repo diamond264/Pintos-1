@@ -118,9 +118,11 @@ struct thread
     bool loaded;
     bool dead;
     struct thread *parent;
-    struct list child_thread;
+    struct list children;
+    struct semaphore sema_start;
+    struct semaphore sema_exit;
     struct list_elem child_elem;
-    struct semaphore *sema_parent;
+    int next_fd;
 
     struct list files;
 #endif

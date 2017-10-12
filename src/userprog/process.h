@@ -3,6 +3,9 @@
 
 #include "threads/thread.h"
 
+#define IS_DEBUG true
+#define printd(x) if(IS_DEBUG) printf(x)
+
 /*struct thread_id {
 	tid_t tid;
 	struct process process;
