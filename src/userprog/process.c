@@ -38,6 +38,18 @@ process_execute (const char *file_name)
     return TID_ERROR;
   strlcpy (fn_copy, file_name, PGSIZE);
 
+  // File name을 parsing 하기 위해 한 번 더 copy 해준다. (to avoid race condition)
+  char *fn_copy2;
+
+  fn_copy2 = palloc_get_page(0);
+  if(fn_copy2 == NULL)
+    return TID_ERROR;
+  strlcpy(fn_copy2, file_name, PGSIZE);
+
+  // args[0]을 가져와 real filename을 parsing한다.
+  char *save_ptr;
+  char *rf_name = strtok_r(fn_copy2, " ", &save_ptr); // real file name
+
   //EDITED
   // struct process *p_child;
   // p_chlid = malloc (sizeof *p_child);
@@ -47,11 +59,13 @@ process_execute (const char *file_name)
   // p_child->loaded = false;
 
   /* Create a new thread to execute FILE_NAME. */
-  tid = thread_create (file_name, PRI_DEFAULT, start_process, fn_copy);
+  tid = thread_create (rf_name, PRI_DEFAULT, start_process, fn_copy);
 
   if (tid == TID_ERROR) {
-    palloc_free_page (fn_copy); 
-    free (p_child);
+    palloc_free_page (fn_copy);
+    palloc_free_page(fn_copy2);
+    free(rf_name);
+    //free (p_child);
   }
 
   //EDITED
@@ -120,13 +134,13 @@ process_wait (tid_t child_tid UNUSED)
   struct thread *t_child;
 
   t_parent = thread_current ();
-  t_child = find_child (t_parent, child_tid);
+  t_child = NULL;//find_child (t_parent, child_tid);
 
   if (t_child == NULL)
     return -1;
 
   //if (!t_child->dead) 
-  sema_down (&t_parent->sema);
+  sema_down (&t_parent->sema_parent);
 
   int status = t_child->exit_status;
   t_child->parent = NULL;
@@ -159,7 +173,7 @@ process_exit (void)
 
       // EDITED
       struct thread *t_parent = curr->parent;
-      if (!t_parent->sema_parent.value) {
+      if (!(t_parent->sema_parent->value)) {
         sema_up (t_parent->sema_parent);
       }
     }

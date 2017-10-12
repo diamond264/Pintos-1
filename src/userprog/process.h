@@ -3,11 +3,11 @@
 
 #include "threads/thread.h"
 
-struct thread_id {
+/*struct thread_id {
 	tid_t tid;
 	struct process process;
 	struct list_elem elem;
-}
+}*/
 
 // struct process {
 // 	pid_t pid;

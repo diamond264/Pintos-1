@@ -3,9 +3,22 @@
 #include <syscall-nr.h>
 #include "threads/interrupt.h"
 #include "threads/thread.h"
+#include "filesys/off_t.h"
 
 static void syscall_handler (struct intr_frame *);
 struct lock file_lock;
+
+struct file* get_file (int fd) {
+  struct thread *curr = thread_current ();
+  struct list_elem *i;
+
+  for (i=list_begin (&curr->files); i!=list_end (&curr->files); i=list_next(i)) {
+    struct file_elem *file_i = list_entry (i, struct file_elem, elem);
+    if (file_i->fd == fd) {
+      return file_i->file;
+    }
+  }
+}
 
 void
 syscall_init (void) 
@@ -20,7 +33,7 @@ syscall_handler (struct intr_frame *f)
   printf ("system call!\n");
   uint32_t *argv[5];
 
-  switch (f->esp) {
+  switch (*(int*)f->esp) {
   	case SYS_HALT	:
       halt ();
   		break;
@@ -37,7 +50,7 @@ syscall_handler (struct intr_frame *f)
 
   	case SYS_WAIT	:
       argv[0] = f->esp + 1;
-      f->eax = wait ((pid_t) *argv[0]);
+      f->eax = wait ((tid_t) *argv[0]);
   		break;
 
   	case SYS_CREATE	:
@@ -77,13 +90,13 @@ exit (int status) {
   thread_exit ();
 }
 
-pid_t
+tid_t
 exec (const char *cmd_line) {
-  return (pid_t) process_execute (cmd_line);
+  return (tid_t) process_execute (cmd_line);
 }
 
 int
-wait (pid_t pid) {
+wait (tid_t pid) {
   return process_wait (pid);
 }
 
@@ -91,6 +104,7 @@ wait (pid_t pid) {
 int
 read (int fd, const void *buffer, unsigned size) {
   int value = -1;
+  int i;
 
   if (fd == 1) exit (-1);
 
@@ -131,19 +145,6 @@ write (int fd, const void *buffer, unsigned size) {
 
   lock_release(&file_lock);
   return value;
-}
-
-struct file*
-get_file (int fd) {
-  struct thread curr = thread_current ();
-  struct list_elem *i;
-
-  for (i=list_begin (&curr->files); i!=list_end (&curr->files); i=list_next(i)) {
-    struct file_elem file_i = list_entry (i, struct file_elem, elem)
-    if (file_i->fd == fd) {
-      return file_i->file;
-    }
-  }
 }
 
 
