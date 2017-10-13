@@ -136,6 +136,7 @@ struct thread
     struct semaphore sema_exit;
 
     struct list files;
+    struct file *program; // executable file을 저장.
 #endif
 
     /* Owned by thread.c. */

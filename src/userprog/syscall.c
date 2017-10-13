@@ -4,6 +4,7 @@
 #include "threads/interrupt.h"
 #include "threads/thread.h"
 #include "filesys/off_t.h"
+#include "threads/vaddr.h"
 
 static void syscall_handler (struct intr_frame *);
 struct lock file_lock;
@@ -204,7 +205,8 @@ syscall_open (const char *file) {
   validate_addr ((void *) file);
 
   struct thread *t = thread_current ();
-  struct file_elem *f = (struct file_elem*)malloc (sizeof (struct file_elem*));
+  struct file_elem *f;
+  f = (struct file_elem*)malloc (sizeof *f);
 
   f->file = filesys_open (file);
   if (!f->file) {
@@ -228,6 +230,9 @@ syscall_filesize (int fd) {
 int
 syscall_read (int fd, const void *buffer, unsigned size) {
   validate_addr ((void *) buffer);
+  validate_addr((void *)(buffer + size));
+  if(!is_user_vaddr(buffer + size)) syscall_exit(-1);
+
   if (fd == 1) syscall_exit (-1);
 
   int value = -1;
@@ -258,6 +263,11 @@ syscall_read (int fd, const void *buffer, unsigned size) {
 int
 syscall_write (int fd, const void *buffer, unsigned size) {
   validate_addr ((void *)buffer);
+  validate_addr ((void *)(buffer + size));
+
+  if(!is_user_vaddr(buffer)) syscall_exit(-1);
+  if(!is_user_vaddr(buffer + size)) syscall_exit(-1);
+
   int value = -1;
 
   if (fd == 0) syscall_exit (-1);
@@ -271,7 +281,10 @@ syscall_write (int fd, const void *buffer, unsigned size) {
   } else {
     /// if no file, exit
     if (get_file (fd) == NULL)
+    {
+      lock_release(&file_lock);
       syscall_exit (-1);
+    }
     value  = file_write(get_file(fd), buffer, (off_t) size);
   }
 

@@ -154,6 +154,7 @@ start_process (void *f_name)
   char *file_name = f_name;
   struct intr_frame if_;
   bool success;
+  struct thread *curr = thread_current();
 
   // Argument Passing
 
@@ -183,6 +184,13 @@ start_process (void *f_name)
   {
     file_deny_write(userprog);
   }
+  else
+  {
+    palloc_free_page(file_name);
+    file_close(userprog);
+    sema_up(&curr->parent->sema_start);
+    syscall_exit(-1);
+  }
 
   memset (&if_, 0, sizeof if_);
   if_.gs = if_.fs = if_.es = if_.ds = if_.ss = SEL_UDSEG;
@@ -198,10 +206,11 @@ start_process (void *f_name)
     syscall_exit(-1);
   }
 
-  struct thread *curr = thread_current();
   struct thread *parent = curr->parent;
   struct child_elem *curr_elem = get_child (parent, curr->tid);
   curr_elem->loaded = true;
+
+  curr->program = userprog;
 
   ////printf("in start_process, %s loaded successfully\n", curr->name);
 
@@ -260,6 +269,7 @@ start_process (void *f_name)
 
   /* If load failed, quit. */
   palloc_free_page (file_name);
+  //file_close(userprog);
 
   /* Start the user process by simulating a return from an
      interrupt, implemented by intr_exit (in
@@ -340,6 +350,9 @@ process_exit (void)
 
     curr_elem->terminated = true;
     curr_elem->exit_status = curr->exit_status;
+
+    if(curr->program != NULL)
+      file_close(curr->program);
 
     // EDITED
     printf("%s: exit(%d)\n", curr->name, curr->exit_status);
@@ -461,7 +474,7 @@ load (const char *file_name, void (**eip) (void), void **esp)
   file = filesys_open (file_name);
   if (file == NULL) 
     {
-      ////printf ("load: %s: open failed\n", file_name);
+      printf ("load: %s: open failed\n", file_name);
       goto done; 
     }
 
@@ -474,7 +487,7 @@ load (const char *file_name, void (**eip) (void), void **esp)
       || ehdr.e_phentsize != sizeof (struct Elf32_Phdr)
       || ehdr.e_phnum > 1024) 
     {
-      ////printf ("load: %s: error loading executable\n", file_name);
+      printf ("load: %s: error loading executable\n", file_name);
       goto done; 
     }
 
