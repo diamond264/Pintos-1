@@ -1,27 +1,25 @@
-Copying tests/userprog/sc-bad-arg into /tmp/F3UYeeZ9DG.dsk...
-Writing command line to /tmp/nLvgjeP6YO.dsk...
-qemu -hda /tmp/nLvgjeP6YO.dsk -hdb /tmp/UE0ktsSB9P.dsk -hdc /tmp/F3UYeeZ9DG.dsk -m 4 -net none -nographic -monitor null
+Copying tests/userprog/sc-bad-arg into /tmp/Vq6OIVlo4n.dsk...
+Writing command line to /tmp/FDEJkrCh6n.dsk...
+qemu -hda /tmp/FDEJkrCh6n.dsk -hdb /tmp/QMlWZw6HWW.dsk -hdc /tmp/Vq6OIVlo4n.dsk -m 4 -net none -nographic -monitor null
 Kernel command line: -q -f put sc-bad-arg run sc-bad-arg
 Pintos booting with 4,096 kB RAM...
 374 pages available in kernel pool.
 374 pages available in user pool.
 Calibrating timer...  157,081,600 loops/s.
-hd0:0: detected 137 sector (68 kB) disk, model "QEMU HARDDISK", serial "QM00001"
-hd0:1: detected 4,032 sector (1 MB) disk, model "QEMU HARDDISK", serial "QM00002"
-hd1:0: detected 98 sector (49 kB) disk, model "QEMU HARDDISK", serial "QM00003"
-Formatting file system...done.
-Boot complete.
-Putting 'sc-bad-arg' into the file system...
-Executing 'sc-bad-arg':
-(sc-bad-arg) begin
-sc-bad-arg: exit(-1)
-Execution of 'sc-bad-arg' complete.
-Timer: 56 ticks
-Thread: 30 idle ticks, 26 kernel ticks, 0 user ticks
-hd0:0: 0 reads, 0 writes
-hd0:1: 61 reads, 204 writes
-hd1:0: 98 reads, 0 writes
-Console: 788 characters output
+Page fault at 0x69726577: not present error writing page in kernel context.
+Interrupt 0x0e (#PF Page-Fault Exception) at eip=0xc010779b
+ cr2=69726577 error=00000002
+ eax=c010ea07 ebx=c010ea07 ecx=69726573 edx=2e006c61
+ esi=00000001 edi=00000000 esp=c0116f90 ebp=c0116f80
+ cs=0008 ds=0010 es=0010 ss=83a4
+Kernel PANIC at ../../userprog/exception.c:101 in kill(): Kernel bug - unexpected interrupt in kernel
+Call stack: 0xc010774c 0xc010ab78 0xc010ac37 0xc01019ed 0xc0101b1f 0xc010779b 0xc01083a4 0xc0102b35 0xc01012f4 0xc01011da.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 23 ticks
+Thread: 1 idle ticks, 22 kernel ticks, 0 user ticks
+Console: 957 characters output
 Keyboard: 0 keys pressed
-Exception: 0 page faults
+Exception: 1 page faults
 Powering off...

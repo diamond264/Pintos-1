@@ -198,8 +198,9 @@ thread_create (const char *name, int priority,
 
   // EDITED
   struct thread *curr = thread_current ();
-  sema_init (&curr->sema_start, 0);
-  sema_init (&curr->sema_exit, 0);
+  //printf("in thread_create, parent is %s\n",curr->name);
+  // sema_init (&curr->sema_start, 0);
+  // sema_init (&curr->sema_exit, 0);
 
   /* Allocate thread. */
   t = palloc_get_page (PAL_ZERO);
@@ -223,13 +224,15 @@ thread_create (const char *name, int priority,
   /* Stack frame for switch_threads(). */
   sf = alloc_frame (t, sizeof *sf);
   sf->eip = switch_entry;
+  //printf("and child is %s\n", t->name);
 
   // EDITED
   t->parent = curr;
-  if (t != NULL && !strcmp(t->name, "idle"))
+  if (t != NULL)
   {
     //printf("push %s on parent %s\n", t->name, curr->name);
-    list_push_back (&curr->children, &t->child_elem);
+    struct child_elem *t_elem = malloc (sizeof (struct child_elem *));
+    list_push_back (&curr->children, &t_elem->elem);
   }
 
   /* Add to run queue. */
@@ -588,7 +591,6 @@ init_thread (struct thread *t, const char *name, int priority)
   t->magic = THREAD_MAGIC;
   t->locked = NULL;
   t->sema_block = NULL;
-  t->loaded = false;
   t->next_fd = (int) 2;
   sema_init(&t->sema_start, 0);
   sema_init(&t->sema_exit, 0);

@@ -22,16 +22,19 @@
 static thread_func start_process NO_RETURN;
 static bool load (const char *cmdline, void (**eip) (void), void **esp);
 
-struct thread* get_child(struct thread *parent, tid_t child_tid)
+struct child_elem* get_child(struct thread *parent, tid_t child_tid)
 {
   //printf("get child by %s\n", parent->name);
   struct list_elem *iter;
+  struct child_elem *t;
+  //printf("%s\n",parent->name);
+  //if (!strcmp (parent->name, "main")) return NULL;
   if (list_empty (&parent->children)) return NULL;
   for(iter = list_begin(&parent->children); iter != list_end(&parent->children); iter = list_next(iter))
   {
-    struct thread *t = list_entry(iter, struct thread, child_elem);
+    t = list_entry(iter, struct child_elem, elem);
     if (t == NULL) return NULL;
-    //printf("iter %s\n",t->name);
+    printf("parent is %s\n",parent->name);
     if(t->tid == child_tid)
     {
       //printf("iter end1\n");
@@ -43,10 +46,9 @@ struct thread* get_child(struct thread *parent, tid_t child_tid)
   return NULL;
 }
 
-void remove_child(struct thread *child)
+void remove_child(struct child_elem *child)
 {
-  list_remove(&child->child_elem);
-  child->parent = NULL;
+  list_remove(&child->elem);
 }
 
 /* Starts a new thread running a user program loaded from
@@ -60,6 +62,10 @@ process_execute (const char *file_name)
   tid_t tid;
 
   struct thread *curr = thread_current();
+  //printf("proces_execut : filename is %s, parent is %s\n",file_name,curr->name);
+
+  sema_init (&curr->sema_start,0);
+  sema_init (&curr->sema_exit,0);
 
   /* Make a copy of FILE_NAME.
      Otherwise there's a race between the caller and load(). */
@@ -90,27 +96,36 @@ process_execute (const char *file_name)
 
   /* Create a new thread to execute FILE_NAME. */
   tid = thread_create (rf_name, PRI_DEFAULT, start_process, fn_copy);
+  struct child_elem *child = get_child(curr, tid);
 
   if (tid == TID_ERROR) {
-    //printf("TID ERROR\n");
+    printf("TID ERROR\n");
     palloc_free_page (fn_copy);
     palloc_free_page(fn_copy2);
     free(rf_name);
     //free (p_child);
   }
+  else {
+    //printf("%s's child created \n", curr->name);
+    //if (child != NULL)
+      //printf ("in process_exec, %s 's child is %s\n", curr->name, child->name);
+    //printf("sema_down %s's sema_start\n", curr->name);
+    sema_down(&curr->sema_start);
+    //printf ("after sema_up, %s 's child is %s\n", curr->name, child->name);
+    
+    if(child != NULL && !child->loaded)
+    {
+      //printf("not loaded \n");
+      remove_child(child);
+      return -1;
+    }
 
-  sema_down(&curr->sema_start);
-  struct thread *child = get_child(curr, tid);
-  if(child != NULL && !child->loaded)
-  {
-    printf("not loaded \n");
-    remove_child(child);
-    return -1;
+    palloc_free_page(fn_copy2);
   }
 
   //EDITED
   // else {
-  //   sema_down (&p_parent->sema);
+  //   sema_down (&p_paret->nsema);
 
   //   if (p_child->loaded) {
   //     struct thread_id child_id;
@@ -180,10 +195,18 @@ start_process (void *f_name)
   }
 
   struct thread *curr = thread_current();
-  curr->loaded = true;
+  struct thread *parent = curr->parent;
+  struct child_elem *curr_elem = get_child (parent, curr->tid);
+  curr_elem->loaded = true;
+
+  //printf("in start_process, %s loaded successfully\n", curr->name);
 
   // load 끝나면 sema up 해준다.
-  sema_up(&curr->parent->sema_start);
+  if (!list_empty (&parent->sema_start.waiters))
+  {
+    //printf("sema_upped %s\n",curr->parent->name);
+    sema_up(&curr->parent->sema_start);
+  }
 
   int i;
   /*
@@ -257,23 +280,29 @@ int
 process_wait (tid_t child_tid) 
 {
   //printf("test1\n");
+  int status;
   struct thread *t_parent;
-  struct thread *t_child;
+  struct child_elem *t_child;
 
   t_parent = thread_current ();
   t_child = get_child (t_parent, child_tid);
 
+  
+
   if (t_child == NULL)
+  {
+    //printf("null child %d\n",t_parent->child_exit_status);
     return -1;
+  }
 
-  //if (!t_child->dead) 
-  sema_down (&t_parent->sema_exit);
-  //printf("test!!!!\n");
+  //printf("process_wait : %s waits %s\n", t_parent->name, t_child->name);
 
-  int status = t_child->exit_status;
+  if (!t_child->terminated)
+    sema_down (&t_parent->sema_exit);
+
+  status = t_child->exit_status;
   remove_child(t_child);
-  //list_remove (&t_child->child_elem);
-  //printf("do return\n");
+
   return status;
 }
 
@@ -300,11 +329,20 @@ process_exit (void)
     pagedir_activate (NULL);
     pagedir_destroy (pd);
 
-    // EDITED
     struct thread *t_parent = curr->parent;
-    printf("%s: exit(%d)\n", curr->name, curr->exit_status);
+    struct child_elem *curr_elem = get_child (t_parent, curr->tid);
 
-    sema_up (&t_parent->sema_exit);
+    curr_elem->terminated = true;
+    curr_elem->exit_status = curr->exit_status;
+
+    // EDITED
+    printf("%s: exit(%d)\n", curr->name, curr->exit_status);
+    t_parent->child_exit_status = curr->exit_status;
+    if (!list_empty (&t_parent->sema_exit.waiters))
+    {
+      //printf("in process_exit, sema_upped %s\n",t_parent->name);
+      sema_up (&t_parent->sema_exit);
+    }
   }
 }
 

@@ -87,7 +87,7 @@ syscall_handler (struct intr_frame *f)
       break;
 
     case SYS_EXEC :
-      printf ("exec call!\n");
+      //printf("exec call!\n")
       argv[0] = get_argument (sp);
       f->eax = syscall_exec ((char *) *argv[0]);
       break;
@@ -178,7 +178,7 @@ syscall_exit (int status) {
 tid_t
 syscall_exec (const char *cmd_line) {
   validate_addr ((void *) cmd_line);
-  printf("reach here\n");
+  //printf("in syscall_exec, cmd line is %s\n", cmd_line);
   return (tid_t) process_execute (cmd_line);
 }
 
