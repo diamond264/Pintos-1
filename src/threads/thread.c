@@ -589,6 +589,7 @@ init_thread (struct thread *t, const char *name, int priority)
   t->locked = NULL;
   t->sema_block = NULL;
   t->loaded = false;
+  t->next_fd = (int) 2;
   sema_init(&t->sema_start, 0);
   sema_init(&t->sema_exit, 0);
   list_init (&t->acquired_locks);

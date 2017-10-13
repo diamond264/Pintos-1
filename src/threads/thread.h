@@ -85,12 +85,12 @@ typedef int tid_t;
 
 struct file_elem {
   struct file *file;
-  struct list_elem elem;
   int fd;
+  struct list_elem elem;
 };
 
 struct thread
-{
+  {
     /* Owned by thread.c. */
     tid_t tid;                          /* Thread identifier. */
     enum thread_status status;          /* Thread state. */
@@ -119,17 +119,18 @@ struct thread
     bool dead;
     struct thread *parent;
     struct list children;
-    struct semaphore sema_start;
-    struct semaphore sema_exit;
     struct list_elem child_elem;
     int next_fd;
+
+    struct semaphore sema_start;
+    struct semaphore sema_exit;
 
     struct list files;
 #endif
 
     /* Owned by thread.c. */
     unsigned magic;                     /* Detects stack overflow. */
-};
+  };
 
 /* If false (default), use round-robin scheduler.
    If true, use multi-level feedback queue scheduler.

@@ -1,0 +1,27 @@
+Copying tests/userprog/close-bad-fd into /tmp/tv5h66gSDG.dsk...
+Writing command line to /tmp/eWmR11oS0J.dsk...
+qemu -hda /tmp/eWmR11oS0J.dsk -hdb /tmp/YxIILg89PK.dsk -hdc /tmp/tv5h66gSDG.dsk -m 4 -net none -nographic -monitor null
+Kernel command line: -q -f put close-bad-fd run close-bad-fd
+Pintos booting with 4,096 kB RAM...
+374 pages available in kernel pool.
+374 pages available in user pool.
+Calibrating timer...  157,081,600 loops/s.
+hd0:0: detected 137 sector (68 kB) disk, model "QEMU HARDDISK", serial "QM00001"
+hd0:1: detected 4,032 sector (1 MB) disk, model "QEMU HARDDISK", serial "QM00002"
+hd1:0: detected 98 sector (49 kB) disk, model "QEMU HARDDISK", serial "QM00003"
+Formatting file system...done.
+Boot complete.
+Putting 'close-bad-fd' into the file system...
+Executing 'close-bad-fd':
+(close-bad-fd) begin
+close-bad-fd: exit(-1)
+Execution of 'close-bad-fd' complete.
+Timer: 55 ticks
+Thread: 30 idle ticks, 25 kernel ticks, 0 user ticks
+hd0:0: 0 reads, 0 writes
+hd0:1: 61 reads, 204 writes
+hd1:0: 98 reads, 0 writes
+Console: 802 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...
