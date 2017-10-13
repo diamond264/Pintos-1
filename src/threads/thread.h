@@ -89,6 +89,14 @@ struct file_elem {
   struct list_elem elem;
 };
 
+struct child_elem {
+  tid_t tid;
+  bool terminated;
+  bool loaded;
+  int exit_status;
+  struct list_elem elem;
+};
+
 struct thread
   {
     /* Owned by thread.c. */
@@ -115,11 +123,10 @@ struct thread
     uint32_t *pagedir;                  /* Page directory. */
 
     int exit_status;
-    bool loaded;
-    bool dead;
+    int child_exit_status;
     struct thread *parent;
     struct list children;
-    struct list_elem child_elem;
+    //struct list_elem child_elem;
     int next_fd;
 
     struct semaphore sema_start;
