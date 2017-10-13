@@ -27,17 +27,18 @@ struct child_elem* get_child(struct thread *parent, tid_t child_tid)
   //printf("get child by %s\n", parent->name);
   struct list_elem *iter;
   struct child_elem *t;
+  printf("parent is %s\n",parent->name);
   //printf("%s\n",parent->name);
   //if (!strcmp (parent->name, "main")) return NULL;
   if (list_empty (&parent->children)) return NULL;
+  printf("%s's children length = %d\n", parent->name, list_size(&parent->children));
   for(iter = list_begin(&parent->children); iter != list_end(&parent->children); iter = list_next(iter))
   {
     t = list_entry(iter, struct child_elem, elem);
     if (t == NULL) return NULL;
-    printf("parent is %s\n",parent->name);
     if(t->tid == child_tid)
     {
-      //printf("iter end1\n");
+      printf("iter end1\n");
       return t;
     }
   }
@@ -96,7 +97,9 @@ process_execute (const char *file_name)
 
   /* Create a new thread to execute FILE_NAME. */
   tid = thread_create (rf_name, PRI_DEFAULT, start_process, fn_copy);
+  printf("thread create completed %s %d\n", curr->name, tid);
   struct child_elem *child = get_child(curr, tid);
+  list_push_back (&curr->children, &child->elem);
 
   if (tid == TID_ERROR) {
     printf("TID ERROR\n");
@@ -111,6 +114,7 @@ process_execute (const char *file_name)
       //printf ("in process_exec, %s 's child is %s\n", curr->name, child->name);
     //printf("sema_down %s's sema_start\n", curr->name);
     sema_down(&curr->sema_start);
+    //printf("Child Start\n");
     //printf ("after sema_up, %s 's child is %s\n", curr->name, child->name);
     
     if(child != NULL && !child->loaded)
@@ -178,7 +182,9 @@ start_process (void *f_name)
   // File Deny Write를 먼저 해준다.
   struct file *userprog = filesys_open(token);
   if(userprog != NULL)
+  {
     file_deny_write(userprog);
+  }
 
   memset (&if_, 0, sizeof if_);
   if_.gs = if_.fs = if_.es = if_.ds = if_.ss = SEL_UDSEG;
@@ -286,6 +292,8 @@ process_wait (tid_t child_tid)
 
   t_parent = thread_current ();
   t_child = get_child (t_parent, child_tid);
+
+  printf("wait start\n");
 
   
 

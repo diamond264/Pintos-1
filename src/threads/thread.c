@@ -230,9 +230,16 @@ thread_create (const char *name, int priority,
   t->parent = curr;
   if (t != NULL)
   {
-    //printf("push %s on parent %s\n", t->name, curr->name);
-    struct child_elem *t_elem = malloc (sizeof (struct child_elem *));
+    struct child_elem *t_elem = (struct child_elem*)malloc (sizeof (struct child_elem *));
+    t_elem->tid = tid;
+    t_elem->name = t->name;
+    t_elem->terminated = false;
+    t_elem->loaded = false;
+    t_elem->exit_status = NULL;
     list_push_back (&curr->children, &t_elem->elem);
+
+    printf("Thread Create Complete name = %s\n", t->name);
+    print_thread_children(curr);
   }
 
   /* Add to run queue. */
@@ -713,3 +720,26 @@ allocate_tid (void)
 /* Offset of `stack' member within `struct thread'.
    Used by switch.S, which can't figure it out on its own. */
 uint32_t thread_stack_ofs = offsetof (struct thread, stack);
+
+
+int print_thread_children(struct thread *t)
+{
+  if (list_empty (&t->children))
+  {
+    printf("null\n");
+    return NULL;
+  }
+
+  int length = 0;
+  struct list_elem *iter;
+  struct child_elem *iter_thread;
+
+  for(iter = list_begin(&t->children); iter != list_end(&t->children); iter = list_next(iter))
+  {
+    iter_thread = list_entry(iter, struct child_elem, elem);
+    if (iter_thread == NULL) return NULL;
+    printf("at length = %d %s's thread name = %s\n", length++, t->name, iter_thread->name);
+  }
+
+  return length;
+}

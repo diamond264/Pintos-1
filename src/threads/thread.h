@@ -6,6 +6,8 @@
 #include <stdint.h>
 #include "synch.h"
 
+#define DEBUG true
+
 /* States in a thread's life cycle. */
 enum thread_status
   {
@@ -91,6 +93,7 @@ struct file_elem {
 
 struct child_elem {
   tid_t tid;
+  char *name;
   bool terminated;
   bool loaded;
   int exit_status;
@@ -179,5 +182,7 @@ int thread_get_nice (void);
 void thread_set_nice (int);
 int thread_get_recent_cpu (void);
 int thread_get_load_avg (void);
+
+int print_thread_children(struct thread *t);
 
 #endif /* threads/thread.h */
