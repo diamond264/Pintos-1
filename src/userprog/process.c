@@ -100,15 +100,13 @@ process_execute (const char *file_name)
   }
 
   sema_down(&curr->sema_start);
-  //printf("curr name %s\n", curr->name);
   struct thread *child = get_child(curr, tid);
-  //printf("what zzzz");
-  // if(!child->loaded)
-  // {
-  //   //printf("not loaded \n");
-  //   remove_child(child);
-  //   return -1;
-  // }
+  if(child != NULL && !child->loaded)
+  {
+    printf("not loaded \n");
+    remove_child(child);
+    return -1;
+  }
 
   //EDITED
   // else {

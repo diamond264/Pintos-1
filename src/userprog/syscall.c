@@ -87,7 +87,7 @@ syscall_handler (struct intr_frame *f)
       break;
 
     case SYS_EXEC :
-      //printf ("exec call!\n");
+      printf ("exec call!\n");
       argv[0] = get_argument (sp);
       f->eax = syscall_exec ((char *) *argv[0]);
       break;
@@ -114,7 +114,7 @@ syscall_handler (struct intr_frame *f)
     case SYS_OPEN :
       //printf ("open call!\n");
       argv[0] = get_argument (sp);
-      f->eax = syscall_open ((char *) *argv[0]);
+      f->eax = syscall_open ((char *) *(uint32_t *)argv[0]);
       break;
 
     case SYS_FILESIZE :
@@ -178,6 +178,7 @@ syscall_exit (int status) {
 tid_t
 syscall_exec (const char *cmd_line) {
   validate_addr ((void *) cmd_line);
+  printf("reach here\n");
   return (tid_t) process_execute (cmd_line);
 }
 
@@ -245,6 +246,8 @@ syscall_read (int fd, const void *buffer, unsigned size) {
     value = size;
   } else {
     /// if no file, exit
+    if (get_file (fd) == NULL)
+      syscall_exit (-1);
     value  = file_read(get_file(fd), buffer, (off_t) size);
   }
 
@@ -267,6 +270,8 @@ syscall_write (int fd, const void *buffer, unsigned size) {
     value = size;
   } else {
     /// if no file, exit
+    if (get_file (fd) == NULL)
+      syscall_exit (-1);
     value  = file_write(get_file(fd), buffer, (off_t) size);
   }
 
@@ -307,9 +312,11 @@ syscall_close (int fd) {
   f_elem = get_file_elem (fd);
   f = get_file (fd);
 
-  if (f = NULL) syscall_exit (-1);
-  file_close (f);
+  if (f == NULL || f_elem == NULL) 
+    syscall_exit (-1);
+  
   list_remove (&f_elem->elem);
+  file_close (f);
   free (f_elem);
 }
 
