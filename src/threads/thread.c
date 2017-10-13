@@ -165,8 +165,7 @@ thread_tick (void)
 void
 thread_print_stats (void) 
 {
-  printf ("Thread: %lld idle ticks, %lld kernel ticks, %lld user ticks\n",
-          idle_ticks, kernel_ticks, user_ticks);
+  //printf ("Thread: %lld idle ticks, %lld kernel ticks, %lld user ticks\n", idle_ticks, kernel_ticks, user_ticks);
 }
 
 /* Creates a new kernel thread named NAME with the given initial
@@ -198,9 +197,9 @@ thread_create (const char *name, int priority,
 
   // EDITED
   struct thread *curr = thread_current ();
-  //printf("in thread_create, parent is %s\n",curr->name);
-  // sema_init (&curr->sema_start, 0);
-  // sema_init (&curr->sema_exit, 0);
+  ////printf("in thread_create, parent is %s\n",curr->name);
+  sema_init (&curr->sema_start, 0);
+  sema_init (&curr->sema_exit, 0);
 
   /* Allocate thread. */
   t = palloc_get_page (PAL_ZERO);
@@ -224,13 +223,14 @@ thread_create (const char *name, int priority,
   /* Stack frame for switch_threads(). */
   sf = alloc_frame (t, sizeof *sf);
   sf->eip = switch_entry;
-  //printf("and child is %s\n", t->name);
+  ////printf("and child is %s\n", t->name);
 
   // EDITED
   t->parent = curr;
   if (t != NULL)
   {
-    struct child_elem *t_elem = (struct child_elem*)malloc (sizeof (struct child_elem *));
+    struct child_elem *t_elem;
+    t_elem = (struct child_elem*)malloc (sizeof *t_elem);
     t_elem->tid = tid;
     t_elem->name = t->name;
     t_elem->terminated = false;
@@ -238,12 +238,15 @@ thread_create (const char *name, int priority,
     t_elem->exit_status = NULL;
     list_push_back (&curr->children, &t_elem->elem);
 
-    printf("Thread Create Complete name = %s\n", t->name);
     print_thread_children(curr);
   }
 
+  ////printf("before unblock\n");
+
   /* Add to run queue. */
   thread_unblock (t);
+
+  //printf("after unblock\n");
 
   return tid;
 }
@@ -644,8 +647,8 @@ next_thread_to_run (void)
    the first time a thread is scheduled it is called by
    switch_entry() (see switch.S).
 
-   It's not safe to call printf() until the thread switch is
-   complete.  In practice that means that printf()s should be
+   It's not safe to call //printf() until the thread switch is
+   complete.  In practice that means that //printf()s should be
    added at the end of the function.
 
    After this function and its caller returns, the thread switch
@@ -685,7 +688,7 @@ schedule_tail (struct thread *prev)
    running to some other state.  This function finds another
    thread to run and switches to it.
    
-   It's not safe to call printf() until schedule_tail() has
+   It's not safe to call //printf() until schedule_tail() has
    completed. */
 static void
 schedule (void) 
@@ -726,7 +729,7 @@ int print_thread_children(struct thread *t)
 {
   if (list_empty (&t->children))
   {
-    printf("null\n");
+    //printf("null\n");
     return NULL;
   }
 
@@ -738,7 +741,7 @@ int print_thread_children(struct thread *t)
   {
     iter_thread = list_entry(iter, struct child_elem, elem);
     if (iter_thread == NULL) return NULL;
-    printf("at length = %d %s's thread name = %s\n", length++, t->name, iter_thread->name);
+    //printf("at length = %d %s's thread name = %s\n", length++, t->name, iter_thread->name);
   }
 
   return length;

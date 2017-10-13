@@ -24,25 +24,24 @@ static bool load (const char *cmdline, void (**eip) (void), void **esp);
 
 struct child_elem* get_child(struct thread *parent, tid_t child_tid)
 {
-  //printf("get child by %s\n", parent->name);
+  ////printf("get child by %s\n", parent->name);
   struct list_elem *iter;
   struct child_elem *t;
-  printf("parent is %s\n",parent->name);
-  //printf("%s\n",parent->name);
+  //printf("parent is %s\n",parent->name);
+  ////printf("%s\n",parent->name);
   //if (!strcmp (parent->name, "main")) return NULL;
   if (list_empty (&parent->children)) return NULL;
-  printf("%s's children length = %d\n", parent->name, list_size(&parent->children));
   for(iter = list_begin(&parent->children); iter != list_end(&parent->children); iter = list_next(iter))
   {
     t = list_entry(iter, struct child_elem, elem);
     if (t == NULL) return NULL;
     if(t->tid == child_tid)
     {
-      printf("iter end1\n");
+      //printf("iter end1\n");
       return t;
     }
   }
-  //printf("iter end2\n");
+  ////printf("iter end2\n");
 
   return NULL;
 }
@@ -63,7 +62,7 @@ process_execute (const char *file_name)
   tid_t tid;
 
   struct thread *curr = thread_current();
-  //printf("proces_execut : filename is %s, parent is %s\n",file_name,curr->name);
+  ////printf("proces_execut : filename is %s, parent is %s\n",file_name,curr->name);
 
   sema_init (&curr->sema_start,0);
   sema_init (&curr->sema_exit,0);
@@ -97,29 +96,28 @@ process_execute (const char *file_name)
 
   /* Create a new thread to execute FILE_NAME. */
   tid = thread_create (rf_name, PRI_DEFAULT, start_process, fn_copy);
-  printf("thread create completed %s %d\n", curr->name, tid);
+  //printf("thread create completed %s %d\n", curr->name, tid);
   struct child_elem *child = get_child(curr, tid);
-  list_push_back (&curr->children, &child->elem);
 
   if (tid == TID_ERROR) {
-    printf("TID ERROR\n");
+    //printf("TID ERROR\n");
     palloc_free_page (fn_copy);
     palloc_free_page(fn_copy2);
     free(rf_name);
     //free (p_child);
   }
   else {
-    //printf("%s's child created \n", curr->name);
+    ////printf("%s's child created \n", curr->name);
     //if (child != NULL)
-      //printf ("in process_exec, %s 's child is %s\n", curr->name, child->name);
-    //printf("sema_down %s's sema_start\n", curr->name);
+      ////printf ("in process_exec, %s 's child is %s\n", curr->name, child->name);
+    ////printf("sema_down %s's sema_start\n", curr->name);
     sema_down(&curr->sema_start);
-    //printf("Child Start\n");
-    //printf ("after sema_up, %s 's child is %s\n", curr->name, child->name);
+    ////printf("Child Start\n");
+    ////printf ("after sema_up, %s 's child is %s\n", curr->name, child->name);
     
     if(child != NULL && !child->loaded)
     {
-      //printf("not loaded \n");
+      ////printf("not loaded \n");
       remove_child(child);
       return -1;
     }
@@ -143,7 +141,7 @@ process_execute (const char *file_name)
   //   }
   // }
 
-  //printf("Maybe?\n");
+  ////printf("Maybe?\n");
 
   return tid;
 }
@@ -172,8 +170,8 @@ start_process (void *f_name)
   for(token = strtok_r(file_name, " ", &save_ptr); token != NULL; token = strtok_r(NULL, " ", &save_ptr))
   {
     //memcpy(args[argc], token, strlen(token)+1);
-    ////printf("%s\n", token);
-    sn//printf(args[argc], strlen(token), "%s", token);
+    //////printf("%s\n", token);
+    sn////printf(args[argc], strlen(token), "%s", token);
     argc++;
   }*/
 
@@ -205,12 +203,12 @@ start_process (void *f_name)
   struct child_elem *curr_elem = get_child (parent, curr->tid);
   curr_elem->loaded = true;
 
-  //printf("in start_process, %s loaded successfully\n", curr->name);
+  ////printf("in start_process, %s loaded successfully\n", curr->name);
 
   // load 끝나면 sema up 해준다.
   if (!list_empty (&parent->sema_start.waiters))
   {
-    //printf("sema_upped %s\n",curr->parent->name);
+    ////printf("sema_upped %s\n",curr->parent->name);
     sema_up(&curr->parent->sema_start);
   }
 
@@ -285,7 +283,7 @@ start_process (void *f_name)
 int
 process_wait (tid_t child_tid) 
 {
-  //printf("test1\n");
+  ////printf("test1\n");
   int status;
   struct thread *t_parent;
   struct child_elem *t_child;
@@ -293,17 +291,17 @@ process_wait (tid_t child_tid)
   t_parent = thread_current ();
   t_child = get_child (t_parent, child_tid);
 
-  printf("wait start\n");
+  //printf("wait start\n");
 
   
 
   if (t_child == NULL)
   {
-    //printf("null child %d\n",t_parent->child_exit_status);
+    ////printf("null child %d\n",t_parent->child_exit_status);
     return -1;
   }
 
-  //printf("process_wait : %s waits %s\n", t_parent->name, t_child->name);
+  ////printf("process_wait : %s waits %s\n", t_parent->name, t_child->name);
 
   if (!t_child->terminated)
     sema_down (&t_parent->sema_exit);
@@ -348,7 +346,7 @@ process_exit (void)
     t_parent->child_exit_status = curr->exit_status;
     if (!list_empty (&t_parent->sema_exit.waiters))
     {
-      //printf("in process_exit, sema_upped %s\n",t_parent->name);
+      ////printf("in process_exit, sema_upped %s\n",t_parent->name);
       sema_up (&t_parent->sema_exit);
     }
   }
@@ -377,7 +375,7 @@ process_activate (void)
 typedef uint32_t Elf32_Word, Elf32_Addr, Elf32_Off;
 typedef uint16_t Elf32_Half;
 
-/* For use with ELF types in //printf(). */
+/* For use with ELF types in ////printf(). */
 #define PE32Wx PRIx32   /* Print Elf32_Word in hexadecimal. */
 #define PE32Ax PRIx32   /* Print Elf32_Addr in hexadecimal. */
 #define PE32Ox PRIx32   /* Print Elf32_Off in hexadecimal. */
@@ -463,7 +461,7 @@ load (const char *file_name, void (**eip) (void), void **esp)
   file = filesys_open (file_name);
   if (file == NULL) 
     {
-      //printf ("load: %s: open failed\n", file_name);
+      ////printf ("load: %s: open failed\n", file_name);
       goto done; 
     }
 
@@ -476,7 +474,7 @@ load (const char *file_name, void (**eip) (void), void **esp)
       || ehdr.e_phentsize != sizeof (struct Elf32_Phdr)
       || ehdr.e_phnum > 1024) 
     {
-      //printf ("load: %s: error loading executable\n", file_name);
+      ////printf ("load: %s: error loading executable\n", file_name);
       goto done; 
     }
 
