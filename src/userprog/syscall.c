@@ -4,6 +4,7 @@
 #include "threads/interrupt.h"
 #include "threads/thread.h"
 #include "filesys/off_t.h"
+#include "threads/vaddr.h"
 
 static void syscall_handler (struct intr_frame *);
 struct lock file_lock;
@@ -68,102 +69,83 @@ syscall_init (void)
 static void
 syscall_handler (struct intr_frame *f) 
 {
-  //printf ("system call!\n");
   uint32_t *argv[5];
   uint32_t *sp = f->esp;
   validate_addr (sp);
 
   switch (*sp) {
     case SYS_HALT :
-      //printf ("halt call!\n");
       power_off ();
       break;
 
     case SYS_EXIT :
-      //printf ("exit call!\n");
       argv[0] = get_argument (sp);
-      //printf ("%d\n", argv[0]);
       syscall_exit ((int) *argv[0]);
       break;
 
     case SYS_EXEC :
-      //printf("exec call!\n")
       argv[0] = get_argument (sp);
       f->eax = syscall_exec ((char *) *argv[0]);
       break;
 
     case SYS_WAIT :
-      //printf ("wait call!\n");
       argv[0] = get_argument (sp);
       f->eax = syscall_wait ((tid_t) *argv[0]);
       break;
 
     case SYS_CREATE :
-      //printf ("create call!\n");
       argv[0] = get_argument (sp);
       argv[1] = get_argument (sp+1);
       f->eax = syscall_create ((char *)*(uint32_t*)argv[0], (unsigned) *argv[1]);
       break;
 
     case SYS_REMOVE :
-      //printf ("remove call!\n");
       argv[0] = get_argument (sp);
       f->eax = syscall_remove ((char *) *argv[0]);
       break;
 
     case SYS_OPEN :
-      //printf ("open call!\n");
       argv[0] = get_argument (sp);
       f->eax = syscall_open ((char *) *(uint32_t *)argv[0]);
       break;
 
     case SYS_FILESIZE :
-      //printf ("filesize call!\n");
       argv[0] = get_argument (sp);
       f->eax = syscall_filesize ((int) *argv[0]);
       break;
 
     case SYS_READ :
-      //printf ("read call!\n");
       argv[0] = get_argument (sp);
       argv[1] = get_argument (sp+1);
       argv[2] = get_argument (sp+2);
       f->eax = (off_t) syscall_read ((int) *argv[0], (void *) *argv[1], (unsigned) *argv[2]);
       break;
 
-    case SYS_WRITE  :
-      //printf ("write call!\n");
+    case SYS_WRITE :
       argv[0] = get_argument (sp);
       argv[1] = get_argument (sp+1);
       argv[2] = get_argument (sp+2);
-      //printf("%d\n", argv[0]);
-      //printf("%d\n", argv[1]);
-      //printf("%d\n", argv[2]);
       f->eax = (off_t) syscall_write ((int) *argv[0], (void *) *argv[1], (unsigned) *argv[2]);
       break;
 
     case SYS_SEEK :
-      //printf ("seek call!\n");
       argv[0] = get_argument (sp);
       argv[1] = get_argument (sp+1);
       syscall_seek ((int) *argv[0], (unsigned) *argv[1]);
       break;
 
     case SYS_TELL :
-      //printf ("tell call!\n");
       argv[0] = get_argument (sp);
       f->eax = syscall_tell ((int) *argv[0]);
       break;
 
     case SYS_CLOSE  :
-      //printf ("close call!\n");
       argv[0] = get_argument (sp);
       syscall_close ((int) *argv[0]);
       break;
 
     default :
       break;
-      //printf("Unknown System Call");
   }
 }
 
@@ -178,7 +160,6 @@ syscall_exit (int status) {
 tid_t
 syscall_exec (const char *cmd_line) {
   validate_addr ((void *) cmd_line);
-  //printf("in syscall_exec, cmd line is %s\n", cmd_line);
   return (tid_t) process_execute (cmd_line);
 }
 
@@ -204,7 +185,8 @@ syscall_open (const char *file) {
   validate_addr ((void *) file);
 
   struct thread *t = thread_current ();
-  struct file_elem *f = (struct file_elem*)malloc (sizeof (struct file_elem*));
+  struct file_elem *f;
+  f = (struct file_elem*)malloc (sizeof *f);
 
   f->file = filesys_open (file);
   if (!f->file) {
@@ -228,6 +210,9 @@ syscall_filesize (int fd) {
 int
 syscall_read (int fd, const void *buffer, unsigned size) {
   validate_addr ((void *) buffer);
+  validate_addr((void *)(buffer + size));
+  if(!is_user_vaddr(buffer + size)) syscall_exit(-1);
+
   if (fd == 1) syscall_exit (-1);
 
   int value = -1;
@@ -236,7 +221,6 @@ syscall_read (int fd, const void *buffer, unsigned size) {
   lock_acquire (&file_lock);
 
   if (fd == 0) {
-    //// 여기 고쳐야함
     for (i = 0; i < (int) size; i++) {
 
       *(uint8_t *)buffer = input_getc();
@@ -258,6 +242,11 @@ syscall_read (int fd, const void *buffer, unsigned size) {
 int
 syscall_write (int fd, const void *buffer, unsigned size) {
   validate_addr ((void *)buffer);
+  validate_addr ((void *)(buffer + size));
+
+  if(!is_user_vaddr(buffer)) syscall_exit(-1);
+  if(!is_user_vaddr(buffer + size)) syscall_exit(-1);
+
   int value = -1;
 
   if (fd == 0) syscall_exit (-1);
@@ -265,13 +254,14 @@ syscall_write (int fd, const void *buffer, unsigned size) {
   lock_acquire (&file_lock);
 
   if (fd == 1) {
-    //// 여기 고쳐야함
     putbuf (buffer, size);
     value = size;
   } else {
-    /// if no file, exit
     if (get_file (fd) == NULL)
+    {
+      lock_release(&file_lock);
       syscall_exit (-1);
+    }
     value  = file_write(get_file(fd), buffer, (off_t) size);
   }
 
@@ -287,7 +277,7 @@ syscall_seek (int fd, unsigned position) {
   struct file *f = get_file (fd);
   if (f == NULL) syscall_exit (-1);
 
-  return file_seek (f, position);//
+  return file_seek (f, position);
 }
 
 unsigned
@@ -319,6 +309,3 @@ syscall_close (int fd) {
   file_close (f);
   free (f_elem);
 }
-
-
-

@@ -1,0 +1,176 @@
+Copying tests/userprog/no-vm/multi-oom into /tmp/dFmbDrHuet.dsk...
+Writing command line to /tmp/5cLMNb7AZS.dsk...
+qemu -hda /tmp/5cLMNb7AZS.dsk -hdb /tmp/b8XvhItCzZ.dsk -hdc /tmp/dFmbDrHuet.dsk -m 4 -net none -nographic -monitor null
+Kernel command line: -q -f put multi-oom run multi-oom
+Pintos booting with 4,096 kB RAM...
+374 pages available in kernel pool.
+374 pages available in user pool.
+Calibrating timer...  157,081,600 loops/s.
+hd0:0: detected 137 sector (68 kB) disk, model "QEMU HARDDISK", serial "QM00001"
+hd0:1: detected 4,032 sector (1 MB) disk, model "QEMU HARDDISK", serial "QM00002"
+hd1:0: detected 114 sector (57 kB) disk, model "QEMU HARDDISK", serial "QM00003"
+Formatting file system...done.
+Boot complete.
+Putting 'multi-oom' into the file system...
+Executing 'multi-oom':
+(multi-oom) begin
+multi-oom: exit(-1)
+multi-oom: exit(-1)
+multi-oom: exit(-1)
+multi-oom: exit(-1)
+multi-oom: exit(-1)
+multi-oom: exit(-1)
+multi-oom: exit(-1)
+multi-oom: exit(-1)
+Page fault at 0: not present error writing page in user context.
+multi-oom: dying due to interrupt 0x0e (#PF Page-Fault Exception).
+Interrupt 0x0e (#PF Page-Fault Exception) at eip=0x8048106
+ cr2=00000000 error=00000006
+ eax=00000000 ebx=00000019 ecx=5fe68ecb edx=5fe68ecb
+ esi=bffffff3 edi=0804b017 esp=bfffff60 ebp=bfffff78
+ cs=001b ds=0023 es=0023 ss=0023
+multi-oom: exit(-1)
+multi-oom: exit(-1)
+Page fault at 0: not present error reading page in user context.
+multi-oom: dying due to interrupt 0x0e (#PF Page-Fault Exception).
+Interrupt 0x0e (#PF Page-Fault Exception) at eip=0x8048110
+ cr2=00000000 error=00000004
+ eax=00000001 ebx=0000001b ecx=44d9b7df edx=44d9b7de
+ esi=bffffff3 edi=0804b017 esp=bfffff60 ebp=bfffff78
+ cs=001b ds=0023 es=0023 ss=0023
+multi-oom: exit(-1)
+multi-oom: exit(-1)
+multi-oom: exit(-1)
+multi-oom: exit(-1)
+Page fault at 0: not present error reading page in user context.
+multi-oom: dying due to interrupt 0x0e (#PF Page-Fault Exception).
+Interrupt 0x0e (#PF Page-Fault Exception) at eip=0x8048110
+ cr2=00000000 error=00000004
+ eax=00000001 ebx=0000001f ecx=d61f9421 edx=d61f9420
+ esi=bffffff3 edi=0804b017 esp=bfffff60 ebp=bfffff78
+ cs=001b ds=0023 es=0023 ss=0023
+multi-oom: exit(-1)
+multi-oom: exit(-1)
+multi-oom: exit(-1)
+multi-oom: exit(-1)
+Page fault at 0: not present error reading page in user context.
+multi-oom: dying due to interrupt 0x0e (#PF Page-Fault Exception).
+Interrupt 0x0e (#PF Page-Fault Exception) at eip=0x8048110
+ cr2=00000000 error=00000004
+ eax=00000001 ebx=00000023 ecx=781c50e4 edx=781c50e3
+ esi=bffffff3 edi=0804b017 esp=bfffff60 ebp=bfffff78
+ cs=001b ds=0023 es=0023 ss=0023
+multi-oom: exit(-1)
+Page fault at 0: not present error reading page in user context.
+multi-oom: dying due to interrupt 0x0e (#PF Page-Fault Exception).
+Interrupt 0x0e (#PF Page-Fault Exception) at eip=0x8048110
+ cr2=00000000 error=00000004
+ eax=00000001 ebx=00000024 ecx=1669da10 edx=1669da0f
+ esi=bffffff3 edi=0804b017 esp=bfffff60 ebp=bfffff78
+ cs=001b ds=0023 es=0023 ss=0023
+multi-oom: exit(-1)
+multi-oom: exit(-1)
+multi-oom: exit(-1)
+Page fault at 0: not present error reading page in user context.
+multi-oom: dying due to interrupt 0x0e (#PF Page-Fault Exception).
+Interrupt 0x0e (#PF Page-Fault Exception) at eip=0x8048110
+ cr2=00000000 error=00000004
+ eax=00000001 ebx=00000027 ecx=a9616da1 edx=a9616da0
+ esi=bffffff3 edi=0804b017 esp=bfffff60 ebp=bfffff78
+ cs=001b ds=0023 es=0023 ss=0023
+multi-oom: exit(-1)
+Page fault at 0: not present error writing page in user context.
+multi-oom: dying due to interrupt 0x0e (#PF Page-Fault Exception).
+Interrupt 0x0e (#PF Page-Fault Exception) at eip=0x8048106
+ cr2=00000000 error=00000006
+ eax=00000000 ebx=00000028 ecx=f4a478ed edx=f4a478ed
+ esi=bffffff3 edi=0804b017 esp=bfffff60 ebp=bfffff78
+ cs=001b ds=0023 es=0023 ss=0023
+multi-oom: exit(-1)
+multi-oom: exit(-1)
+Page fault at 0: not present error reading page in user context.
+multi-oom: dying due to interrupt 0x0e (#PF Page-Fault Exception).
+Interrupt 0x0e (#PF Page-Fault Exception) at eip=0x8048110
+ cr2=00000000 error=00000004
+ eax=00000001 ebx=0000002a ecx=5bba4177 edx=5bba4176
+ esi=bffffff3 edi=0804b017 esp=bfffff60 ebp=bfffff78
+ cs=001b ds=0023 es=0023 ss=0023
+multi-oom: exit(-1)
+Page fault at 0: not present error reading page in user context.
+multi-oom: dying due to interrupt 0x0e (#PF Page-Fault Exception).
+Interrupt 0x0e (#PF Page-Fault Exception) at eip=0x8048110
+ cr2=00000000 error=00000004
+ eax=00000001 ebx=0000002b ecx=f737833f edx=f737833e
+ esi=bffffff3 edi=0804b017 esp=bfffff60 ebp=bfffff78
+ cs=001b ds=0023 es=0023 ss=0023
+multi-oom: exit(-1)
+Page fault at 0: not present error reading page in user context.
+multi-oom: dying due to interrupt 0x0e (#PF Page-Fault Exception).
+Interrupt 0x0e (#PF Page-Fault Exception) at eip=0x8048110
+ cr2=00000000 error=00000004
+ eax=00000001 ebx=0000002c ecx=f47150d6 edx=f47150d5
+ esi=bffffff3 edi=0804b017 esp=bfffff60 ebp=bfffff78
+ cs=001b ds=0023 es=0023 ss=0023
+multi-oom: exit(-1)
+multi-oom: exit(-1)
+multi-oom: exit(-1)
+multi-oom: exit(-1)
+multi-oom: exit(-1)
+Page fault at 0: not present error writing page in user context.
+multi-oom: dying due to interrupt 0x0e (#PF Page-Fault Exception).
+Interrupt 0x0e (#PF Page-Fault Exception) at eip=0x8048106
+ cr2=00000000 error=00000006
+ eax=00000000 ebx=00000031 ecx=42e7a251 edx=42e7a251
+ esi=bffffff3 edi=0804b017 esp=bfffff60 ebp=bfffff78
+ cs=001b ds=0023 es=0023 ss=0023
+multi-oom: exit(-1)
+multi-oom: exit(-1)
+multi-oom: exit(-1)
+multi-oom: exit(-1)
+Page fault at 0: not present error reading page in user context.
+multi-oom: dying due to interrupt 0x0e (#PF Page-Fault Exception).
+Interrupt 0x0e (#PF Page-Fault Exception) at eip=0x8048110
+ cr2=00000000 error=00000004
+ eax=00000001 ebx=00000035 ecx=a8fca93e edx=a8fca93d
+ esi=bffffff3 edi=0804b017 esp=bfffff60 ebp=bfffff78
+ cs=001b ds=0023 es=0023 ss=0023
+multi-oom: exit(-1)
+multi-oom: exit(-1)
+Page fault at 0: not present error reading page in user context.
+multi-oom: dying due to interrupt 0x0e (#PF Page-Fault Exception).
+Interrupt 0x0e (#PF Page-Fault Exception) at eip=0x8048110
+ cr2=00000000 error=00000004
+ eax=00000001 ebx=00000037 ecx=311f5fce edx=311f5fcd
+ esi=bffffff3 edi=0804b017 esp=bfffff60 ebp=bfffff78
+ cs=001b ds=0023 es=0023 ss=0023
+multi-oom: exit(-1)
+multi-oom: exit(-1)
+Page fault at 0: not present error writing page in user context.
+multi-oom: dying due to interrupt 0x0e (#PF Page-Fault Exception).
+Interrupt 0x0e (#PF Page-Fault Exception) at eip=0x8048106
+ cr2=00000000 error=00000006
+ eax=00000000 ebx=00000039 ecx=f107ff7f edx=f107ff7f
+ esi=bffffff3 edi=0804b017 esp=bfffff60 ebp=bfffff78
+ cs=001b ds=0023 es=0023 ss=0023
+multi-oom: exit(-1)
+Page fault at 0: not present error reading page in user context.
+multi-oom: dying due to interrupt 0x0e (#PF Page-Fault Exception).
+Interrupt 0x0e (#PF Page-Fault Exception) at eip=0x8048110
+ cr2=00000000 error=00000004
+ eax=00000001 ebx=0000003a ecx=91917b30 edx=91917b2f
+ esi=bffffff3 edi=0804b017 esp=bfffff60 ebp=bfffff78
+ cs=001b ds=0023 es=0023 ss=0023
+multi-oom: exit(-1)
+Page fault at 0: not present error reading page in user context.
+multi-oom: dying due to interrupt 0x0e (#PF Page-Fault Exception).
+Interrupt 0x0e (#PF Page-Fault Exception) at eip=0x8048110
+ cr2=00000000 error=00000004
+ eax=00000001 ebx=0000003b ecx=7e49a0ca edx=7e49a0c9
+ esi=bffffff3 edi=0804b017 esp=bfffff60 ebp=bfffff78
+ cs=001b ds=0023 es=0023 ss=0023
+multi-oom: exit(-1)
+multi-oom: exit(-1)
+multi-oom: exit(-1)
+multi-oom: exit(-1)
+
+TIMEOUT after 361 seconds of wall-clock time - load average: 0.00, 0.06, 0.07

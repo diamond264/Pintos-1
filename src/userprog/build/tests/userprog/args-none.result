@@ -1,17 +1,1 @@
-FAIL
-Kernel panic in run: PANIC at ../../userprog/exception.c:101 in kill(): Kernel bug - unexpected interrupt in kernel
-Call stack: 0xc010773c 0xc010ab68 0xc010ac27 0xc01019dd 0xc0101b0f 0xc010778b 0xc0108394 0xc01039cd 0xc0103aad 0xc010bd99 0xc010b86f 0xc010b7b8 0xc0100614
-Translation of call stack:
-0xc010773c: debug_panic (.../../lib/kernel/debug.c:34)
-0xc010ab68: kill (.../userprog/exception.c:106)
-0xc010ac27: page_fault (.../userprog/exception.c:164)
-0xc01019dd: intr_handler (..../threads/interrupt.c:361)
-0xc0101b0f: intr_entry (threads/intr-stubs.S:38)
-0xc010778b: list_remove (.../../lib/kernel/list.c:260)
-0xc0108394: list_pop_front (.../../lib/kernel/list.c:273)
-0xc01039cd: malloc (..../../threads/malloc.c:149)
-0xc0103aad: calloc (..../../threads/malloc.c:170)
-0xc010bd99: file_open (...d/../../filesys/file.c:20)
-0xc010b86f: free_map_create (.../../filesys/free-map.c:79)
-0xc010b7b8: do_format (.../../filesys/filesys.c:100)
-0xc0100614: main (.../../../threads/init.c:118)
+PASS

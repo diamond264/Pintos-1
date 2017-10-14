@@ -1,14 +1,1 @@
-FAIL
-Kernel panic in run: PANIC at ../../userprog/exception.c:101 in kill(): Kernel bug - unexpected interrupt in kernel
-Call stack: 0xc010774c 0xc010ab78 0xc010ac37 0xc01019ed 0xc0101b1f 0xc010779b 0xc01083a4 0xc0102b35 0xc01012f4 0xc01011da
-Translation of call stack:
-0xc010774c: debug_panic (.../../lib/kernel/debug.c:34)
-0xc010ab78: kill (.../userprog/exception.c:106)
-0xc010ac37: page_fault (.../userprog/exception.c:164)
-0xc01019ed: intr_handler (..../threads/interrupt.c:361)
-0xc0101b1f: intr_entry (threads/intr-stubs.S:38)
-0xc010779b: list_remove (.../../lib/kernel/list.c:260)
-0xc01083a4: list_pop_front (.../../lib/kernel/list.c:273)
-0xc0102b35: sema_up (...../../threads/synch.c:139)
-0xc01012f4: idle (..../../threads/thread.c:525)
-0xc01011da: kernel_thread (..../../threads/thread.c:552)
+PASS

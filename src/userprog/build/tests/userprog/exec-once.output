@@ -1,7 +1,7 @@
-Copying tests/userprog/exec-once into /tmp/OlYdWrHzbg.dsk...
-Copying tests/userprog/child-simple into /tmp/OlYdWrHzbg.dsk...
-Writing command line to /tmp/E6FS0kKeiy.dsk...
-qemu -hda /tmp/E6FS0kKeiy.dsk -hdb /tmp/SFLZdCz8UU.dsk -hdc /tmp/OlYdWrHzbg.dsk -m 4 -net none -nographic -monitor null
+Copying tests/userprog/exec-once into /tmp/r5vt684rKC.dsk...
+Copying tests/userprog/child-simple into /tmp/r5vt684rKC.dsk...
+Writing command line to /tmp/XxCFyMdVzc.dsk...
+qemu -hda /tmp/XxCFyMdVzc.dsk -hdb /tmp/vRfBfxWS3j.dsk -hdc /tmp/r5vt684rKC.dsk -m 4 -net none -nographic -monitor null
 Kernel command line: -q -f put exec-once put child-simple run exec-once
 Pintos booting with 4,096 kB RAM...
 374 pages available in kernel pool.
@@ -15,16 +15,18 @@ Boot complete.
 Putting 'exec-once' into the file system...
 Putting 'child-simple' into the file system...
 Executing 'exec-once':
-parent is main
-parent is main
 (exec-once) begin
-parent is exec-once
-parent is main
-parent is main
 (child-simple) run
 child-simple: exit(81)
-parent is exec-once
-parent is exec-once
-exec-once: exit(-1)
-
-TIMEOUT after 61 seconds of wall-clock time - load average: 0.03, 0.01, 0.00
+(exec-once) end
+exec-once: exit(0)
+Execution of 'exec-once' complete.
+Timer: 56 ticks
+Thread: 30 idle ticks, 27 kernel ticks, 0 user ticks
+hd0:0: 0 reads, 0 writes
+hd0:1: 127 reads, 400 writes
+hd1:0: 195 reads, 0 writes
+Console: 905 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...

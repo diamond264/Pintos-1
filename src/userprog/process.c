@@ -22,30 +22,27 @@
 static thread_func start_process NO_RETURN;
 static bool load (const char *cmdline, void (**eip) (void), void **esp);
 
+// parent thread의 chilren list에서 tid를 가지는 element를 꺼내오기 위한 함수
 struct child_elem* get_child(struct thread *parent, tid_t child_tid)
 {
-  //printf("get child by %s\n", parent->name);
   struct list_elem *iter;
   struct child_elem *t;
-  //printf("%s\n",parent->name);
-  //if (!strcmp (parent->name, "main")) return NULL;
+
   if (list_empty (&parent->children)) return NULL;
+
   for(iter = list_begin(&parent->children); iter != list_end(&parent->children); iter = list_next(iter))
   {
     t = list_entry(iter, struct child_elem, elem);
     if (t == NULL) return NULL;
-    printf("parent is %s\n",parent->name);
+
     if(t->tid == child_tid)
-    {
-      //printf("iter end1\n");
       return t;
-    }
   }
-  //printf("iter end2\n");
 
   return NULL;
 }
 
+// parent thread의 children list에서 child element를 제거한다.
 void remove_child(struct child_elem *child)
 {
   list_remove(&child->elem);
@@ -62,7 +59,6 @@ process_execute (const char *file_name)
   tid_t tid;
 
   struct thread *curr = thread_current();
-  //printf("proces_execut : filename is %s, parent is %s\n",file_name,curr->name);
 
   sema_init (&curr->sema_start,0);
   sema_init (&curr->sema_exit,0);
@@ -86,61 +82,30 @@ process_execute (const char *file_name)
   char *save_ptr;
   char *rf_name = strtok_r(fn_copy2, " ", &save_ptr); // real file name
 
-  //EDITED
-  // struct process *p_child;
-  // p_chlid = malloc (sizeof *p_child);
-  // list_init (&p_child->child_thread);
-  // p_child->pid = tid;
-  // p_child->parent = p_parent->pid;
-  // p_child->loaded = false;
-
   /* Create a new thread to execute FILE_NAME. */
   tid = thread_create (rf_name, PRI_DEFAULT, start_process, fn_copy);
-  struct child_elem *child = get_child(curr, tid);
 
   if (tid == TID_ERROR) {
-    printf("TID ERROR\n");
     palloc_free_page (fn_copy);
     palloc_free_page(fn_copy2);
     free(rf_name);
-    //free (p_child);
-  }
-  else {
-    //printf("%s's child created \n", curr->name);
-    //if (child != NULL)
-      //printf ("in process_exec, %s 's child is %s\n", curr->name, child->name);
-    //printf("sema_down %s's sema_start\n", curr->name);
-    sema_down(&curr->sema_start);
-    //printf ("after sema_up, %s 's child is %s\n", curr->name, child->name);
-    
-    if(child != NULL && !child->loaded)
-    {
-      //printf("not loaded \n");
-      remove_child(child);
-      return -1;
-    }
 
-    palloc_free_page(fn_copy2);
+    return -1;
   }
 
-  //EDITED
-  // else {
-  //   sema_down (&p_paret->nsema);
+  // thread_create에서 children list에 넣어준 tid를 꺼내 준다.
+  struct child_elem *child = get_child(curr, tid);
 
-  //   if (p_child->loaded) {
-  //     struct thread_id child_id;
-  //     child_id = malloc (sizeof *child_id);
-  //     child_id->tid = tid;
-  //     child_id->process = p_child;
-  //     list_push_back (&p->child_thread, &child_id->elem);
-  //   } else {
-  //     free (p_child);
-  //     return -1;
-  //   }
-  // }
+  // start_process에서 sema_up을 기다리기 위해 sema_down
+  sema_down(&curr->sema_start);
+  
+  // load가 되지 않았을 때, -1을 return하기 위한 작업
+  if(child != NULL && !child->loaded) {
+    remove_child(child);
+    return -1;
+  }
 
-  //printf("Maybe?\n");
-
+  palloc_free_page(fn_copy2);
   return tid;
 }
 
@@ -152,33 +117,33 @@ start_process (void *f_name)
   char *file_name = f_name;
   struct intr_frame if_;
   bool success;
+  struct thread *curr = thread_current();
 
   // Argument Passing
 
   // file_name parse with spliting space
   char args[100][100] = {0,}; // arguments를 저장할 array
   char *args_addr[100] = {0,}; // args의 pointer를 저장할 array
-  //memset(args, 0, sizeof(args));
-  //memset(args_addr, 0, sizeof(args_addr));
 
   int argc = 0;
   char *token, *save_ptr;
   token = strtok_r(file_name, " ", &save_ptr);
-  /*
-  for(token = strtok_r(file_name, " ", &save_ptr); token != NULL; token = strtok_r(NULL, " ", &save_ptr))
-  {
-    //memcpy(args[argc], token, strlen(token)+1);
-    ////printf("%s\n", token);
-    sn//printf(args[argc], strlen(token), "%s", token);
-    argc++;
-  }*/
 
   /* Initialize interrupt frame and load executable. */
 
   // File Deny Write를 먼저 해준다.
   struct file *userprog = filesys_open(token);
   if(userprog != NULL)
+  {
     file_deny_write(userprog);
+  }
+  else
+  {
+    palloc_free_page(file_name);
+    file_close(userprog);
+    sema_up(&curr->parent->sema_start);
+    syscall_exit(-1);
+  }
 
   memset (&if_, 0, sizeof if_);
   if_.gs = if_.fs = if_.es = if_.ds = if_.ss = SEL_UDSEG;
@@ -188,36 +153,20 @@ start_process (void *f_name)
 
   if(!success)
   {
-    //file_close(userprog);
     palloc_free_page(file_name);
     file_close(userprog);
     syscall_exit(-1);
   }
 
-  struct thread *curr = thread_current();
   struct thread *parent = curr->parent;
   struct child_elem *curr_elem = get_child (parent, curr->tid);
   curr_elem->loaded = true;
 
-  //printf("in start_process, %s loaded successfully\n", curr->name);
+  curr->program = userprog;
 
   // load 끝나면 sema up 해준다.
   if (!list_empty (&parent->sema_start.waiters))
-  {
-    //printf("sema_upped %s\n",curr->parent->name);
     sema_up(&curr->parent->sema_start);
-  }
-
-  int i;
-  /*
-  for(i=argc-1; i>=0; i--)
-  {
-    // Null 문자를 포함해 +1 해준다.
-    int len = strlen(args[i]) + 1;
-    if_.esp -= len;
-    memcpy(if_.esp, args[i], len);
-    args_addr[i] = if_.esp;
-  }*/
 
   for(; token != NULL; token = strtok_r(NULL, " ", &save_ptr))
   {
@@ -235,6 +184,7 @@ start_process (void *f_name)
   *(int*)if_.esp = 0;
 
   // args[0~argc-1]
+  int i;
   for(i = argc - 1; i >= 0; i--)
   {
     if_.esp -= 4;
@@ -273,29 +223,19 @@ start_process (void *f_name)
    child of the calling process, or if process_wait() has already
    been successfully called for the given TID, returns -1
    immediately, without waiting.
-
    This function will be implemented in problem 2-2.  For now, it
    does nothing. */
 int
 process_wait (tid_t child_tid) 
 {
-  //printf("test1\n");
   int status;
   struct thread *t_parent;
   struct child_elem *t_child;
 
   t_parent = thread_current ();
   t_child = get_child (t_parent, child_tid);
-
-  
-
   if (t_child == NULL)
-  {
-    //printf("null child %d\n",t_parent->child_exit_status);
     return -1;
-  }
-
-  //printf("process_wait : %s waits %s\n", t_parent->name, t_child->name);
 
   if (!t_child->terminated)
     sema_down (&t_parent->sema_exit);
@@ -335,14 +275,14 @@ process_exit (void)
     curr_elem->terminated = true;
     curr_elem->exit_status = curr->exit_status;
 
+    if(curr->program != NULL)
+      file_close(curr->program);
+
     // EDITED
     printf("%s: exit(%d)\n", curr->name, curr->exit_status);
     t_parent->child_exit_status = curr->exit_status;
     if (!list_empty (&t_parent->sema_exit.waiters))
-    {
-      //printf("in process_exit, sema_upped %s\n",t_parent->name);
       sema_up (&t_parent->sema_exit);
-    }
   }
 }
 
@@ -369,7 +309,7 @@ process_activate (void)
 typedef uint32_t Elf32_Word, Elf32_Addr, Elf32_Off;
 typedef uint16_t Elf32_Half;
 
-/* For use with ELF types in //printf(). */
+/* For use with ELF types in ////printf(). */
 #define PE32Wx PRIx32   /* Print Elf32_Word in hexadecimal. */
 #define PE32Ax PRIx32   /* Print Elf32_Addr in hexadecimal. */
 #define PE32Ox PRIx32   /* Print Elf32_Off in hexadecimal. */
@@ -455,7 +395,7 @@ load (const char *file_name, void (**eip) (void), void **esp)
   file = filesys_open (file_name);
   if (file == NULL) 
     {
-      //printf ("load: %s: open failed\n", file_name);
+      printf ("load: %s: open failed\n", file_name);
       goto done; 
     }
 
@@ -468,7 +408,7 @@ load (const char *file_name, void (**eip) (void), void **esp)
       || ehdr.e_phentsize != sizeof (struct Elf32_Phdr)
       || ehdr.e_phnum > 1024) 
     {
-      //printf ("load: %s: error loading executable\n", file_name);
+      printf ("load: %s: error loading executable\n", file_name);
       goto done; 
     }
 
@@ -598,15 +538,11 @@ validate_segment (const struct Elf32_Phdr *phdr, struct file *file)
 /* Loads a segment starting at offset OFS in FILE at address
    UPAGE.  In total, READ_BYTES + ZERO_BYTES bytes of virtual
    memory are initialized, as follows:
-
         - READ_BYTES bytes at UPAGE must be read from FILE
           starting at offset OFS.
-
         - ZERO_BYTES bytes at UPAGE + READ_BYTES must be zeroed.
-
    The pages initialized by this function must be writable by the
    user process if WRITABLE is true, read-only otherwise.
-
    Return true if successful, false if a memory allocation error
    or disk read error occurs. */
 static bool

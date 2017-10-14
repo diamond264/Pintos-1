@@ -1,25 +1,27 @@
-Copying tests/userprog/sc-boundary-2 into /tmp/nyi5W7PBXR.dsk...
-Writing command line to /tmp/o7cSSPLFNs.dsk...
-qemu -hda /tmp/o7cSSPLFNs.dsk -hdb /tmp/AVByCjMAfD.dsk -hdc /tmp/nyi5W7PBXR.dsk -m 4 -net none -nographic -monitor null
+Copying tests/userprog/sc-boundary-2 into /tmp/hC3NwaB3G4.dsk...
+Writing command line to /tmp/82ZdZgywwg.dsk...
+qemu -hda /tmp/82ZdZgywwg.dsk -hdb /tmp/0lbEKH0lvh.dsk -hdc /tmp/hC3NwaB3G4.dsk -m 4 -net none -nographic -monitor null
 Kernel command line: -q -f put sc-boundary-2 run sc-boundary-2
 Pintos booting with 4,096 kB RAM...
 374 pages available in kernel pool.
 374 pages available in user pool.
-Calibrating timer...  104,755,200 loops/s.
-Page fault at 0x69726577: not present error writing page in kernel context.
-Interrupt 0x0e (#PF Page-Fault Exception) at eip=0xc010779b
- cr2=69726577 error=00000002
- eax=c010ea07 ebx=c010ea07 ecx=69726573 edx=2e006c61
- esi=00000001 edi=00000000 esp=c0116f90 ebp=c0116f80
- cs=0008 ds=0010 es=0010 ss=83a4
-Kernel PANIC at ../../userprog/exception.c:101 in kill(): Kernel bug - unexpected interrupt in kernel
-Call stack: 0xc010774c 0xc010ab78 0xc010ac37 0xc01019ed 0xc0101b1f 0xc010779b 0xc01083a4 0xc0102b35 0xc01012f4 0xc01011da.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Timer: 21 ticks
-Thread: 1 idle ticks, 20 kernel ticks, 0 user ticks
-Console: 963 characters output
+Calibrating timer...  157,081,600 loops/s.
+hd0:0: detected 137 sector (68 kB) disk, model "QEMU HARDDISK", serial "QM00001"
+hd0:1: detected 4,032 sector (1 MB) disk, model "QEMU HARDDISK", serial "QM00002"
+hd1:0: detected 101 sector (50 kB) disk, model "QEMU HARDDISK", serial "QM00003"
+Formatting file system...done.
+Boot complete.
+Putting 'sc-boundary-2' into the file system...
+Executing 'sc-boundary-2':
+(sc-boundary-2) begin
+sc-boundary-2: exit(67)
+Execution of 'sc-boundary-2' complete.
+Timer: 54 ticks
+Thread: 30 idle ticks, 25 kernel ticks, 0 user ticks
+hd0:0: 0 reads, 0 writes
+hd0:1: 61 reads, 210 writes
+hd1:0: 101 reads, 0 writes
+Console: 811 characters output
 Keyboard: 0 keys pressed
-Exception: 1 page faults
+Exception: 0 page faults
 Powering off...
