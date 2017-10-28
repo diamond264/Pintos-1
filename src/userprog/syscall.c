@@ -211,7 +211,6 @@ int
 syscall_read (int fd, const void *buffer, unsigned size) {
   validate_addr ((void *) buffer);
   validate_addr((void *)(buffer + size));
-  if(!is_user_vaddr(buffer + size)) syscall_exit(-1);
 
   if (fd == 1) syscall_exit (-1);
 
@@ -301,6 +300,9 @@ syscall_close (int fd) {
 
   f_elem = get_file_elem (fd);
   f = get_file (fd);
+
+  if (f == NULL && f_elem != NULL)
+    free (f_elem);
 
   if (f == NULL || f_elem == NULL) 
     syscall_exit (-1);

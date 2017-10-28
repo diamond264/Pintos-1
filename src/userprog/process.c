@@ -28,6 +28,8 @@ struct child_elem* get_child(struct thread *parent, tid_t child_tid)
   struct list_elem *iter;
   struct child_elem *t;
 
+  if (parent == NULL) return NULL;
+
   if (list_empty (&parent->children)) return NULL;
 
   for(iter = list_begin(&parent->children); iter != list_end(&parent->children); iter = list_next(iter))
@@ -102,6 +104,7 @@ process_execute (const char *file_name)
   // load가 되지 않았을 때, -1을 return하기 위한 작업
   if(child != NULL && !child->loaded) {
     remove_child(child);
+    free (child);
     return -1;
   }
 
@@ -141,7 +144,8 @@ start_process (void *f_name)
   {
     palloc_free_page(file_name);
     file_close(userprog);
-    sema_up(&curr->parent->sema_start);
+    if (!list_empty (&curr->parent->sema_start.waiters))
+      sema_up(&curr->parent->sema_start);
     syscall_exit(-1);
   }
 
@@ -155,12 +159,14 @@ start_process (void *f_name)
   {
     palloc_free_page(file_name);
     file_close(userprog);
+    if (!list_empty (&curr->parent->sema_start.waiters))
+      sema_up(&curr->parent->sema_start);
     syscall_exit(-1);
   }
 
   struct thread *parent = curr->parent;
   struct child_elem *curr_elem = get_child (parent, curr->tid);
-  curr_elem->loaded = true;
+  curr_elem->loaded = success;
 
   curr->program = userprog;
 
@@ -238,10 +244,13 @@ process_wait (tid_t child_tid)
     return -1;
 
   if (!t_child->terminated)
+  {
     sema_down (&t_parent->sema_exit);
+  }
 
   status = t_child->exit_status;
   remove_child(t_child);
+  free(t_child);
 
   return status;
 }
@@ -276,13 +285,38 @@ process_exit (void)
     curr_elem->exit_status = curr->exit_status;
 
     if(curr->program != NULL)
+    {
       file_close(curr->program);
+      curr->program = NULL;
+    }
 
     // EDITED
     printf("%s: exit(%d)\n", curr->name, curr->exit_status);
     t_parent->child_exit_status = curr->exit_status;
+
     if (!list_empty (&t_parent->sema_exit.waiters))
+    {
       sema_up (&t_parent->sema_exit);
+    }
+
+    struct list_elem *t_elem;
+    struct child_elem *t;
+
+    struct list_elem *f_elem;
+    struct file_elem *f;
+
+    while (!list_empty (&curr->children)) {
+      t_elem = list_pop_front (&curr->children);
+      t = list_entry (t_elem, struct child_elem, elem);
+      free (t);
+    }
+
+    while (!list_empty (&curr->files)) {
+      f_elem = list_pop_front (&curr->files);
+      f = list_entry (f_elem, struct file_elem, elem);
+      free (f->file);
+      free (f);
+    }
   }
 }
 

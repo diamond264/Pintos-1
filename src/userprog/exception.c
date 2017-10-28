@@ -88,7 +88,7 @@ kill (struct intr_frame *f)
               thread_name (), f->vec_no, intr_name (f->vec_no));
       intr_dump_frame (f);
       thread_current()->exit_status = -1;
-      thread_exit (); 
+      syscall_exit (); 
 
     case SEL_KCSEG:
       /* Kernel's code segment, which indicates a kernel bug.
@@ -104,7 +104,7 @@ kill (struct intr_frame *f)
       printf ("Interrupt %#04x (%s) in unknown segment %04x\n",
              f->vec_no, intr_name (f->vec_no), f->cs);
       thread_current()->exit_status = -1;
-      thread_exit ();
+      syscall_exit ();
     }
 }
 
@@ -147,7 +147,7 @@ page_fault (struct intr_frame *f)
   write = (f->error_code & PF_W) != 0;
   user = (f->error_code & PF_U) != 0;
 
-  if (!is_user_vaddr (fault_addr))
+  if (fault_addr == NULL || is_kernel_vaddr(fault_addr))
     syscall_exit (-1);
 
   /* To implement virtual memory, delete the rest of the function
