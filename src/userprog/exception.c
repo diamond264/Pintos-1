@@ -126,6 +126,7 @@ page_fault (struct intr_frame *f)
   bool user;         /* True: access by user, false: access by kernel. */
   void *fault_addr;  /* Fault address. */
 
+  // 나중에 지워야함
   syscall_exit (-1);
 
   /* Obtain faulting address, the virtual address that was
