@@ -1,11 +1,11 @@
-Copying tests/filesys/base/sm-seq-block into /tmp/rpk4iIhwXK.dsk...
-Writing command line to /tmp/tc77Gc04TD.dsk...
-qemu -hda /tmp/tc77Gc04TD.dsk -hdb /tmp/iE6U3Wx5eC.dsk -hdc /tmp/rpk4iIhwXK.dsk -m 4 -net none -nographic -monitor null
+Copying tests/filesys/base/sm-seq-block into /tmp/eIAt7cSkw0.dsk...
+Writing command line to /tmp/l5JZgykp7i.dsk...
+qemu -hda /tmp/l5JZgykp7i.dsk -hdb /tmp/myB75dc0E5.dsk -hdc /tmp/eIAt7cSkw0.dsk -m 4 -net none -nographic -monitor null
 Kernel command line: -q -f put sm-seq-block run sm-seq-block
 Pintos booting with 4,096 kB RAM...
 374 pages available in kernel pool.
 374 pages available in user pool.
-Calibrating timer...  157,081,600 loops/s.
+Calibrating timer...  155,648,000 loops/s.
 hd0:0: detected 137 sector (68 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 4,032 sector (1 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 102 sector (51 kB) disk, model "QEMU HARDDISK", serial "QM00003"
@@ -24,8 +24,8 @@ Executing 'sm-seq-block':
 (sm-seq-block) end
 sm-seq-block: exit(0)
 Execution of 'sm-seq-block' complete.
-Timer: 57 ticks
-Thread: 30 idle ticks, 25 kernel ticks, 2 user ticks
+Timer: 61 ticks
+Thread: 30 idle ticks, 28 kernel ticks, 3 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 126 reads, 251 writes
 hd1:0: 102 reads, 0 writes
