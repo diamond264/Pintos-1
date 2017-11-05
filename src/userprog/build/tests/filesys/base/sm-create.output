@@ -1,6 +1,6 @@
-Copying tests/filesys/base/sm-create into /tmp/bghAR2GRl6.dsk...
-Writing command line to /tmp/zc98tTGw3K.dsk...
-qemu -hda /tmp/zc98tTGw3K.dsk -hdb /tmp/MwMZDOz7S4.dsk -hdc /tmp/bghAR2GRl6.dsk -m 4 -net none -nographic -monitor null
+Copying tests/filesys/base/sm-create into /tmp/ueVTaBTfak.dsk...
+Writing command line to /tmp/dxweN96L01.dsk...
+qemu -hda /tmp/dxweN96L01.dsk -hdb /tmp/57jO1XSnoz.dsk -hdc /tmp/ueVTaBTfak.dsk -m 4 -net none -nographic -monitor null
 Kernel command line: -q -f put sm-create run sm-create
 Pintos booting with 4,096 kB RAM...
 374 pages available in kernel pool.
@@ -21,8 +21,8 @@ Executing 'sm-create':
 (sm-create) end
 sm-create: exit(0)
 Execution of 'sm-create' complete.
-Timer: 56 ticks
-Thread: 30 idle ticks, 25 kernel ticks, 1 user ticks
+Timer: 57 ticks
+Thread: 30 idle ticks, 25 kernel ticks, 2 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 100 reads, 226 writes
 hd1:0: 101 reads, 0 writes

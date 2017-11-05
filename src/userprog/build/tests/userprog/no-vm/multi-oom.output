@@ -1,11 +1,11 @@
-Copying tests/userprog/no-vm/multi-oom into /tmp/0CYZv6xvKD.dsk...
-Writing command line to /tmp/ErotCYBAwP.dsk...
-qemu -hda /tmp/ErotCYBAwP.dsk -hdb /tmp/68WjEixQlG.dsk -hdc /tmp/0CYZv6xvKD.dsk -m 4 -net none -nographic -monitor null
+Copying tests/userprog/no-vm/multi-oom into /tmp/twgUO2RTc9.dsk...
+Writing command line to /tmp/Wy7718EbRG.dsk...
+qemu -hda /tmp/Wy7718EbRG.dsk -hdb /tmp/fl46VMVwGH.dsk -hdc /tmp/twgUO2RTc9.dsk -m 4 -net none -nographic -monitor null
 Kernel command line: -q -f put multi-oom run multi-oom
 Pintos booting with 4,096 kB RAM...
 374 pages available in kernel pool.
 374 pages available in user pool.
-Calibrating timer...  157,081,600 loops/s.
+Calibrating timer...  130,867,200 loops/s.
 hd0:0: detected 137 sector (68 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 4,032 sector (1 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 114 sector (57 kB) disk, model "QEMU HARDDISK", serial "QM00003"
@@ -1098,8 +1098,8 @@ multi-oom: exit(61)
 (multi-oom) end
 multi-oom: exit(61)
 Execution of 'multi-oom' complete.
-Timer: 1900 ticks
-Thread: 30 idle ticks, 260 kernel ticks, 1611 user ticks
+Timer: 1863 ticks
+Thread: 30 idle ticks, 251 kernel ticks, 1582 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 303519 reads, 236 writes
 hd1:0: 114 reads, 0 writes
