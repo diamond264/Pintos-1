@@ -1,5 +1,5 @@
-Copying tests/vm/pt-grow-stk-sc into /tmp/y97d5HItjw.dsk...
-Writing command line to /tmp/sXGTsuLw0L.dsk...
+Copying tests/vm/pt-grow-stk-sc into /tmp/Ddw8RYUWVV.dsk...
+Writing command line to /tmp/5Y2ZDkntgt.dsk...
 warning: can't find squish-pty, so terminal input will fail
 bochs -q
 Kernel command line: -q -f put pt-grow-stk-sc run pt-grow-stk-sc
@@ -16,15 +16,22 @@ Boot complete.
 Putting 'pt-grow-stk-sc' into the file system...
 Executing 'pt-grow-stk-sc':
 (pt-grow-stk-sc) begin
-pt-grow-stk-sc: exit(-1)
+(pt-grow-stk-sc) create "sample.txt"
+(pt-grow-stk-sc) open "sample.txt"
+(pt-grow-stk-sc) write "sample.txt"
+(pt-grow-stk-sc) 2nd open "sample.txt"
+(pt-grow-stk-sc) read "sample.txt"
+(pt-grow-stk-sc) compare written data against read data
+(pt-grow-stk-sc) end
+pt-grow-stk-sc: exit(0)
 Execution of 'pt-grow-stk-sc' complete.
-Timer: 280 ticks
-Thread: 30 idle ticks, 225 kernel ticks, 28 user ticks
+Timer: 388 ticks
+Thread: 30 idle ticks, 255 kernel ticks, 106 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 71 reads, 210 writes
+hd0:1: 104 reads, 218 writes
 hd1:0: 101 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 934 characters output
+Console: 1194 characters output
 Keyboard: 0 keys pressed
-Exception: 0 page faults
+Exception: 1 page faults
 Powering off...

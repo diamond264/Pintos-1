@@ -126,8 +126,7 @@ page_fault (struct intr_frame *f)
   bool user;         /* True: access by user, false: access by kernel. */
   void *fault_addr;  /* Fault address. */
 
-  // 나중에 지워야함
-  syscall_exit (-1);
+  // EDITED
 
   /* Obtain faulting address, the virtual address that was
      accessed to cause the fault.  It may point to code or to
@@ -150,16 +149,41 @@ page_fault (struct intr_frame *f)
   write = (f->error_code & PF_W) != 0;
   user = (f->error_code & PF_U) != 0;
 
-  if (fault_addr == NULL || is_kernel_vaddr(fault_addr))
+  // Check errors
+  if (!not_present) syscall_exit (-1);
+
+  struct thread * curr = thread_current ();
+  void *rounded_addr = pg_round_down (fault_addr);
+
+  if (fault_addr == NULL
+    || !is_user_vaddr(fault_addr))
+  {
     syscall_exit (-1);
+  }
+
+  // Get current thread's supplemental page table entry
+  // if it is not null, and not loaded, load it.
+  struct spage_entry *spte = spage_get_entry (rounded_addr);
+
+  if (spte) {
+    spage_load (spte);
+  }
+
+  else if (fault_addr >= (f->esp - 32))
+  {
+    stack_growth (fault_addr);
+  }
+  else {
+    syscall_exit (-1);
+  }
 
   /* To implement virtual memory, delete the rest of the function
      body, and replace it with code that brings in the page to
      which fault_addr refers. */
-  printf ("Page fault at %p: %s error %s page in %s context.\n",
-          fault_addr,
-          not_present ? "not present" : "rights violation",
-          write ? "writing" : "reading",
-          user ? "user" : "kernel");
-  kill (f);
+  // printf ("Page fault at %p: %s error %s page in %s context.\n",
+  //         fault_addr,
+  //         not_present ? "not present" : "rights violation",
+  //         write ? "writing" : "reading",
+  //         user ? "user" : "kernel");
+  // kill (f);
 }

@@ -1,5 +1,5 @@
-Copying tests/userprog/bad-read2 into /tmp/JlTAk6X0BV.dsk...
-Writing command line to /tmp/kZ75s6WDv8.dsk...
+Copying tests/userprog/bad-read2 into /tmp/4nhpszwb3V.dsk...
+Writing command line to /tmp/JuoPkZ8DSF.dsk...
 warning: can't find squish-pty, so terminal input will fail
 bochs -q
 Kernel command line: -q -f put bad-read2 run bad-read2
@@ -18,13 +18,13 @@ Executing 'bad-read2':
 (bad-read2) begin
 bad-read2: exit(-1)
 Execution of 'bad-read2' complete.
-Timer: 276 ticks
-Thread: 30 idle ticks, 222 kernel ticks, 27 user ticks
+Timer: 300 ticks
+Thread: 30 idle ticks, 245 kernel ticks, 28 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 61 reads, 204 writes
 hd1:0: 98 reads, 0 writes
 hd1:1: 0 reads, 0 writes
 Console: 898 characters output
 Keyboard: 0 keys pressed
-Exception: 0 page faults
+Exception: 1 page faults
 Powering off...

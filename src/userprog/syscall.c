@@ -16,7 +16,7 @@ bool syscall_create (const char *file, unsigned initial_size);
 bool syscall_remove (const char *file);
 int syscall_open (const char *file);
 int syscall_filesize (int fd);
-int syscall_read (int fd, const void *buffer, unsigned size);
+int syscall_read (struct intr_frame *f, int fd, const void *buffer, unsigned size);
 int syscall_write (int fd, const void *buffer, unsigned size);
 void syscall_seek (int fd, unsigned position);
 unsigned syscall_tell (int fd);
@@ -118,7 +118,7 @@ syscall_handler (struct intr_frame *f)
       argv[0] = get_argument (sp);
       argv[1] = get_argument (sp+1);
       argv[2] = get_argument (sp+2);
-      f->eax = (off_t) syscall_read ((int) *argv[0], (void *) *argv[1], (unsigned) *argv[2]);
+      f->eax = (off_t) syscall_read (f, (int) *argv[0], (void *) *argv[1], (unsigned) *argv[2]);
       break;
 
     case SYS_WRITE :
@@ -208,9 +208,13 @@ syscall_filesize (int fd) {
 
 
 int
-syscall_read (int fd, const void *buffer, unsigned size) {
-  validate_addr ((void *) buffer);
-  validate_addr((void *)(buffer + size));
+syscall_read (struct intr_frame *f, int fd, const void *buffer, unsigned size) {
+  if ((void *) buffer == NULL)
+  {
+    syscall_exit (-1);
+  }
+  validate_addr_syscall (f, (void *) buffer);
+  validate_addr_syscall (f, (void *)(buffer + size));
 
   if (fd == 1) syscall_exit (-1);
 
@@ -224,7 +228,11 @@ syscall_read (int fd, const void *buffer, unsigned size) {
 
       *(uint8_t *)buffer = input_getc();
       buffer++;
-      validate_addr ((void *) buffer);
+      validate_addr_syscall (f, (void *) buffer);
+      if ((void *) buffer == NULL)
+      {
+        syscall_exit (-1);
+      }
     }
     value = size;
   } else {

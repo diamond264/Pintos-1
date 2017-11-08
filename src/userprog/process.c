@@ -122,6 +122,9 @@ start_process (void *f_name)
   bool success;
   struct thread *curr = thread_current();
 
+  // 수정해야함
+  hash_init (&curr->spage_table, hash_calc_func, hash_comp_func, NULL);
+
   // Argument Passing
 
   // file_name parse with spliting space
@@ -245,6 +248,7 @@ process_wait (tid_t child_tid)
 
   if (!t_child->terminated)
   {
+    t_parent->waiting = child_tid;
     sema_down (&t_parent->sema_exit);
   }
 
@@ -294,10 +298,13 @@ process_exit (void)
     printf("%s: exit(%d)\n", curr->name, curr->exit_status);
     t_parent->child_exit_status = curr->exit_status;
 
-    if (!list_empty (&t_parent->sema_exit.waiters))
+    if (curr_elem->tid == t_parent->waiting && !list_empty (&t_parent->sema_exit.waiters))
     {
       sema_up (&t_parent->sema_exit);
     }
+
+    // 수정해야함
+    hash_destroy (&curr->spage_table, hash_free_func);
 
     struct list_elem *t_elem;
     struct child_elem *t;
@@ -409,9 +416,6 @@ static bool load_segment (struct file *file, off_t ofs, uint8_t *upage,
    Stores the executable's entry point into *EIP
    and its initial stack pointer into *ESP.
    Returns true if successful, false otherwise. */
-/*
-  load 함수에서 pagedir ptr을 새로 할당받아온다.
-*/
 bool
 load (const char *file_name, void (**eip) (void), void **esp) 
 {
@@ -599,6 +603,9 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
       size_t page_read_bytes = read_bytes < PGSIZE ? read_bytes : PGSIZE;
       size_t page_zero_bytes = PGSIZE - page_read_bytes;
 
+      // 수정해야함
+      spage_insert_upage (upage);
+
       /* Get a page of memory. */
       uint8_t *kpage = palloc_get_page (PAL_USER);
       if (kpage == NULL)
@@ -678,4 +685,22 @@ void* validate_addr (void *addr)
   }
   else 
     return addr;
+}
+
+void validate_addr_syscall (struct intr_frame *f, void *fault_addr)
+{
+  struct thread * curr = thread_current ();
+  void *rounded_addr = pg_round_down (fault_addr);
+
+  if (fault_addr == NULL
+    || !is_user_vaddr(fault_addr))
+  {
+    syscall_exit (-1);
+  }
+
+  if (pagedir_get_page (curr->pagedir, fault_addr) == NULL)
+  {
+    if (fault_addr >= (f->esp - 32))
+      stack_growth (fault_addr);
+  }
 }

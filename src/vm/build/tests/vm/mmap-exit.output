@@ -1,6 +1,6 @@
-Copying tests/vm/mmap-exit into /tmp/Urfgu1rMKO.dsk...
-Copying tests/vm/child-mm-wrt into /tmp/Urfgu1rMKO.dsk...
-Writing command line to /tmp/uh18HS5I3X.dsk...
+Copying tests/vm/mmap-exit into /tmp/WESB6gYVo6.dsk...
+Copying tests/vm/child-mm-wrt into /tmp/WESB6gYVo6.dsk...
+Writing command line to /tmp/ds5MPSojvN.dsk...
 warning: can't find squish-pty, so terminal input will fail
 bochs -q
 Kernel command line: -q -f put mmap-exit put child-mm-wrt run mmap-exit
@@ -26,13 +26,13 @@ child-mm-wrt: exit(-1)
 (mmap-exit) wait for child (should return 0): FAILED
 mmap-exit: exit(1)
 Execution of 'mmap-exit' complete.
-Timer: 480 ticks
-Thread: 30 idle ticks, 344 kernel ticks, 109 user ticks
+Timer: 509 ticks
+Thread: 30 idle ticks, 369 kernel ticks, 113 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 166 reads, 416 writes
 hd1:0: 200 reads, 0 writes
 hd1:1: 0 reads, 0 writes
 Console: 1162 characters output
 Keyboard: 0 keys pressed
-Exception: 0 page faults
+Exception: 1 page faults
 Powering off...

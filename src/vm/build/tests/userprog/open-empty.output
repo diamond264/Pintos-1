@@ -1,5 +1,5 @@
-Copying tests/userprog/open-empty into /tmp/L5Z0kvdq1O.dsk...
-Writing command line to /tmp/10EB7970Xp.dsk...
+Copying tests/userprog/open-empty into /tmp/Gi333LIZUv.dsk...
+Writing command line to /tmp/dXoU7mqSWu.dsk...
 warning: can't find squish-pty, so terminal input will fail
 bochs -q
 Kernel command line: -q -f put open-empty run open-empty
@@ -19,8 +19,8 @@ Executing 'open-empty':
 (open-empty) end
 open-empty: exit(0)
 Execution of 'open-empty' complete.
-Timer: 312 ticks
-Thread: 30 idle ticks, 242 kernel ticks, 43 user ticks
+Timer: 316 ticks
+Thread: 30 idle ticks, 246 kernel ticks, 43 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 78 reads, 204 writes
 hd1:0: 98 reads, 0 writes

@@ -5,6 +5,8 @@
 #include <list.h>
 #include <stdint.h>
 #include "synch.h"
+#include "lib/kernel/hash.h"
+#include "vm/page.h"
 
 #define DEBUG true
 
@@ -130,6 +132,10 @@ struct thread
 
     struct list files;
     struct file *program; // executable file을 저장.
+    tid_t waiting;
+
+    // PAGE TABLE
+    struct hash spage_table;
 #endif
 
     /* Owned by thread.c. */
