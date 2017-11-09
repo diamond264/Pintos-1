@@ -12,45 +12,10 @@ init_frame_table ()
 	list_init (&frames);
 }
 
-// void
-// set_frame (struct frame * f, void * vaddr, void * paddr)
-// {
-// 	f->vaddr = vaddr;
-// 	f->paddr = paddr;
-// }
-
-// bool
-// has_free_entry ()
-// {
-// 	void *vaddr = palloc_get_page (PAL_USER | PAL_ZERO);
-
-// 	if (vaddr != NULL) return true;
-// 	else return false;
-// }
-
-// struct frame *
-// find_frame_with_paddr (void * paddr) 
-// {
-//   	if (list_empty (&frames)) return NULL;
-
-// 	struct list_elem *iter;
-// 	struct frame *frame_with_paddr;
-
-// 	for(iter = list_begin(&frames); iter != list_end(&frames); iter = list_next(iter))
-// 	{
-// 		frame_with_paddr = list_entry(iter, struct frame, elem);
-
-// 		if(frame_with_paddr->paddr == paddr)
-// 			return frame_with_paddr;
-// 	}
-
-// 	return NULL;
-// }
-
-struct frame *
-find_frame_with_vaddr (void * vaddr)
+struct list_elem *
+get_frame_elem (void * vaddr)
 {
-  	if (list_empty (&frames)) return NULL;
+	if (list_empty (&frames)) return NULL;
 
 	struct list_elem *iter;
 	struct frame_entry *frame_with_vaddr;
@@ -60,7 +25,7 @@ find_frame_with_vaddr (void * vaddr)
 		frame_with_vaddr = list_entry(iter, struct frame_entry, elem);
 
 		if(frame_with_vaddr->vaddr == vaddr)
-			return frame_with_vaddr;
+			return iter;
 	}
 
 	return NULL;
@@ -98,14 +63,15 @@ insert_frame (void * vaddr)
 void
 free_frame (void * vaddr)
 {
-	struct frame_entry *f = find_frame_with_vaddr (vaddr);
+	// LOCK 걸어 주어야 함
+	struct list_elem *e = get_frame_elem (vaddr);
+	struct frame_entry *f;
 
-	if (f == NULL) return;
-	else {
-		list_remove (&f->elem);
-		palloc_free_page (vaddr);
-		free (f);
-	}
+	if (e == NULL) return;
+	
+	f = list_entry(e, struct frame_entry, elem);
+	list_remove (e);
+	free (f);
 }
 
 

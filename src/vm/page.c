@@ -15,15 +15,15 @@ spage_load (struct spage_entry *spe)
 	if (frame == NULL) return;
 
 	bool success = pagedir_set_page (curr->pagedir, spe->vaddr, frame, true);
-	spage_insert_upage (spe->vaddr);
-	// if (success)
-	// {
-	// 	swap_in ()
-	// }
-	// else
-	// {
-	// 	frame_free (frame);
-	// }
+	if (success)
+	{
+		swap_in (spe->vaddr);
+		// hash_delete
+	}
+	else
+	{
+		frame_free (frame);
+	}
 
 	return;
 }
@@ -92,6 +92,7 @@ hash_free_func (const struct hash_elem *e, void *aux UNUSED)
 
 	if (spe == NULL) return;
 
+	// free swap_slot
 	free (spe);
 	return;
 }

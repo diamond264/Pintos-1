@@ -604,9 +604,11 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
       size_t page_zero_bytes = PGSIZE - page_read_bytes;
 
       // 수정해야함
+      // file도 넣어 주어야  하나??
       spage_insert_upage (upage);
 
       /* Get a page of memory. */
+      // frame 관련 작업을 해야 할 듯
       uint8_t *kpage = palloc_get_page (PAL_USER);
       if (kpage == NULL)
         return false;
@@ -614,6 +616,7 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
       /* Load this page. */
       if (file_read (file, kpage, page_read_bytes) != (int) page_read_bytes)
         {
+          // frame 관련 작업
           palloc_free_page (kpage);
           return false; 
         }
@@ -622,6 +625,7 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
       /* Add the page to the process's address space. */
       if (!install_page (upage, kpage, writable)) 
         {
+          // frame 관련 작업
           palloc_free_page (kpage);
           return false; 
         }

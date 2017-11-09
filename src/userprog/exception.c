@@ -126,8 +126,6 @@ page_fault (struct intr_frame *f)
   bool user;         /* True: access by user, false: access by kernel. */
   void *fault_addr;  /* Fault address. */
 
-  // EDITED
-
   /* Obtain faulting address, the virtual address that was
      accessed to cause the fault.  It may point to code or to
      data.  It is not necessarily the address of the instruction
@@ -150,12 +148,10 @@ page_fault (struct intr_frame *f)
   user = (f->error_code & PF_U) != 0;
 
   // Check errors
-  if (!not_present) syscall_exit (-1);
-
-  struct thread * curr = thread_current ();
   void *rounded_addr = pg_round_down (fault_addr);
 
-  if (fault_addr == NULL
+  if (!not_present
+    || fault_addr == NULL
     || !is_user_vaddr(fault_addr))
   {
     syscall_exit (-1);

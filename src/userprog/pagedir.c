@@ -41,9 +41,14 @@ pagedir_destroy (uint32_t *pd)
         
         for (pte = pt; pte < pt + PGSIZE / sizeof *pte; pte++)
           if (*pte & PTE_P) 
+          {
+            free_frame (pte_get_page (*pte));
             palloc_free_page (pte_get_page (*pte));
+          }
+        free_frame (pt);
         palloc_free_page (pt);
       }
+  free_frame (pd);
   palloc_free_page (pd);
 }
 
@@ -113,9 +118,13 @@ pagedir_set_page (uint32_t *pd, void *upage, void *kpage, bool writable)
       ASSERT ((*pte & PTE_P) == 0);
       *pte = pte_create_user (kpage, writable);
 
-      //EDITED
-      // 여기서 supplemental page table 에 해당하는 값을 넣어 주어야 한다.
-      // spage_insert_upage (upage);
+      struct list_elem *e = get_frame_elem (kpage);
+      struct frame_entry *f;
+      if (e != NULL)
+        f = list_entry(e, struct frame_entry, elem);
+
+      f->pte = pte;
+      f->user_vaddr = upage;
 
       return true;
     }
