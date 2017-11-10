@@ -4,12 +4,15 @@
 
 
 struct list frames;
+struct lock access_frame_table;
 
 struct frame_entry {
 	struct list_elem elem;
 
 	tid_t tid;
-	void *vaddr;
+	void *frame_addr;
+	void *user_vaddr;
+	struct thread *thread;
 	struct spage_entry spage;
 };
 

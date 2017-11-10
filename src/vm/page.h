@@ -7,8 +7,10 @@ struct spage_entry {
 	struct hash_elem elem;
 
 	void *vaddr;
+	size_t index;
 	bool loaded;
 	bool swapped;
+	bool writable;
 };
 
 void

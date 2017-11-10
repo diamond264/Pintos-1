@@ -48,6 +48,37 @@ allocate_frame ()
 	return vaddr;
 }
 
+void *
+evict_frame ()
+{
+	// lock 걸어 주어야 한다
+	struct frame_entry *f = NULL;
+	struct list_elem *iter;
+	struct thread *t;
+
+	for(iter = list_begin(&frames); iter != list_end(&frames); iter = list_next(iter))
+	{
+		f = list_entry(iter, struct frame_entry, elem);
+		t = f->thread;
+
+		if (pagedir_is_accessed (t->pagedir, f->vaddr))
+			pagedir_set_accessed (t->pagedir, f->vaddr, false);
+		else
+		{
+			list_remove (e);
+			list_push_back (&frames, e);
+			break;
+		}
+	}
+
+	//save_evicted_frame ();
+	f->thread = thread_current ();
+	f->user_vaddr = NULL;
+	// lock 풀어줘도됨
+
+	return v->vaddr;
+}
+
 void
 insert_frame (void * vaddr)
 {
@@ -64,6 +95,8 @@ void
 free_frame (void * vaddr)
 {
 	// LOCK 걸어 주어야 함
+	lock_acquire (&access_frame_table);
+
 	struct list_elem *e = get_frame_elem (vaddr);
 	struct frame_entry *f;
 
@@ -72,6 +105,8 @@ free_frame (void * vaddr)
 	f = list_entry(e, struct frame_entry, elem);
 	list_remove (e);
 	free (f);
+
+	lock_release (&access_frame_table);
 }
 
 

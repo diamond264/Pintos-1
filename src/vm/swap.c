@@ -9,13 +9,22 @@
 void
 swap_init ()
 {
-	swap_block = block_get_role (BLOCK_SWAP);
+	swap_block = disk_get_role (BLOCK_SWAP);
 }
 
 void
 swap_in (struct spage_entry *spe)
 {
+	size_t index = spte->index;
+	size_t i;
+	void *vaddr = spe->vaddr;
 
+	for(i=0;i<;i++)
+	{
+		disk_read (swap_disk, 디스크 공간, 메모리 공간);
+	}
+
+	bitmap_flip (swap_table, index);
 }
 
 void

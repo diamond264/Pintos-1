@@ -118,6 +118,8 @@ pagedir_set_page (uint32_t *pd, void *upage, void *kpage, bool writable)
       ASSERT ((*pte & PTE_P) == 0);
       *pte = pte_create_user (kpage, writable);
 
+      // Edited
+
       struct list_elem *e = get_frame_elem (kpage);
       struct frame_entry *f;
       if (e != NULL)

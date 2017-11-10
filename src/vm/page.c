@@ -10,22 +10,24 @@ void
 spage_load (struct spage_entry *spe)
 {
 	struct thread *curr = thread_current ();
-	void *frame = pagedir_get_page (PAL_USER | PAL_ZERO);
+	void *frame = palloc_get_page (PAL_USER);
+	bool writable = spe->writable;
 
-	if (frame == NULL) return;
+	if (frame == NULL) 
+	{
+		frame = evict_frame ();
+		if (frame == NULL)
+			return;
+	}
 
-	bool success = pagedir_set_page (curr->pagedir, spe->vaddr, frame, true);
+	bool success = pagedir_set_page (curr->pagedir, spe->vaddr, frame, writable);
+	
 	if (success)
 	{
+		insert_frame (frame);
 		swap_in (spe->vaddr);
-		// hash_delete
+		hash_delete (&curr->spage_table, &spe->elem);
 	}
-	else
-	{
-		frame_free (frame);
-	}
-
-	return;
 }
 
 struct spage_entry *

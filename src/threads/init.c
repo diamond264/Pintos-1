@@ -102,6 +102,10 @@ main (void)
 #ifdef USERPROG
   exception_init ();
   syscall_init ();
+
+  // implemented initiation
+  init_frame_table ();
+  swap_init ();
 #endif
 
   /* Start thread scheduler and enable interrupts. */

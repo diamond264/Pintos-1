@@ -1,6 +1,6 @@
 #include "devices/block.h"
 #include <bitmap.h>
 
-struct block *swap_block;
+struct disk *swap_disk;
 struct bitmap *swap_bitmap;
 
