@@ -1,3 +1,6 @@
+#ifndef _PAGEH_
+#define _PAGEH_
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "threads/thread.h"
@@ -8,8 +11,6 @@ struct spage_entry {
 
 	void *vaddr;
 	size_t index;
-	bool loaded;
-	bool swapped;
 	bool writable;
 };
 
@@ -34,3 +35,5 @@ hash_calc_func (const struct hash_elem *e, void *aux UNUSED);
 
 void
 hash_free_func (const struct hash_elem *e, void *aux UNUSED);
+
+#endif

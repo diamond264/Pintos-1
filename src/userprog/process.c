@@ -279,7 +279,8 @@ process_exit (void)
        directory, or our active page directory will be one
        that's been freed (and cleared). */
     curr->pagedir = NULL;
-    pagedir_activate (NULL);
+    
+    pagedir_activate (NULL);ASSERT(0);
     pagedir_destroy (pd);
 
     struct thread *t_parent = curr->parent;

@@ -26,6 +26,9 @@
 #include "userprog/gdt.h"
 #include "userprog/syscall.h"
 #include "userprog/tss.h"
+#include "vm/page.h"
+#include "vm/swap.h"
+#include "vm/frame.h"
 #else
 #include "tests/threads/tests.h"
 #endif
@@ -105,7 +108,6 @@ main (void)
 
   // implemented initiation
   init_frame_table ();
-  swap_init ();
 #endif
 
   /* Start thread scheduler and enable interrupts. */
@@ -116,6 +118,7 @@ main (void)
 #ifdef FILESYS
   /* Initialize file system. */
   disk_init ();
+  swap_init ();
   filesys_init (format_filesys);
 #endif
 

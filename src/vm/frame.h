@@ -10,29 +10,20 @@ struct frame_entry {
 	struct list_elem elem;
 
 	tid_t tid;
-	void *frame_addr;
-	void *user_vaddr;
+	void *frame;
+	void *vaddr;
 	struct thread *thread;
-	struct spage_entry spage;
+	// struct spage_entry spage;
 };
 
 void
 init_frame_table ();
 
-// void
-// set_frame (struct frame * f, void * vaddr, void * paddr);
-
-// bool
-// has_free_entry ();
-
-// struct frame *
-// find_frame_with_paddr (void * paddr);
-
 struct frame *
 find_frame_with_vaddr (void * vaddr);
 
 void *
-allocate_frame ();
+evict_frame ();
 
 void
 insert_frame (void * vaddr);

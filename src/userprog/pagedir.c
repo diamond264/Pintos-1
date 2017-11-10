@@ -5,6 +5,7 @@
 #include "threads/init.h"
 #include "threads/pte.h"
 #include "threads/palloc.h"
+#include "vm/frame.h"
 
 static uint32_t *active_pd (void);
 static void invalidate_pagedir (uint32_t *);
@@ -123,10 +124,10 @@ pagedir_set_page (uint32_t *pd, void *upage, void *kpage, bool writable)
       struct list_elem *e = get_frame_elem (kpage);
       struct frame_entry *f;
       if (e != NULL)
+      {
         f = list_entry(e, struct frame_entry, elem);
-
-      f->pte = pte;
-      f->user_vaddr = upage;
+        f->vaddr = upage;
+      }
 
       return true;
     }

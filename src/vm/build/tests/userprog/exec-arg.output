@@ -1,40 +1,20 @@
-Copying tests/userprog/exec-arg into /tmp/tgex4BLtSu.dsk...
-Copying tests/userprog/child-args into /tmp/tgex4BLtSu.dsk...
-Writing command line to /tmp/QQmPoWtymD.dsk...
+Copying tests/userprog/exec-arg into /tmp/E1Vd06nkdH.dsk...
+Copying tests/userprog/child-args into /tmp/E1Vd06nkdH.dsk...
+Writing command line to /tmp/nLRTAGMF6p.dsk...
 warning: can't find squish-pty, so terminal input will fail
 bochs -q
 Kernel command line: -q -f put exec-arg put child-args run exec-arg
 Pintos booting with 4,096 kB RAM...
 374 pages available in kernel pool.
 374 pages available in user pool.
-Calibrating timer...  204,600 loops/s.
-hd0:0: detected 1,008 sector (504 kB) disk, model "Generic 1234", serial "BXHD00011"
-hd0:1: detected 4,032 sector (1 MB) disk, model "Generic 1234", serial "BXHD00012"
-hd1:0: detected 1,008 sector (504 kB) disk, model "Generic 1234", serial "BXHD00021"
-hd1:1: detected 8,064 sector (3 MB) disk, model "Generic 1234", serial "BXHD00022"
-Formatting file system...done.
-Boot complete.
-Putting 'exec-arg' into the file system...
-Putting 'child-args' into the file system...
-Executing 'exec-arg':
-(exec-arg) begin
-(args) begin
-(args) argc = 2
-(args) argv[0] = 'child-args'
-(args) argv[1] = 'childarg'
-(args) argv[2] = null
-(args) end
-child-args: exit(0)
-(exec-arg) end
-exec-arg: exit(0)
-Execution of 'exec-arg' complete.
-Timer: 476 ticks
-Thread: 30 idle ticks, 366 kernel ticks, 83 user ticks
-hd0:0: 0 reads, 0 writes
-hd0:1: 121 reads, 400 writes
-hd1:0: 195 reads, 0 writes
-hd1:1: 0 reads, 0 writes
-Console: 1107 characters output
+Kernel PANIC at ../../threads/vaddr.h:85 in vtop(): assertion `0' failed.
+Call stack: 0xc01075cc 0xc0100472.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 0 ticks
+Thread: 0 idle ticks, 0 kernel ticks, 0 user ticks
+Console: 503 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

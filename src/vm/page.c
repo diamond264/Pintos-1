@@ -1,4 +1,5 @@
 #include "vm/frame.h"
+#include "vm/swap.h"
 #include "threads/malloc.h"
 #include "threads/pte.h"
 #include "threads/palloc.h"
@@ -25,9 +26,10 @@ spage_load (struct spage_entry *spe)
 	if (success)
 	{
 		insert_frame (frame);
-		swap_in (spe->vaddr);
+		swap_in (spe);
 		hash_delete (&curr->spage_table, &spe->elem);
 	}
+	else palloc_free_page (frame);
 }
 
 struct spage_entry *
@@ -45,6 +47,20 @@ spage_get_entry (void *vaddr)
 	return hash_entry (spe_elem, struct spage_entry, elem);
 }
 
+struct spage_entry *
+spage_get_entry_from_thread (void *vaddr, struct thread *t)
+{
+	struct spage_entry spe;
+
+	spe.vaddr = vaddr;
+	struct hash_elem *spe_elem = hash_find (&t->spage_table, &spe.elem);
+
+	if (spe_elem == NULL)
+		return NULL;
+
+	return hash_entry (spe_elem, struct spage_entry, elem);
+}
+
 void
 spage_insert_upage (uint8_t *upage)
 {
@@ -52,8 +68,8 @@ spage_insert_upage (uint8_t *upage)
 	spe = malloc (sizeof *spe);
 
 	spe->vaddr = upage;
-	spe->loaded = false;
-	spe->swapped = false;
+	// spe->loaded = false;
+	// spe->swapped = false;
 
 	spage_insert_entry (spe);
 }
@@ -65,12 +81,6 @@ spage_insert_entry (struct spage_entry *spe)
 
 	return hash_insert (&curr->spage_table, &spe->elem);
 }
-
-// void
-// hash_destroy_func (struct hash_elem *e, void *aux UNUSED)
-// {
-
-// }
 
 bool
 hash_comp_func (const struct hash_elem *x,
@@ -94,7 +104,8 @@ hash_free_func (const struct hash_elem *e, void *aux UNUSED)
 
 	if (spe == NULL) return;
 
-	// free swap_slot
+	//조건문에 넣어야 하려나?
+	bitmap_flip (swap_bitmap, spe->index);
 	free (spe);
 	return;
 }

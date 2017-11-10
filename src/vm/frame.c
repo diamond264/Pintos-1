@@ -1,4 +1,6 @@
 #include "vm/frame.h"
+#include "vm/page.h"
+#include "vm/swap.h"
 #include "threads/malloc.h"
 #include "threads/pte.h"
 #include "threads/palloc.h"
@@ -13,18 +15,18 @@ init_frame_table ()
 }
 
 struct list_elem *
-get_frame_elem (void * vaddr)
+get_frame_elem (void * frame)
 {
 	if (list_empty (&frames)) return NULL;
 
 	struct list_elem *iter;
-	struct frame_entry *frame_with_vaddr;
+	struct frame_entry *f;
 
 	for(iter = list_begin(&frames); iter != list_end(&frames); iter = list_next(iter))
 	{
-		frame_with_vaddr = list_entry(iter, struct frame_entry, elem);
+		f = list_entry(iter, struct frame_entry, elem);
 
-		if(frame_with_vaddr->vaddr == vaddr)
+		if(f->frame == frame)
 			return iter;
 	}
 
@@ -32,29 +34,14 @@ get_frame_elem (void * vaddr)
 }
 
 void *
-allocate_frame ()
-{
-	void * vaddr = palloc_get_page (PAL_USER | PAL_ZERO);
-
-	if (vaddr) {
-		insert_frame (vaddr);
-		return vaddr;
-	}
-	// else {
-	// 	void * evicted_frame = frame_eviction ();
-	// 	return evicted_frame;
-	// }
-
-	return vaddr;
-}
-
-void *
 evict_frame ()
 {
-	// lock 걸어 주어야 한다
+	lock_acquire (&access_frame_table);
+
 	struct frame_entry *f = NULL;
 	struct list_elem *iter;
 	struct thread *t;
+	struct spage_entry *spe;
 
 	for(iter = list_begin(&frames); iter != list_end(&frames); iter = list_next(iter))
 	{
@@ -65,39 +52,65 @@ evict_frame ()
 			pagedir_set_accessed (t->pagedir, f->vaddr, false);
 		else
 		{
-			list_remove (e);
-			list_push_back (&frames, e);
+			list_remove (iter);
+			list_push_back (&frames, iter);
 			break;
 		}
 	}
+	
+	t = f->thread;
+	spe = spage_get_entry_from_thread (f->vaddr, t);
 
-	//save_evicted_frame ();
+	if (spe == NULL)
+	{
+		spe = malloc (sizeof *spe);
+		spe->vaddr = f->vaddr;
+		hash_insert (&t->spage_table, &spe->elem);
+	}
+	else
+	{
+		if (pagedir_is_dirty (t->pagedir, spe->vaddr))
+		{
+			if (!swap_out (spe))
+				return;
+		}
+
+		memset (f->frame, 0, PGSIZE);
+		pagedir_clear_page (t->pagedir, spe->vaddr);
+	}
+
+
 	f->thread = thread_current ();
-	f->user_vaddr = NULL;
-	// lock 풀어줘도됨
+	f->vaddr = NULL;
 
-	return v->vaddr;
+	lock_release (&access_frame_table);
+
+	return f->vaddr;
 }
 
 void
-insert_frame (void * vaddr)
+insert_frame (void * frame)
 {
 	struct frame_entry *f;
 
+	lock_acquire (&access_frame_table);
+
 	f = malloc (sizeof *f);
-	f->vaddr = vaddr;
-	f->tid = thread_current ()->tid;
+	// 말록 실패할 경우?
+	f->frame = frame;
+	f->thread = thread_current ();
 
 	list_push_back (&frames, &f->elem);
+
+	lock_release (&access_frame_table);
 }
 
 void
-free_frame (void * vaddr)
+free_frame (void * frame)
 {
-	// LOCK 걸어 주어야 함
 	lock_acquire (&access_frame_table);
 
-	struct list_elem *e = get_frame_elem (vaddr);
+	struct list_elem *e = get_frame_elem (frame);
 	struct frame_entry *f;
 
 	if (e == NULL) return;
