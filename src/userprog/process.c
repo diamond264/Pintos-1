@@ -122,9 +122,6 @@ start_process (void *f_name)
   bool success;
   struct thread *curr = thread_current();
 
-  // 수정해야함
-  hash_init (&curr->spage_table, hash_calc_func, hash_comp_func, NULL);
-
   // Argument Passing
 
   // file_name parse with spliting space
@@ -279,8 +276,7 @@ process_exit (void)
        directory, or our active page directory will be one
        that's been freed (and cleared). */
     curr->pagedir = NULL;
-    
-    pagedir_activate (NULL);ASSERT(0);
+    pagedir_activate (NULL);
     pagedir_destroy (pd);
 
     struct thread *t_parent = curr->parent;
@@ -606,11 +602,12 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 
       // 수정해야함
       // file도 넣어 주어야  하나??
-      spage_insert_upage (upage);
+      // struct spage_entry *spe;
+      // spe = spage_insert_upage (upage, writable); // writable, upage가지는 놈 만듬
+      // if (spe == NULL) return false;
 
       /* Get a page of memory. */
-      // frame 관련 작업을 해야 할 듯
-      uint8_t *kpage = palloc_get_page (PAL_USER);
+      uint8_t *kpage = palloc_get_page (PAL_USER); // obtain frame, frame관련 작업을
       if (kpage == NULL)
         return false;
 
@@ -618,8 +615,9 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
       if (file_read (file, kpage, page_read_bytes) != (int) page_read_bytes)
         {
           // frame 관련 작업
+          ASSERT(0);
           palloc_free_page (kpage);
-          return false; 
+          return false;
         }
       memset (kpage + page_read_bytes, 0, page_zero_bytes);
 
@@ -630,7 +628,6 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
           palloc_free_page (kpage);
           return false; 
         }
-
       /* Advance. */
       read_bytes -= page_read_bytes;
       zero_bytes -= page_zero_bytes;

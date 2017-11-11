@@ -1,11 +1,12 @@
 #include "vm/frame.h"
 #include "vm/swap.h"
+#include "vm/page.h"
 #include "threads/malloc.h"
 #include "threads/pte.h"
 #include "threads/palloc.h"
+#include "threads/thread.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <list.h>
 
 void
 spage_load (struct spage_entry *spe)
@@ -61,23 +62,35 @@ spage_get_entry_from_thread (void *vaddr, struct thread *t)
 	return hash_entry (spe_elem, struct spage_entry, elem);
 }
 
-void
-spage_insert_upage (uint8_t *upage)
+struct spage_entry *
+spage_insert_upage (uint8_t *upage, bool writable)
 {
 	struct spage_entry *spe;
 	spe = malloc (sizeof *spe);
+	if (spe == NULL) 
+	{
+		return NULL;
+	}
 
 	spe->vaddr = upage;
-	// spe->loaded = false;
-	// spe->swapped = false;
+	spe->writable = writable;
 
-	spage_insert_entry (spe);
+	struct hash *h = &thread_current ()->spage_table;
+	struct hash_elem *e = hash_insert (h, &spe->elem);
+	ASSERT(0);
+	if (e == NULL) 
+	{
+		return NULL;
+	}
+
+	return spe;
 }
 
 struct hash_elem *
 spage_insert_entry (struct spage_entry *spe)
 {
 	struct thread *curr = thread_current ();
+	ASSERT(&curr->spage_table);
 
 	return hash_insert (&curr->spage_table, &spe->elem);
 }
@@ -94,7 +107,7 @@ unsigned
 hash_calc_func (const struct hash_elem *e, void *aux UNUSED)
 {
 	struct spage_entry *spe = hash_entry (e, struct spage_entry, elem);
-	return hash_bytes (&spe->vaddr, sizeof spe->vaddr);
+	return hash_int ((int) spe->vaddr);
 }
 
 void
@@ -108,6 +121,12 @@ hash_free_func (const struct hash_elem *e, void *aux UNUSED)
 	bitmap_flip (swap_bitmap, spe->index);
 	free (spe);
 	return;
+}
+
+void
+hash_table_init (struct hash *h)
+{
+	hash_init (h, hash_calc_func, hash_comp_func, NULL);
 }
 
 void

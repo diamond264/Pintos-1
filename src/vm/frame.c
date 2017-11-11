@@ -1,5 +1,4 @@
 #include "vm/frame.h"
-#include "vm/page.h"
 #include "vm/swap.h"
 #include "threads/malloc.h"
 #include "threads/pte.h"
@@ -8,19 +7,23 @@
 #include <stdlib.h>
 #include <list.h>
 
+struct lock access_frame_table;
+struct list frames;
+
 void
 init_frame_table ()
 {
 	list_init (&frames);
+	lock_init (&access_frame_table);
 }
 
 struct list_elem *
 get_frame_elem (void * frame)
 {
-	if (list_empty (&frames)) return NULL;
-
 	struct list_elem *iter;
 	struct frame_entry *f;
+
+	if (list_empty (&frames)) return NULL;
 
 	for(iter = list_begin(&frames); iter != list_end(&frames); iter = list_next(iter))
 	{
@@ -108,12 +111,12 @@ insert_frame (void * frame)
 void
 free_frame (void * frame)
 {
-	lock_acquire (&access_frame_table);
-
 	struct list_elem *e = get_frame_elem (frame);
 	struct frame_entry *f;
 
 	if (e == NULL) return;
+
+	lock_acquire (&access_frame_table);
 	
 	f = list_entry(e, struct frame_entry, elem);
 	list_remove (e);

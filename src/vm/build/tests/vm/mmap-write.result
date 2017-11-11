@@ -1,6 +1,19 @@
 FAIL
-Kernel panic in run: PANIC at ../../threads/vaddr.h:85 in vtop(): assertion `0' failed.
-Call stack: 0xc01075cc 0xc0100472
-Translation of call stack:
-0xc01075cc: debug_panic (.../../lib/kernel/debug.c:34)
-0xc0100472: vtop (.../../../threads/vaddr.h:84)
+Test output failed to match any acceptable form.
+
+Acceptable output:
+  (mmap-write) begin
+  (mmap-write) create "sample.txt"
+  (mmap-write) open "sample.txt"
+  (mmap-write) mmap "sample.txt"
+  (mmap-write) compare read data against written data
+  (mmap-write) end
+Differences in `diff -u' format:
+  (mmap-write) begin
+  (mmap-write) create "sample.txt"
+  (mmap-write) open "sample.txt"
+  (mmap-write) mmap "sample.txt"
+- (mmap-write) compare read data against written data
+- (mmap-write) end
+
+(Process exit codes are excluded for matching purposes.)

@@ -39,7 +39,7 @@ pagedir_destroy (uint32_t *pd)
       {
         uint32_t *pt = pde_get_pt (*pde);
         uint32_t *pte;
-        
+
         for (pte = pt; pte < pt + PGSIZE / sizeof *pte; pte++)
           if (*pte & PTE_P) 
           {

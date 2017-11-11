@@ -1,20 +1,67 @@
-Copying tests/userprog/rox-multichild into /tmp/qdGjjWkCuv.dsk...
-Copying tests/userprog/child-rox into /tmp/qdGjjWkCuv.dsk...
-Writing command line to /tmp/EQbeANvcDc.dsk...
+Copying tests/userprog/rox-multichild into /tmp/B12EMDXx5E.dsk...
+Copying tests/userprog/child-rox into /tmp/B12EMDXx5E.dsk...
+Writing command line to /tmp/KcHvhkF8pu.dsk...
 warning: can't find squish-pty, so terminal input will fail
 bochs -q
 Kernel command line: -q -f put rox-multichild put child-rox run rox-multichild
 Pintos booting with 4,096 kB RAM...
 374 pages available in kernel pool.
-374 pages available in user pool.
-Kernel PANIC at ../../threads/vaddr.h:85 in vtop(): assertion `0' failed.
-Call stack: 0xc01075cc 0xc0100472.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Timer: 0 ticks
-Thread: 0 idle ticks, 0 kernel ticks, 0 user ticks
-Console: 514 characters output
+373 pages available in user pool.
+Calibrating timer...  204,600 loops/s.
+hd0:0: detected 1,008 sector (504 kB) disk, model "Generic 1234", serial "BXHD00011"
+hd0:1: detected 4,032 sector (1 MB) disk, model "Generic 1234", serial "BXHD00012"
+hd1:0: detected 1,008 sector (504 kB) disk, model "Generic 1234", serial "BXHD00021"
+hd1:1: detected 8,064 sector (3 MB) disk, model "Generic 1234", serial "BXHD00022"
+Formatting file system...done.
+Boot complete.
+Putting 'rox-multichild' into the file system...
+Putting 'child-rox' into the file system...
+Executing 'rox-multichild':
+(rox-multichild) begin
+(rox-multichild) open "child-rox"
+(rox-multichild) read "child-rox"
+(rox-multichild) write "child-rox"
+(rox-multichild) exec "child-rox 5"
+(child-rox) begin
+(child-rox) try to write "child-rox"
+(child-rox) exec "child-rox 4"
+(child-rox) begin
+(child-rox) try to write "child-rox"
+(child-rox) exec "child-rox 3"
+(child-rox) begin
+(child-rox) try to write "child-rox"
+(child-rox) exec "child-rox 2"
+(child-rox) begin
+(child-rox) try to write "child-rox"
+(child-rox) exec "child-rox 1"
+(child-rox) begin
+(child-rox) try to write "child-rox"
+(child-rox) try to write "child-rox"
+(child-rox) end
+child-rox: exit(12)
+(child-rox) try to write "child-rox"
+(child-rox) end
+child-rox: exit(12)
+(child-rox) try to write "child-rox"
+(child-rox) end
+child-rox: exit(12)
+(child-rox) try to write "child-rox"
+(child-rox) end
+child-rox: exit(12)
+(child-rox) try to write "child-rox"
+(child-rox) end
+child-rox: exit(12)
+(rox-multichild) write "child-rox"
+(rox-multichild) end
+rox-multichild: exit(0)
+Execution of 'rox-multichild' complete.
+Timer: 895 ticks
+Thread: 30 idle ticks, 514 kernel ticks, 354 user ticks
+hd0:0: 0 reads, 0 writes
+hd0:1: 306 reads, 430 writes
+hd1:0: 209 reads, 0 writes
+hd1:1: 0 reads, 0 writes
+Console: 1952 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

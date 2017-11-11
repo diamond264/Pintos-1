@@ -1,6 +1,23 @@
 FAIL
-Kernel panic in run: PANIC at ../../threads/vaddr.h:85 in vtop(): assertion `0' failed.
-Call stack: 0xc01075cc 0xc0100472
-Translation of call stack:
-0xc01075cc: debug_panic (.../../lib/kernel/debug.c:34)
-0xc0100472: vtop (.../../../threads/vaddr.h:84)
+Test output failed to match any acceptable form.
+
+Acceptable output:
+  (pt-grow-stk-sc) begin
+  (pt-grow-stk-sc) create "sample.txt"
+  (pt-grow-stk-sc) open "sample.txt"
+  (pt-grow-stk-sc) write "sample.txt"
+  (pt-grow-stk-sc) 2nd open "sample.txt"
+  (pt-grow-stk-sc) read "sample.txt"
+  (pt-grow-stk-sc) compare written data against read data
+  (pt-grow-stk-sc) end
+Differences in `diff -u' format:
+  (pt-grow-stk-sc) begin
+- (pt-grow-stk-sc) create "sample.txt"
+- (pt-grow-stk-sc) open "sample.txt"
+- (pt-grow-stk-sc) write "sample.txt"
+- (pt-grow-stk-sc) 2nd open "sample.txt"
+- (pt-grow-stk-sc) read "sample.txt"
+- (pt-grow-stk-sc) compare written data against read data
+- (pt-grow-stk-sc) end
+
+(Process exit codes are excluded for matching purposes.)

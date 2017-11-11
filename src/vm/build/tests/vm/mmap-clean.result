@@ -1,6 +1,25 @@
 FAIL
-Kernel panic in run: PANIC at ../../threads/vaddr.h:85 in vtop(): assertion `0' failed.
-Call stack: 0xc01075cc 0xc0100472
-Translation of call stack:
-0xc01075cc: debug_panic (.../../lib/kernel/debug.c:34)
-0xc0100472: vtop (.../../../threads/vaddr.h:84)
+Test output failed to match any acceptable form.
+
+Acceptable output:
+  (mmap-clean) begin
+  (mmap-clean) open "sample.txt"
+  (mmap-clean) mmap "sample.txt"
+  (mmap-clean) write "sample.txt"
+  (mmap-clean) munmap "sample.txt"
+  (mmap-clean) seek "sample.txt"
+  (mmap-clean) read "sample.txt"
+  (mmap-clean) file change was retained after munmap
+  (mmap-clean) end
+Differences in `diff -u' format:
+  (mmap-clean) begin
+  (mmap-clean) open "sample.txt"
+  (mmap-clean) mmap "sample.txt"
+- (mmap-clean) write "sample.txt"
+- (mmap-clean) munmap "sample.txt"
+- (mmap-clean) seek "sample.txt"
+- (mmap-clean) read "sample.txt"
+- (mmap-clean) file change was retained after munmap
+- (mmap-clean) end
+
+(Process exit codes are excluded for matching purposes.)

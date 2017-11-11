@@ -4,6 +4,7 @@
 #include <debug.h>
 #include <list.h>
 #include <stdint.h>
+#include <hash.h>
 #include "synch.h"
 #include "lib/kernel/hash.h"
 #include "vm/page.h"
@@ -116,6 +117,7 @@ struct thread
     int real_priority;
     struct thread *donated;
     struct semaphore *sema_block;
+    struct hash spage_table;
 
 #ifdef USERPROG
     /* Owned by userprog/process.c. */
@@ -133,9 +135,6 @@ struct thread
     struct list files;
     struct file *program; // executable file을 저장.
     tid_t waiting;
-
-    // PAGE TABLE
-    struct hash spage_table;
 #endif
 
     /* Owned by thread.c. */

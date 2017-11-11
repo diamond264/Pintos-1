@@ -1,20 +1,37 @@
-Copying tests/vm/mmap-twice into /tmp/Y50J0zUQfC.dsk...
-Copying ../../tests/vm/sample.txt into /tmp/Y50J0zUQfC.dsk...
-Writing command line to /tmp/WSQP75n4le.dsk...
+Copying tests/vm/mmap-twice into /tmp/FJykv2CWMi.dsk...
+Copying ../../tests/vm/sample.txt into /tmp/FJykv2CWMi.dsk...
+Writing command line to /tmp/1fSl8wTPNx.dsk...
 warning: can't find squish-pty, so terminal input will fail
 bochs -q
 Kernel command line: -q -f put mmap-twice put sample.txt run mmap-twice
 Pintos booting with 4,096 kB RAM...
 374 pages available in kernel pool.
-374 pages available in user pool.
-Kernel PANIC at ../../threads/vaddr.h:85 in vtop(): assertion `0' failed.
-Call stack: 0xc01075cc 0xc0100472.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Timer: 0 ticks
-Thread: 0 idle ticks, 0 kernel ticks, 0 user ticks
-Console: 507 characters output
+373 pages available in user pool.
+Calibrating timer...  204,600 loops/s.
+hd0:0: detected 1,008 sector (504 kB) disk, model "Generic 1234", serial "BXHD00011"
+hd0:1: detected 4,032 sector (1 MB) disk, model "Generic 1234", serial "BXHD00012"
+hd1:0: detected 1,008 sector (504 kB) disk, model "Generic 1234", serial "BXHD00021"
+hd1:1: detected 8,064 sector (3 MB) disk, model "Generic 1234", serial "BXHD00022"
+Formatting file system...done.
+Boot complete.
+Putting 'mmap-twice' into the file system...
+Putting 'sample.txt' into the file system...
+Executing 'mmap-twice':
+(mmap-twice) begin
+(mmap-twice) open "sample.txt" #0
+(mmap-twice) mmap "sample.txt" #0 at 0x10000000
+(mmap-twice) open "sample.txt" #1
+(mmap-twice) mmap "sample.txt" #1 at 0x20000000
+(mmap-twice) compare mmap'd file 0 against data
+mmap-twice: exit(-1)
+Execution of 'mmap-twice' complete.
+Timer: 403 ticks
+Thread: 30 idle ticks, 312 kernel ticks, 64 user ticks
+hd0:0: 0 reads, 0 writes
+hd0:1: 104 reads, 218 writes
+hd1:0: 104 reads, 0 writes
+hd1:1: 0 reads, 0 writes
+Console: 1179 characters output
 Keyboard: 0 keys pressed
-Exception: 0 page faults
+Exception: 2 page faults
 Powering off...

@@ -1,6 +1,6 @@
 #include "vm/frame.h"
-#include "vm/page.h"
 #include "vm/swap.h"
+#include "vm/page.h"
 #include "devices/disk.h"
 #include "threads/vaddr.h"
 #include <bitmap.h>
@@ -54,6 +54,6 @@ swap_out (struct spage_entry *spe)
 	spe->index = index;
 
 	lock_release (&swap_lock);
-	
+
 	return true;
 }

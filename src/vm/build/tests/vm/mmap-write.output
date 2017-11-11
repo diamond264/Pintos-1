@@ -1,19 +1,33 @@
-Copying tests/vm/mmap-write into /tmp/vWCu6LWQ3d.dsk...
-Writing command line to /tmp/hZZD03lTvL.dsk...
+Copying tests/vm/mmap-write into /tmp/tNG9Fzxidk.dsk...
+Writing command line to /tmp/PWpzCVF3WS.dsk...
 warning: can't find squish-pty, so terminal input will fail
 bochs -q
 Kernel command line: -q -f put mmap-write run mmap-write
 Pintos booting with 4,096 kB RAM...
 374 pages available in kernel pool.
-374 pages available in user pool.
-Kernel PANIC at ../../threads/vaddr.h:85 in vtop(): assertion `0' failed.
-Call stack: 0xc01075cc 0xc0100472.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Timer: 0 ticks
-Thread: 0 idle ticks, 0 kernel ticks, 0 user ticks
-Console: 492 characters output
+373 pages available in user pool.
+Calibrating timer...  204,600 loops/s.
+hd0:0: detected 1,008 sector (504 kB) disk, model "Generic 1234", serial "BXHD00011"
+hd0:1: detected 4,032 sector (1 MB) disk, model "Generic 1234", serial "BXHD00012"
+hd1:0: detected 1,008 sector (504 kB) disk, model "Generic 1234", serial "BXHD00021"
+hd1:1: detected 8,064 sector (3 MB) disk, model "Generic 1234", serial "BXHD00022"
+Formatting file system...done.
+Boot complete.
+Putting 'mmap-write' into the file system...
+Executing 'mmap-write':
+(mmap-write) begin
+(mmap-write) create "sample.txt"
+(mmap-write) open "sample.txt"
+(mmap-write) mmap "sample.txt"
+mmap-write: exit(-1)
+Execution of 'mmap-write' complete.
+Timer: 370 ticks
+Thread: 30 idle ticks, 279 kernel ticks, 64 user ticks
+hd0:0: 0 reads, 0 writes
+hd0:1: 97 reads, 216 writes
+hd1:0: 101 reads, 0 writes
+hd1:1: 0 reads, 0 writes
+Console: 1001 characters output
 Keyboard: 0 keys pressed
-Exception: 0 page faults
+Exception: 2 page faults
 Powering off...

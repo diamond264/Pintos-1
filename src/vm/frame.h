@@ -2,10 +2,6 @@
 #include <stdlib.h>
 #include "threads/thread.h"
 
-
-struct list frames;
-struct lock access_frame_table;
-
 struct frame_entry {
 	struct list_elem elem;
 
