@@ -1,5 +1,5 @@
-Copying tests/vm/pt-grow-stk-sc into /tmp/J4d4nXH5tZ.dsk...
-Writing command line to /tmp/ymozKVWsQB.dsk...
+Copying tests/vm/pt-grow-stk-sc into /tmp/r0MMc5LGNA.dsk...
+Writing command line to /tmp/zZHPLfjIxg.dsk...
 warning: can't find squish-pty, so terminal input will fail
 bochs -q
 Kernel command line: -q -f put pt-grow-stk-sc run pt-grow-stk-sc
@@ -25,8 +25,8 @@ Executing 'pt-grow-stk-sc':
 (pt-grow-stk-sc) end
 pt-grow-stk-sc: exit(0)
 Execution of 'pt-grow-stk-sc' complete.
-Timer: 422 ticks
-Thread: 30 idle ticks, 292 kernel ticks, 103 user ticks
+Timer: 423 ticks
+Thread: 30 idle ticks, 292 kernel ticks, 104 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 104 reads, 218 writes
 hd1:0: 101 reads, 0 writes

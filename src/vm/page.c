@@ -132,14 +132,19 @@ hash_table_init (struct hash *h)
 void
 stack_growth (void *addr)
 {
-	void *frame = palloc_get_page (PAL_USER | PAL_ZERO);
+	void *frame = allocate_frame (PAL_USER | PAL_ZERO);
 	struct thread *curr = thread_current ();
 	bool success = false;
 
 	if (frame)
+	{
 		success = pagedir_set_page (curr->pagedir, pg_round_down (addr), frame, true);
-	if (!success)
-		free_frame (frame);
+		if (!success)
+		{
+			free_frame (frame);
+			palloc_free_page (frame);
+		}
+	}
 }
 
 
