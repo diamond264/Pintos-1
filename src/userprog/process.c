@@ -514,7 +514,6 @@ load (const char *file_name, void (**eip) (void), void **esp)
   /* Set up stack. */
   if (!setup_stack (esp))
   {
-    ASSERT(0);
     goto done;
   }
 
@@ -615,7 +614,7 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 
       /* Get a page of memory. */
       uint8_t *kpage = allocate_frame (PAL_USER); // obtain frame, frame관련 작업을
-      printf("%p\n",kpage);
+      // printf("%p\n",kpage);
       if (kpage == NULL)
       {
         // printf("kpage is null\n");

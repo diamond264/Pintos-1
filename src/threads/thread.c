@@ -332,7 +332,6 @@ thread_exit (void)
   ASSERT (!intr_context ());
 
 #ifdef USERPROG
-  struct thread *curr = thread_current();
   process_exit ();
 #endif
 

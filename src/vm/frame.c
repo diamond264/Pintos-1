@@ -68,7 +68,6 @@ evict_frame ()
 	{
 		spe = malloc (sizeof *spe);
 		spe->vaddr = f->vaddr;
-		ASSERT(0);
 		hash_insert (&t->spage_table, &spe->elem);
 	}
 	else

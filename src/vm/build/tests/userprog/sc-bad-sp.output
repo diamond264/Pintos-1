@@ -1,9 +1,8 @@
-Copying tests/userprog/read-boundary into /tmp/gm47QgeWDl.dsk...
-Copying ../../tests/userprog/sample.txt into /tmp/gm47QgeWDl.dsk...
-Writing command line to /tmp/s28W6pLe3Q.dsk...
+Copying tests/userprog/sc-bad-sp into /tmp/5qR0KHmHIB.dsk...
+Writing command line to /tmp/PGX6y1cZvm.dsk...
 warning: can't find squish-pty, so terminal input will fail
 bochs -q
-Kernel command line: -q -f put read-boundary put sample.txt run read-boundary
+Kernel command line: -q -f put sc-bad-sp run sc-bad-sp
 Pintos booting with 4,096 kB RAM...
 374 pages available in kernel pool.
 373 pages available in user pool.
@@ -14,21 +13,18 @@ hd1:0: detected 1,008 sector (504 kB) disk, model "Generic 1234", serial "BXHD00
 hd1:1: detected 8,064 sector (3 MB) disk, model "Generic 1234", serial "BXHD00022"
 Formatting file system...done.
 Boot complete.
-Putting 'read-boundary' into the file system...
-Putting 'sample.txt' into the file system...
-Executing 'read-boundary':
-(read-boundary) begin
-(read-boundary) open "sample.txt"
-(read-boundary) end
-read-boundary: exit(0)
-Execution of 'read-boundary' complete.
-Timer: 395 ticks
-Thread: 30 idle ticks, 321 kernel ticks, 47 user ticks
+Putting 'sc-bad-sp' into the file system...
+Executing 'sc-bad-sp':
+(sc-bad-sp) begin
+sc-bad-sp: exit(-1)
+Execution of 'sc-bad-sp' complete.
+Timer: 338 ticks
+Thread: 30 idle ticks, 282 kernel ticks, 29 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 101 reads, 218 writes
-hd1:0: 104 reads, 0 writes
+hd0:1: 61 reads, 204 writes
+hd1:0: 98 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1041 characters output
+Console: 898 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

@@ -1,19 +1,19 @@
 FAIL
 Kernel panic in run: PANIC at ../../threads/synch.c:209 in donate(): assertion `lender != NULL' failed.
-Call stack: 0xc01077fc 0xc0102982 0xc01030a2 0xc0104e76 0xc010cc59 0xc010c710 0xc010ba77 0xc010aff4 0xc010b5bf 0xc0101a9d 0xc0101bcf 0x804a6f1 0x8048133 0x8048954
+Call stack: 0xc01077ec 0xc0102972 0xc0103092 0xc0104e66 0xc010cc59 0xc010c710 0xc010ba77 0xc010aff4 0xc010b5bf 0xc0101a8d 0xc0101bbf 0x804a6f1 0x8048133 0x8048954
 Translation of call stack:
 In kernel.o:
-0xc01077fc: debug_panic (.../../lib/kernel/debug.c:34)
-0xc0102982: donate (...../../threads/synch.c:212)
-0xc01030a2: lock_acquire (...../../threads/synch.c:289)
-0xc0104e76: disk_read (.../../../devices/disk.c:229)
+0xc01077ec: debug_panic (.../../lib/kernel/debug.c:34)
+0xc0102972: donate (...../../threads/synch.c:212)
+0xc0103092: lock_acquire (...../../threads/synch.c:289)
+0xc0104e66: disk_read (.../../../devices/disk.c:229)
 0xc010cc59: inode_open (...../../filesys/inode.c:142)
 0xc010c710: dir_open_root (...../filesys/directory.c:57)
 0xc010ba77: filesys_open (..../../filesys/filesys.c:70)
 0xc010aff4: syscall_open (...../userprog/syscall.c:191)
 0xc010b5bf: syscall_handler (...../userprog/syscall.c:109)
-0xc0101a9d: intr_handler (..../threads/interrupt.c:361)
-0xc0101bcf: intr_entry (threads/intr-stubs.S:38)
+0xc0101a8d: intr_handler (..../threads/interrupt.c:361)
+0xc0101bbf: intr_entry (threads/intr-stubs.S:38)
 0x0804a6f1: (unknown)
 In tests/filesys/base/syn-read:
 0x08048133: test_main (...ilesys/base/syn-read.c:24)
