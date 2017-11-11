@@ -8,4 +8,4 @@ threads/thread.o: ../../threads/thread.c ../../threads/thread.h \
   ../../threads/interrupt.h ../../threads/intr-stubs.h \
   ../../threads/palloc.h ../../threads/switch.h ../../threads/synch.h \
   ../../threads/vaddr.h ../../threads/loader.h ../../vm/frame.h \
-  ../../userprog/process.h ../../threads/thread.h
+  ../../threads/palloc.h ../../userprog/process.h ../../threads/thread.h

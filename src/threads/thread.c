@@ -13,6 +13,7 @@
 #include "threads/vaddr.h"
 #ifdef USERPROG
 #include "vm/frame.h"
+#include "vm/page.h"
 #include "userprog/process.h"
 #endif
 
@@ -196,8 +197,7 @@ thread_create (const char *name, int priority,
 
   sema_init (&curr->sema_start, 0);
   sema_init (&curr->sema_exit, 0);
-  hash_table_init (&curr->spage_table);
-
+  //hash_table_init (&curr->spage_table);
 
   /* Allocate thread. */
   t = palloc_get_page (PAL_ZERO);

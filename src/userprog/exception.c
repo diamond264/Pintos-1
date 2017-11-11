@@ -162,6 +162,7 @@ page_fault (struct intr_frame *f)
   struct spage_entry *spte = spage_get_entry (rounded_addr);
 
   if (spte) {
+    ASSERT(0);
     spage_load (spte);
   }
 

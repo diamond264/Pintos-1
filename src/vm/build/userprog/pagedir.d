@@ -6,4 +6,4 @@ userprog/pagedir.o: ../../userprog/pagedir.c ../../userprog/pagedir.h \
   ../../lib/stdarg.h ../../lib/kernel/stdio.h ../../lib/stdlib.h \
   ../../threads/thread.h ../../lib/kernel/list.h ../../lib/kernel/hash.h \
   ../../lib/kernel/list.h ../../threads/synch.h ../../lib/kernel/hash.h \
-  ../../vm/page.h
+  ../../vm/page.h ../../threads/palloc.h

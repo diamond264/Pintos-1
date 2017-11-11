@@ -18,6 +18,7 @@
 #include "threads/palloc.h"
 #include "threads/thread.h"
 #include "threads/vaddr.h"
+#include "vm/frame.h"
 
 static thread_func start_process NO_RETURN;
 static bool load (const char *cmdline, void (**eip) (void), void **esp);
@@ -121,6 +122,7 @@ start_process (void *f_name)
   struct intr_frame if_;
   bool success;
   struct thread *curr = thread_current();
+  hash_table_init (&curr->spage_table);
 
   // Argument Passing
 
@@ -511,7 +513,10 @@ load (const char *file_name, void (**eip) (void), void **esp)
 
   /* Set up stack. */
   if (!setup_stack (esp))
+  {
+    ASSERT(0);
     goto done;
+  }
 
   /* Start address. */
   *eip = (void (*) (void)) ehdr.e_entry;
@@ -604,18 +609,25 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
       // file도 넣어 주어야  하나??
       // struct spage_entry *spe;
       // spe = spage_insert_upage (upage, writable); // writable, upage가지는 놈 만듬
-      // if (spe == NULL) return false;
+      // if (spe == NULL) {
+      //   return false;
+      // }
 
       /* Get a page of memory. */
-      uint8_t *kpage = palloc_get_page (PAL_USER); // obtain frame, frame관련 작업을
+      uint8_t *kpage = allocate_frame (PAL_USER); // obtain frame, frame관련 작업을
+      printf("%p\n",kpage);
       if (kpage == NULL)
+      {
+        // printf("kpage is null\n");
         return false;
+      }
 
       /* Load this page. */
       if (file_read (file, kpage, page_read_bytes) != (int) page_read_bytes)
         {
           // frame 관련 작업
           ASSERT(0);
+          free_frame (kpage);
           palloc_free_page (kpage);
           return false;
         }
@@ -625,6 +637,7 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
       if (!install_page (upage, kpage, writable)) 
         {
           // frame 관련 작업
+          free_frame (kpage);
           palloc_free_page (kpage);
           return false; 
         }
@@ -633,6 +646,7 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
       zero_bytes -= page_zero_bytes;
       upage += PGSIZE;
     }
+  // printf("loop end\n");
   return true;
 }
 
@@ -644,14 +658,17 @@ setup_stack (void **esp)
   uint8_t *kpage;
   bool success = false;
 
-  kpage = palloc_get_page (PAL_USER | PAL_ZERO);
+  kpage = allocate_frame (PAL_USER | PAL_ZERO);
   if (kpage != NULL) 
     {
       success = install_page (((uint8_t *) PHYS_BASE) - PGSIZE, kpage, true);
       if (success)
         *esp = PHYS_BASE;
       else
+      {
+        free_frame (kpage);
         palloc_free_page (kpage);
+      }
     }
   return success;
 }

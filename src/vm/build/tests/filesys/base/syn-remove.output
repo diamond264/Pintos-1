@@ -1,5 +1,5 @@
-Copying tests/filesys/base/syn-remove into /tmp/SrbSaR5nE0.dsk...
-Writing command line to /tmp/hBcbDgGI74.dsk...
+Copying tests/filesys/base/syn-remove into /tmp/uSZ4s1Vy0q.dsk...
+Writing command line to /tmp/iQ7tHJJA7I.dsk...
 warning: can't find squish-pty, so terminal input will fail
 bochs -q
 Kernel command line: -q -f put syn-remove run syn-remove
@@ -26,13 +26,13 @@ Executing 'syn-remove':
 (syn-remove) end
 syn-remove: exit(0)
 Execution of 'syn-remove' complete.
-Timer: 407 ticks
-Thread: 30 idle ticks, 282 kernel ticks, 98 user ticks
+Timer: 414 ticks
+Thread: 30 idle ticks, 286 kernel ticks, 101 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 99 reads, 227 writes
 hd1:0: 103 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1136 characters output
+Console: 1137 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

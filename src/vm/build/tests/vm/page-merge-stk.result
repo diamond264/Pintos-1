@@ -1,2 +1,14 @@
 FAIL
-Run didn't produce any output
+Kernel panic in run: PANIC at ../../threads/palloc.c:147 in palloc_free_multiple(): assertion `bitmap_all (pool->used_map, page_idx, page_cnt)' failed.
+Call stack: 0xc01077fc 0xc0103457 0xc010349b 0xc010a529 0xc01098e1 0xc0100f18 0xc010b0de 0xc010ae6e 0xc0101a9d 0xc0101bcf
+Translation of call stack:
+0xc01077fc: debug_panic (.../../lib/kernel/debug.c:34)
+0xc0103457: palloc_free_multiple (..../../threads/palloc.c:148)
+0xc010349b: palloc_free_page (..../../threads/palloc.c:156)
+0xc010a529: pagedir_destroy (.../../userprog/pagedir.c:43)
+0xc01098e1: process_exit (...../userprog/process.c:284)
+0xc0100f18: thread_exit (..../../threads/thread.c:341)
+0xc010b0de: syscall_init (.../../userprog/syscall.c:64)
+0xc010ae6e: page_fault (.../userprog/exception.c:162)
+0xc0101a9d: intr_handler (..../threads/interrupt.c:361)
+0xc0101bcf: intr_entry (threads/intr-stubs.S:38)

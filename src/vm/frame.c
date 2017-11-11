@@ -68,6 +68,7 @@ evict_frame ()
 	{
 		spe = malloc (sizeof *spe);
 		spe->vaddr = f->vaddr;
+		ASSERT(0);
 		hash_insert (&t->spage_table, &spe->elem);
 	}
 	else
@@ -75,7 +76,10 @@ evict_frame ()
 		if (pagedir_is_dirty (t->pagedir, spe->vaddr))
 		{
 			if (!swap_out (spe))
+			{
+				ASSERT(0);
 				return;
+			}
 		}
 
 		memset (f->frame, 0, PGSIZE);
@@ -88,7 +92,33 @@ evict_frame ()
 
 	lock_release (&access_frame_table);
 
-	return f->vaddr;
+	return f->frame;
+}
+
+uint8_t *
+allocate_frame (enum palloc_flags stat)
+{
+	uint8_t *frame;
+
+	if (stat & PAL_USER)
+    {
+      if (stat & PAL_ZERO)
+        frame = palloc_get_page (PAL_USER | PAL_ZERO);
+      else
+        frame = palloc_get_page (PAL_USER);
+    }
+
+	if (frame == NULL) 
+	{
+		frame = evict_frame ();
+		if (frame == NULL)
+			ASSERT(0);
+	}
+	else
+	{
+		insert_frame (frame);
+	}
+	return frame;
 }
 
 void

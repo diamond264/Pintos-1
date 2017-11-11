@@ -1,5 +1,5 @@
-Copying tests/userprog/create-normal into /tmp/wna620AxSk.dsk...
-Writing command line to /tmp/uTDo8fuBRe.dsk...
+Copying tests/userprog/create-normal into /tmp/m2lLnIqcgG.dsk...
+Writing command line to /tmp/oqTIb2yNBI.dsk...
 warning: can't find squish-pty, so terminal input will fail
 bochs -q
 Kernel command line: -q -f put create-normal run create-normal
@@ -20,8 +20,8 @@ Executing 'create-normal':
 (create-normal) end
 create-normal: exit(0)
 Execution of 'create-normal' complete.
-Timer: 360 ticks
-Thread: 30 idle ticks, 279 kernel ticks, 54 user ticks
+Timer: 367 ticks
+Thread: 30 idle ticks, 285 kernel ticks, 55 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 83 reads, 208 writes
 hd1:0: 98 reads, 0 writes

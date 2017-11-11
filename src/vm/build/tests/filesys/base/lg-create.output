@@ -1,5 +1,5 @@
-Copying tests/filesys/base/lg-create into /tmp/arGTiNL9y8.dsk...
-Writing command line to /tmp/Degzup2uUa.dsk...
+Copying tests/filesys/base/lg-create into /tmp/KNaafY6vAR.dsk...
+Writing command line to /tmp/w6P7R77yNu.dsk...
 warning: can't find squish-pty, so terminal input will fail
 bochs -q
 Kernel command line: -q -f put lg-create run lg-create
@@ -23,8 +23,8 @@ Executing 'lg-create':
 (lg-create) end
 lg-create: exit(0)
 Execution of 'lg-create' complete.
-Timer: 557 ticks
-Thread: 30 idle ticks, 312 kernel ticks, 218 user ticks
+Timer: 573 ticks
+Thread: 30 idle ticks, 320 kernel ticks, 226 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 236 reads, 362 writes
 hd1:0: 101 reads, 0 writes

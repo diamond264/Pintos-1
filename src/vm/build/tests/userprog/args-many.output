@@ -1,5 +1,5 @@
-Copying tests/userprog/args-many into /tmp/8Aq5tnn6b2.dsk...
-Writing command line to /tmp/xAxtuYgyCo.dsk...
+Copying tests/userprog/args-many into /tmp/HqgeSgStua.dsk...
+Writing command line to /tmp/8WGxjGnIa0.dsk...
 warning: can't find squish-pty, so terminal input will fail
 bochs -q
 Kernel command line: -q -f put args-many run 'args-many a b c d e f g h i j k l m n o p q r s t u v'
@@ -44,8 +44,8 @@ Executing 'args-many a b c d e f g h i j k l m n o p q r s t u v':
 (args) end
 args-many: exit(0)
 Execution of 'args-many a b c d e f g h i j k l m n o p q r s t u v' complete.
-Timer: 438 ticks
-Thread: 30 idle ticks, 288 kernel ticks, 123 user ticks
+Timer: 445 ticks
+Thread: 30 idle ticks, 293 kernel ticks, 125 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 61 reads, 202 writes
 hd1:0: 97 reads, 0 writes

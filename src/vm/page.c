@@ -69,6 +69,7 @@ spage_insert_upage (uint8_t *upage, bool writable)
 	spe = malloc (sizeof *spe);
 	if (spe == NULL) 
 	{
+		ASSERT(0);
 		return NULL;
 	}
 
@@ -76,10 +77,9 @@ spage_insert_upage (uint8_t *upage, bool writable)
 	spe->writable = writable;
 
 	struct hash *h = &thread_current ()->spage_table;
-	struct hash_elem *e = hash_insert (h, &spe->elem);
-	ASSERT(0);
-	if (e == NULL) 
+	if (!hash_insert (h, &spe->elem))
 	{
+//		ASSERT(0);
 		return NULL;
 	}
 
