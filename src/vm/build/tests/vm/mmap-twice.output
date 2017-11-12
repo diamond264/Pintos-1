@@ -1,12 +1,12 @@
-Copying tests/vm/mmap-twice into /tmp/KHXtD9cW1l.dsk...
-Copying ../../tests/vm/sample.txt into /tmp/KHXtD9cW1l.dsk...
-Writing command line to /tmp/dfBWPiQ8mm.dsk...
+Copying tests/vm/mmap-twice into /tmp/AaXatOIK7g.dsk...
+Copying ../../tests/vm/sample.txt into /tmp/AaXatOIK7g.dsk...
+Writing command line to /tmp/oq80EIaWCz.dsk...
 warning: can't find squish-pty, so terminal input will fail
 bochs -q
 Kernel command line: -q -f put mmap-twice put sample.txt run mmap-twice
 Pintos booting with 4,096 kB RAM...
 374 pages available in kernel pool.
-373 pages available in user pool.
+374 pages available in user pool.
 Calibrating timer...  204,600 loops/s.
 hd0:0: detected 1,008 sector (504 kB) disk, model "Generic 1234", serial "BXHD00011"
 hd0:1: detected 4,032 sector (1 MB) disk, model "Generic 1234", serial "BXHD00012"
@@ -25,13 +25,13 @@ Executing 'mmap-twice':
 (mmap-twice) compare mmap'd file 0 against data
 mmap-twice: exit(-1)
 Execution of 'mmap-twice' complete.
-Timer: 408 ticks
-Thread: 30 idle ticks, 315 kernel ticks, 66 user ticks
+Timer: 368 ticks
+Thread: 0 idle ticks, 311 kernel ticks, 60 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 104 reads, 218 writes
 hd1:0: 104 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1179 characters output
+Console: 1178 characters output
 Keyboard: 0 keys pressed
 Exception: 1 page faults
 Powering off...

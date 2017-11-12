@@ -1,12 +1,12 @@
-Copying tests/vm/mmap-null into /tmp/J1gORTiIQF.dsk...
-Copying ../../tests/vm/sample.txt into /tmp/J1gORTiIQF.dsk...
-Writing command line to /tmp/z6n0PYZYV6.dsk...
+Copying tests/vm/mmap-null into /tmp/HKtY3q8ACY.dsk...
+Copying ../../tests/vm/sample.txt into /tmp/HKtY3q8ACY.dsk...
+Writing command line to /tmp/wKdWueRONR.dsk...
 warning: can't find squish-pty, so terminal input will fail
 bochs -q
 Kernel command line: -q -f put mmap-null put sample.txt run mmap-null
 Pintos booting with 4,096 kB RAM...
 374 pages available in kernel pool.
-373 pages available in user pool.
+374 pages available in user pool.
 Calibrating timer...  204,600 loops/s.
 hd0:0: detected 1,008 sector (504 kB) disk, model "Generic 1234", serial "BXHD00011"
 hd0:1: detected 4,032 sector (1 MB) disk, model "Generic 1234", serial "BXHD00012"
@@ -23,13 +23,13 @@ Executing 'mmap-null':
 (mmap-null) try to mmap at address 0: FAILED
 mmap-null: exit(1)
 Execution of 'mmap-null' complete.
-Timer: 389 ticks
-Thread: 30 idle ticks, 314 kernel ticks, 48 user ticks
+Timer: 352 ticks
+Thread: 0 idle ticks, 312 kernel ticks, 43 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 92 reads, 212 writes
 hd1:0: 101 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1070 characters output
+Console: 1069 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

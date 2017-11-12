@@ -70,20 +70,18 @@ evict_frame ()
 		spe->vaddr = f->vaddr;
 		hash_insert (&t->spage_table, &spe->elem);
 	}
-	else
-	{
-		if (pagedir_is_dirty (t->pagedir, spe->vaddr))
-		{
-			if (!swap_out (spe))
-			{
-				ASSERT(0);
-				return;
-			}
-		}
 
-		memset (f->frame, 0, PGSIZE);
-		pagedir_clear_page (t->pagedir, spe->vaddr);
+	if (pagedir_is_dirty (t->pagedir, spe->vaddr))
+	{
+		if (!swap_out (spe))
+		{
+			ASSERT(0);
+			return;
+		}
 	}
+
+	memset (f->frame, 0, PGSIZE);
+	pagedir_clear_page (t->pagedir, spe->vaddr);
 
 
 	f->thread = thread_current ();

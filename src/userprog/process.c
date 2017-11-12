@@ -636,6 +636,7 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
       if (!install_page (upage, kpage, writable)) 
         {
           // frame 관련 작업
+          ASSERT(0);
           free_frame (kpage);
           palloc_free_page (kpage);
           return false; 
@@ -669,6 +670,7 @@ setup_stack (void **esp)
         palloc_free_page (kpage);
       }
     }
+  else ASSERT(0);
   return success;
 }
 

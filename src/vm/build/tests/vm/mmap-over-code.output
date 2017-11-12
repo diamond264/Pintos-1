@@ -1,12 +1,12 @@
-Copying tests/vm/mmap-over-code into /tmp/eYSHiOcDcT.dsk...
-Copying ../../tests/vm/sample.txt into /tmp/eYSHiOcDcT.dsk...
-Writing command line to /tmp/t809wmJlr8.dsk...
+Copying tests/vm/mmap-over-code into /tmp/VgnROZZ5Ef.dsk...
+Copying ../../tests/vm/sample.txt into /tmp/VgnROZZ5Ef.dsk...
+Writing command line to /tmp/ncXGY7S4sg.dsk...
 warning: can't find squish-pty, so terminal input will fail
 bochs -q
 Kernel command line: -q -f put mmap-over-code put sample.txt run mmap-over-code
 Pintos booting with 4,096 kB RAM...
 374 pages available in kernel pool.
-373 pages available in user pool.
+374 pages available in user pool.
 Calibrating timer...  204,600 loops/s.
 hd0:0: detected 1,008 sector (504 kB) disk, model "Generic 1234", serial "BXHD00011"
 hd0:1: detected 4,032 sector (1 MB) disk, model "Generic 1234", serial "BXHD00012"
@@ -23,13 +23,13 @@ Executing 'mmap-over-code':
 (mmap-over-code) try to mmap over code segment: FAILED
 mmap-over-code: exit(1)
 Execution of 'mmap-over-code' complete.
-Timer: 395 ticks
-Thread: 30 idle ticks, 317 kernel ticks, 51 user ticks
+Timer: 355 ticks
+Thread: 0 idle ticks, 312 kernel ticks, 46 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 92 reads, 212 writes
 hd1:0: 101 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1130 characters output
+Console: 1129 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

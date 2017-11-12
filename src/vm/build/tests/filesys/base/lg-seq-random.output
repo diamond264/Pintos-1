@@ -1,11 +1,11 @@
-Copying tests/filesys/base/lg-seq-random into /tmp/NNPuJUTHJN.dsk...
-Writing command line to /tmp/2qL5McB5vg.dsk...
+Copying tests/filesys/base/lg-seq-random into /tmp/tpa68qKOjn.dsk...
+Writing command line to /tmp/7spJyV39cu.dsk...
 warning: can't find squish-pty, so terminal input will fail
 bochs -q
 Kernel command line: -q -f put lg-seq-random run lg-seq-random
 Pintos booting with 4,096 kB RAM...
 374 pages available in kernel pool.
-373 pages available in user pool.
+374 pages available in user pool.
 Calibrating timer...  204,600 loops/s.
 hd0:0: detected 1,008 sector (504 kB) disk, model "Generic 1234", serial "BXHD00011"
 hd0:1: detected 4,032 sector (1 MB) disk, model "Generic 1234", serial "BXHD00012"
@@ -26,13 +26,13 @@ Executing 'lg-seq-random':
 (lg-seq-random) end
 lg-seq-random: exit(0)
 Execution of 'lg-seq-random' complete.
-Timer: 1060 ticks
-Thread: 30 idle ticks, 322 kernel ticks, 711 user ticks
+Timer: 903 ticks
+Thread: 0 idle ticks, 321 kernel ticks, 585 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 504 reads, 664 writes
 hd1:0: 102 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1199 characters output
+Console: 1197 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

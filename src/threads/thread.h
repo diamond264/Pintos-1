@@ -17,8 +17,7 @@ enum thread_status
     THREAD_RUNNING,     /* Running thread. */
     THREAD_READY,       /* Not running but ready to run. */
     THREAD_BLOCKED,     /* Waiting for an event to trigger. */
-    THREAD_DYING,       /* About to be destroyed. */
-    THREAD_SLEEPING     /* Sleeping for untilSleepTicks */
+    THREAD_DYING        /* About to be destroyed. */
   };
 
 /* Thread identifier type.
@@ -105,7 +104,6 @@ struct thread
     char name[16];                      /* Name (for debugging purposes). */
     uint8_t *stack;                     /* Saved stack pointer. */
     int priority;                       /* Priority. */
-    int64_t terminate_sleep;            /* ticks for sleep */
 
     /* Shared between thread.c and synch.c. */
     struct list_elem elem;              /* List element. */
@@ -146,17 +144,8 @@ struct thread
    Controlled by kernel command-line option "-o mlfqs". */
 extern bool thread_mlfqs;
 
-int64_t time_to_wakeup (void);
-
 void thread_init (void);
 void thread_start (void);
-
-bool priority_comp (const struct list_elem *x, const struct list_elem *y,
-    void *aux UNUSED);
-bool sleep_comp (const struct list_elem *x, const struct list_elem *y,
-    void *aux UNUSED);
-void thread_sleep (int64_t, int64_t);
-void thread_wakeup (void);
 
 void thread_tick (void);
 void thread_print_stats (void);

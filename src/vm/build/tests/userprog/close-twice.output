@@ -1,12 +1,12 @@
-Copying tests/userprog/close-twice into /tmp/gzX1z4XBw0.dsk...
-Copying ../../tests/userprog/sample.txt into /tmp/gzX1z4XBw0.dsk...
-Writing command line to /tmp/U81ybHlATH.dsk...
+Copying tests/userprog/close-twice into /tmp/Dlor9Ve8Uu.dsk...
+Copying ../../tests/userprog/sample.txt into /tmp/Dlor9Ve8Uu.dsk...
+Writing command line to /tmp/EC9QhXH6Ma.dsk...
 warning: can't find squish-pty, so terminal input will fail
 bochs -q
 Kernel command line: -q -f put close-twice put sample.txt run close-twice
 Pintos booting with 4,096 kB RAM...
 374 pages available in kernel pool.
-373 pages available in user pool.
+374 pages available in user pool.
 Calibrating timer...  204,600 loops/s.
 hd0:0: detected 1,008 sector (504 kB) disk, model "Generic 1234", serial "BXHD00011"
 hd0:1: detected 4,032 sector (1 MB) disk, model "Generic 1234", serial "BXHD00012"
@@ -23,13 +23,13 @@ Executing 'close-twice':
 (close-twice) close "sample.txt" again
 close-twice: exit(-1)
 Execution of 'close-twice' complete.
-Timer: 391 ticks
-Thread: 30 idle ticks, 316 kernel ticks, 48 user ticks
+Timer: 353 ticks
+Thread: 0 idle ticks, 313 kernel ticks, 43 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 92 reads, 210 writes
 hd1:0: 100 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1077 characters output
+Console: 1076 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...
