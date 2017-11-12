@@ -30,30 +30,33 @@ swap_in (struct spage_entry *spe)
 	for(i=0;i<PAGE_SECTOR;i++)
 		disk_read (swap_disk, i+index, vaddr+i*DISK_SECTOR_SIZE);
 
-	bitmap_flip (swap_bitmap, index);
+	// bitmap_flip (swap_bitmap, index);
+	bitmap_set_multiple(swap_bitmap, index, PAGE_SECTOR, 0);
+	spe->index = -1;
 
 	lock_release (&swap_lock);
 }
 
-bool
+size_t
 swap_out (struct spage_entry *spe)
 {
 	lock_acquire (&swap_lock);
 
-	size_t index = bitmap_scan_and_flip (swap_bitmap, 0, 1, true);
+	size_t index = bitmap_scan_and_flip (swap_bitmap, 0, PAGE_SECTOR, 0);
 	size_t page_sector = DISK_SECTOR_SIZE / PGSIZE * index;
 	size_t i;
 	void *vaddr = spe->vaddr;
 
 	if (index == BITMAP_ERROR)
-		return false;
+	{
+		ASSERT(0);
+		return NULL;
+	}
 
-	for(i=0;i<page_sector/index;i++)
-		disk_read (swap_disk, i+index, vaddr+i*DISK_SECTOR_SIZE);
-
-	spe->index = index;
+	for(i=0;i<PAGE_SECTOR;i++)
+		disk_write (swap_disk, i+index, vaddr+i*DISK_SECTOR_SIZE);
 
 	lock_release (&swap_lock);
 
-	return true;
+	return index;
 }

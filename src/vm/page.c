@@ -12,25 +12,23 @@ void
 spage_load (struct spage_entry *spe)
 {
 	struct thread *curr = thread_current ();
-	void *frame = palloc_get_page (PAL_USER);
-	bool writable = spe->writable;
+	void *frame = allocate_frame (PAL_USER);
+	// bool writable = spe->writable;
 
-	if (frame == NULL) 
-	{
-		frame = evict_frame ();
-		if (frame == NULL)
-			return;
-	}
+	if (frame == NULL) return;
 
-	bool success = pagedir_set_page (curr->pagedir, spe->vaddr, frame, writable);
+	bool success = pagedir_set_page (curr->pagedir, spe->vaddr, frame, true);
 	
 	if (success)
 	{
-		insert_frame (frame);
 		swap_in (spe);
 		hash_delete (&curr->spage_table, &spe->elem);
 	}
-	else palloc_free_page (frame);
+	else {
+		ASSERT(0);
+		free_frame (frame);
+		palloc_free_page (frame);
+	}
 }
 
 struct spage_entry *
@@ -75,6 +73,7 @@ spage_insert_upage (uint8_t *upage, bool writable)
 
 	spe->vaddr = upage;
 	spe->writable = writable;
+	spe->index = -1;
 
 	struct hash *h = &thread_current ()->spage_table;
 	if (!hash_insert (h, &spe->elem))

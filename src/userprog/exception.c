@@ -154,6 +154,8 @@ page_fault (struct intr_frame *f)
     || fault_addr == NULL
     || !is_user_vaddr(fault_addr))
   {
+    // printf("not valid\n");
+    // printf("%p\n", fault_addr);
     syscall_exit (-1);
   }
 
@@ -162,9 +164,9 @@ page_fault (struct intr_frame *f)
   struct spage_entry *spte = spage_get_entry (rounded_addr);
 
   if (spte) {
-    spage_load (spte);
+    if (spte->index >= 0)
+      spage_load (spte);
   }
-
   else if (fault_addr >= (f->esp - 32))
   {
     stack_growth (fault_addr);

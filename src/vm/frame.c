@@ -60,8 +60,9 @@ evict_frame ()
 			break;
 		}
 	}
-	
+	//////
 	t = f->thread;
+	ASSERT(t);
 	spe = spage_get_entry_from_thread (f->vaddr, t);
 
 	if (spe == NULL)
@@ -69,19 +70,28 @@ evict_frame ()
 		spe = malloc (sizeof *spe);
 		spe->vaddr = f->vaddr;
 		hash_insert (&t->spage_table, &spe->elem);
-	}
+		// insert 실패할경우?
+	} else ASSERT(0);
+
+	ASSERT(spe);
+
+	size_t idx;
 
 	if (pagedir_is_dirty (t->pagedir, spe->vaddr))
 	{
-		if (!swap_out (spe))
-		{
-			ASSERT(0);
-			return;
-		}
+		printf("ffff\n");
+		
 	}
+	idx = swap_out (spe);
+		// if (idx == BITMAP_ERROR)
+		// {
+		// 	ASSERT(0);
+		// }
 
 	memset (f->frame, 0, PGSIZE);
+	spe->index = idx;
 	pagedir_clear_page (t->pagedir, spe->vaddr);
+	/////
 
 
 	f->thread = thread_current ();

@@ -1,14 +1,51 @@
 FAIL
-Kernel panic in run: PANIC at ../../threads/palloc.c:147 in palloc_free_multiple(): assertion `bitmap_all (pool->used_map, page_idx, page_cnt)' failed.
-Call stack: 0xc01071fc 0xc0102e73 0xc0102eb7 0xc0109f49 0xc01092e1 0xc0100cce 0xc010aaee 0xc010a88a 0xc010180d 0xc010193f
-Translation of call stack:
-0xc01071fc: debug_panic (.../../lib/kernel/debug.c:34)
-0xc0102e73: palloc_free_multiple (..../../threads/palloc.c:148)
-0xc0102eb7: palloc_free_page (..../../threads/palloc.c:156)
-0xc0109f49: pagedir_destroy (.../../userprog/pagedir.c:43)
-0xc01092e1: process_exit (...../userprog/process.c:284)
-0xc0100cce: thread_exit (..../../threads/thread.c:311)
-0xc010aaee: syscall_exec (...../userprog/syscall.c:161)
-0xc010a88a: page_fault (.../userprog/exception.c:162)
-0xc010180d: intr_handler (..../threads/interrupt.c:361)
-0xc010193f: intr_entry (threads/intr-stubs.S:38)
+Test output failed to match any acceptable form.
+
+Acceptable output:
+  (page-merge-mm) begin
+  (page-merge-mm) init
+  (page-merge-mm) sort chunk 0
+  (page-merge-mm) sort chunk 1
+  (page-merge-mm) sort chunk 2
+  (page-merge-mm) sort chunk 3
+  (page-merge-mm) sort chunk 4
+  (page-merge-mm) sort chunk 5
+  (page-merge-mm) sort chunk 6
+  (page-merge-mm) sort chunk 7
+  (page-merge-mm) wait for child 0
+  (page-merge-mm) wait for child 1
+  (page-merge-mm) wait for child 2
+  (page-merge-mm) wait for child 3
+  (page-merge-mm) wait for child 4
+  (page-merge-mm) wait for child 5
+  (page-merge-mm) wait for child 6
+  (page-merge-mm) wait for child 7
+  (page-merge-mm) merge
+  (page-merge-mm) verify
+  (page-merge-mm) success, buf_idx=1,048,576
+  (page-merge-mm) end
+Differences in `diff -u' format:
+- (page-merge-mm) begin
+- (page-merge-mm) init
+- (page-merge-mm) sort chunk 0
+- (page-merge-mm) sort chunk 1
+- (page-merge-mm) sort chunk 2
+- (page-merge-mm) sort chunk 3
+- (page-merge-mm) sort chunk 4
+- (page-merge-mm) sort chunk 5
+- (page-merge-mm) sort chunk 6
+- (page-merge-mm) sort chunk 7
+- (page-merge-mm) wait for child 0
+- (page-merge-mm) wait for child 1
+- (page-merge-mm) wait for child 2
+- (page-merge-mm) wait for child 3
+- (page-merge-mm) wait for child 4
+- (page-merge-mm) wait for child 5
+- (page-merge-mm) wait for child 6
+- (page-merge-mm) wait for child 7
+- (page-merge-mm) merge
+- (page-merge-mm) verify
+- (page-merge-mm) success, buf_idx=1,048,576
+- (page-merge-mm) end
+
+(Process exit codes are excluded for matching purposes.)

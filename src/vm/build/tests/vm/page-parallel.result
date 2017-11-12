@@ -23,5 +23,17 @@ Differences in `diff -u' format:
 - (page-parallel) wait for child 2
 - (page-parallel) wait for child 3
 - (page-parallel) end
++ ffff
++ ffff
++ ffff
++ ffff
++ ffff
++ ffff
++ page-parallel: dying due to interrupt 0x03 (#BP Breakpoint Exception).
++ Interrupt 0x03 (#BP Breakpoint Exception) at eip=0x804a123
++  cr2=0804a122 error=00000000
++  eax=00000005 ebx=00000002 ecx=00000024 edx=0804bc00
++  esi=bfffff90 edi=00000000 esp=bfffff70 ebp=bfffff78
++  cs=001b ds=0023 es=0023 ss=0023
 
 (Process exit codes are excluded for matching purposes.)

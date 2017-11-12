@@ -1,6 +1,6 @@
-Copying tests/vm/page-merge-seq into /tmp/wnJMEb52Hn.dsk...
-Copying tests/vm/child-sort into /tmp/wnJMEb52Hn.dsk...
-Writing command line to /tmp/W0Qk2eNv20.dsk...
+Copying tests/vm/page-merge-seq into /tmp/1tbFzqmun1.dsk...
+Copying tests/vm/child-sort into /tmp/1tbFzqmun1.dsk...
+Writing command line to /tmp/yuJATD77zQ.dsk...
 warning: can't find squish-pty, so terminal input will fail
 bochs -q
 Kernel command line: -q -f put page-merge-seq put child-sort run page-merge-seq
@@ -17,18 +17,15 @@ Boot complete.
 Putting 'page-merge-seq' into the file system...
 Putting 'child-sort' into the file system...
 Executing 'page-merge-seq':
-Kernel PANIC at ../../threads/palloc.c:147 in palloc_free_multiple(): assertion `bitmap_all (pool->used_map, page_idx, page_cnt)' failed.
-Call stack: 0xc01071fc 0xc0102e73 0xc0102eb7 0xc0109f49 0xc01092e1 0xc0100cce 0xc010aaee 0xc010a88a 0xc010180d 0xc010193f.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Timer: 3424 ticks
-Thread: 0 idle ticks, 1128 kernel ticks, 2296 user ticks
+page-merge-seq: exit(-1)
+Execution of 'page-merge-seq' complete.
+Timer: 3588 ticks
+Thread: 0 idle ticks, 1054 kernel ticks, 2541 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 90 reads, 420 writes
 hd1:0: 205 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1324 characters output
+Console: 974 characters output
 Keyboard: 0 keys pressed
-Exception: 1 page faults
+Exception: 2 page faults
 Powering off...

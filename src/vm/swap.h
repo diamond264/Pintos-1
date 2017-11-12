@@ -11,5 +11,5 @@ swap_init ();
 void
 swap_in (struct spage_entry *spe);
 
-bool
+size_t
 swap_out (struct spage_entry *spe);
