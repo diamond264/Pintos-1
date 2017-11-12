@@ -156,6 +156,8 @@ page_fault (struct intr_frame *f)
   {
     // printf("not valid\n");
     // printf("%p\n", fault_addr);
+    /*printf("%x\n", f->esp);
+    ASSERT(!(fault_addr == NULL));*/
     syscall_exit (-1);
   }
 
@@ -165,7 +167,9 @@ page_fault (struct intr_frame *f)
 
   if (spte) {
     if (spte->index >= 0)
+    {
       spage_load (spte);
+    }
   }
   else if (fault_addr >= (f->esp - 32))
   {

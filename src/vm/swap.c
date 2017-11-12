@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define PAGE_SECTOR (DISK_SECTOR_SIZE / PGSIZE)
+#define PAGE_SECTOR (PGSIZE / DISK_SECTOR_SIZE)
 
 void
 swap_init (void)
@@ -43,13 +43,12 @@ swap_out (struct spage_entry *spe)
 	lock_acquire (&swap_lock);
 
 	size_t index = bitmap_scan_and_flip (swap_bitmap, 0, PAGE_SECTOR, 0);
-	size_t page_sector = DISK_SECTOR_SIZE / PGSIZE * index;
 	size_t i;
 	void *vaddr = spe->vaddr;
 
 	if (index == BITMAP_ERROR)
 	{
-		ASSERT(0);
+		// 꽉 찼을 때
 		return NULL;
 	}
 

@@ -22,7 +22,7 @@ spage_load (struct spage_entry *spe)
 	if (success)
 	{
 		swap_in (spe);
-		hash_delete (&curr->spage_table, &spe->elem);
+		//hash_delete (&curr->spage_table, &spe->elem);
 	}
 	else {
 		ASSERT(0);

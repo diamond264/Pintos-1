@@ -71,7 +71,7 @@ evict_frame ()
 		spe->vaddr = f->vaddr;
 		hash_insert (&t->spage_table, &spe->elem);
 		// insert 실패할경우?
-	} else ASSERT(0);
+	} //else ASSERT(0);
 
 	ASSERT(spe);
 
@@ -79,7 +79,7 @@ evict_frame ()
 
 	if (pagedir_is_dirty (t->pagedir, spe->vaddr))
 	{
-		printf("ffff\n");
+		//printf("ffff\n");
 		
 	}
 	idx = swap_out (spe);
@@ -108,12 +108,12 @@ allocate_frame (enum palloc_flags stat)
 	uint8_t *frame;
 
 	if (stat & PAL_USER)
-    {
-      if (stat & PAL_ZERO)
-        frame = palloc_get_page (PAL_USER | PAL_ZERO);
-      else
-        frame = palloc_get_page (PAL_USER);
-    }
+	{
+		if (stat & PAL_ZERO)
+			frame = palloc_get_page (PAL_USER | PAL_ZERO);
+		else
+			frame = palloc_get_page (PAL_USER);
+	}
 
 	if (frame == NULL) 
 	{

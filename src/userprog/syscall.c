@@ -154,6 +154,7 @@ syscall_exit (int status) {
   struct thread *t;
   t = thread_current ();
   t->exit_status = status;
+  //ASSERT(0);
   thread_exit ();
 }
 
