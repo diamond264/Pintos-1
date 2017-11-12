@@ -1,6 +1,6 @@
-Copying tests/vm/page-merge-stk into /tmp/usTXFlEunJ.dsk...
-Copying tests/vm/child-qsort into /tmp/usTXFlEunJ.dsk...
-Writing command line to /tmp/jvpV57LvqN.dsk...
+Copying tests/vm/page-merge-stk into /tmp/E7ZxbPm9h2.dsk...
+Copying tests/vm/child-qsort into /tmp/E7ZxbPm9h2.dsk...
+Writing command line to /tmp/5OnE7fa07K.dsk...
 warning: can't find squish-pty, so terminal input will fail
 bochs -q
 Kernel command line: -q -f put page-merge-stk put child-qsort run page-merge-stk
@@ -17,15 +17,160 @@ Boot complete.
 Putting 'page-merge-stk' into the file system...
 Putting 'child-qsort' into the file system...
 Executing 'page-merge-stk':
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
 page-merge-stk: exit(-1)
 Execution of 'page-merge-stk' complete.
-Timer: 3653 ticks
-Thread: 0 idle ticks, 1057 kernel ticks, 2603 user ticks
+Timer: 3977 ticks
+Thread: 0 idle ticks, 1056 kernel ticks, 2928 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 91 reads, 436 writes
 hd1:0: 213 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 976 characters output
+Console: 2571 characters output
 Keyboard: 0 keys pressed
 Exception: 2 page faults
 Powering off...

@@ -1,5 +1,5 @@
-Copying tests/vm/page-linear into /tmp/yLgSI6vqOD.dsk...
-Writing command line to /tmp/BkDrQAA2yz.dsk...
+Copying tests/vm/page-linear into /tmp/hKF2DMGdtd.dsk...
+Writing command line to /tmp/SeTqZOvgl1.dsk...
 warning: can't find squish-pty, so terminal input will fail
 bochs -q
 Kernel command line: -q -f put page-linear run page-linear
@@ -15,15 +15,160 @@ Formatting file system...done.
 Boot complete.
 Putting 'page-linear' into the file system...
 Executing 'page-linear':
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
 page-linear: exit(-1)
 Execution of 'page-linear' complete.
-Timer: 3569 ticks
-Thread: 0 idle ticks, 973 kernel ticks, 2603 user ticks
+Timer: 3893 ticks
+Thread: 0 idle ticks, 972 kernel ticks, 2928 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 62 reads, 216 writes
 hd1:0: 104 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 895 characters output
+Console: 2490 characters output
 Keyboard: 0 keys pressed
 Exception: 2 page faults
 Powering off...

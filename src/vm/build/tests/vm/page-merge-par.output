@@ -1,6 +1,6 @@
-Copying tests/vm/page-merge-par into /tmp/w0KRkqxSdo.dsk...
-Copying tests/vm/child-sort into /tmp/w0KRkqxSdo.dsk...
-Writing command line to /tmp/wBuu1MBvLq.dsk...
+Copying tests/vm/page-merge-par into /tmp/Q4Sc27Da6l.dsk...
+Copying tests/vm/child-sort into /tmp/Q4Sc27Da6l.dsk...
+Writing command line to /tmp/ctglYwTFGG.dsk...
 warning: can't find squish-pty, so terminal input will fail
 bochs -q
 Kernel command line: -q -f put page-merge-par put child-sort run page-merge-par
@@ -17,15 +17,160 @@ Boot complete.
 Putting 'page-merge-par' into the file system...
 Putting 'child-sort' into the file system...
 Executing 'page-merge-par':
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
 page-merge-par: exit(-1)
 Execution of 'page-merge-par' complete.
-Timer: 3653 ticks
-Thread: 0 idle ticks, 1057 kernel ticks, 2603 user ticks
+Timer: 3973 ticks
+Thread: 0 idle ticks, 1051 kernel ticks, 2929 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 91 reads, 424 writes
 hd1:0: 207 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 974 characters output
+Console: 2569 characters output
 Keyboard: 0 keys pressed
 Exception: 2 page faults
 Powering off...

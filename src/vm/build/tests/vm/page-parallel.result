@@ -1,39 +1,11 @@
 FAIL
-Test output failed to match any acceptable form.
-
-Acceptable output:
-  (page-parallel) begin
-  (page-parallel) exec "child-linear"
-  (page-parallel) exec "child-linear"
-  (page-parallel) exec "child-linear"
-  (page-parallel) exec "child-linear"
-  (page-parallel) wait for child 0
-  (page-parallel) wait for child 1
-  (page-parallel) wait for child 2
-  (page-parallel) wait for child 3
-  (page-parallel) end
-Differences in `diff -u' format:
-  (page-parallel) begin
-  (page-parallel) exec "child-linear"
-  (page-parallel) exec "child-linear"
-- (page-parallel) exec "child-linear"
-- (page-parallel) exec "child-linear"
-- (page-parallel) wait for child 0
-- (page-parallel) wait for child 1
-- (page-parallel) wait for child 2
-- (page-parallel) wait for child 3
-- (page-parallel) end
-+ ffff
-+ ffff
-+ ffff
-+ ffff
-+ ffff
-+ ffff
-+ page-parallel: dying due to interrupt 0x03 (#BP Breakpoint Exception).
-+ Interrupt 0x03 (#BP Breakpoint Exception) at eip=0x804a123
-+  cr2=0804a122 error=00000000
-+  eax=00000005 ebx=00000002 ecx=00000024 edx=0804bc00
-+  esi=bfffff90 edi=00000000 esp=bfffff70 ebp=bfffff78
-+  cs=001b ds=0023 es=0023 ss=0023
-
-(Process exit codes are excluded for matching purposes.)
+Kernel panic in run: PANIC at ../../userprog/pagedir.c:67 in lookup_page(): assertion `pd != NULL' failed.
+Call stack: 0xc01071fc 0xc010a06e 0xc010a32c 0xc010cfda 0xc010d039 0xc010984b 0xc0101017
+Translation of call stack:
+0xc01071fc: debug_panic (.../../lib/kernel/debug.c:34)
+0xc010a06e: lookup_page (.../../userprog/pagedir.c:70)
+0xc010a32c: pagedir_clear_page (...../userprog/pagedir.c:168)
+0xc010cfda: evict_frame (...build/../../vm/frame.c:99)
+0xc010d039: allocate_frame (...uild/../../vm/frame.c:122)
+0xc010984b: load_segment (...../userprog/process.c:616)
+0xc0101017: kernel_thread (..../../threads/thread.c:428)

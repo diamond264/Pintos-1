@@ -1,6 +1,6 @@
-Copying tests/vm/page-parallel into /tmp/RSmxb0yr8d.dsk...
-Copying tests/vm/child-linear into /tmp/RSmxb0yr8d.dsk...
-Writing command line to /tmp/6ciAx57w67.dsk...
+Copying tests/vm/page-parallel into /tmp/5kRQ5chLsp.dsk...
+Copying tests/vm/child-linear into /tmp/5kRQ5chLsp.dsk...
+Writing command line to /tmp/Ll5dF4CayP.dsk...
 warning: can't find squish-pty, so terminal input will fail
 bochs -q
 Kernel command line: -q -f put page-parallel put child-linear run page-parallel
@@ -20,28 +20,29 @@ Executing 'page-parallel':
 (page-parallel) begin
 (page-parallel) exec "child-linear"
 (page-parallel) exec "child-linear"
-ffff
-ffff
-ffff
-ffff
-ffff
-ffff
-child-linear: exit(-1)
-page-parallel: dying due to interrupt 0x03 (#BP Breakpoint Exception).
-Interrupt 0x03 (#BP Breakpoint Exception) at eip=0x804a123
- cr2=0804a122 error=00000000
- eax=00000005 ebx=00000002 ecx=00000024 edx=0804bc00
- esi=bfffff90 edi=00000000 esp=bfffff70 ebp=bfffff78
- cs=001b ds=0023 es=0023 ss=0023
-page-parallel: exit(-1072570448)
-Execution of 'page-parallel' complete.
-Timer: 3751 ticks
-Thread: 0 idle ticks, 851 kernel ticks, 2907 user ticks
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+index is 0
+Kernel PANIC at ../../userprog/pagedir.c:67 in lookup_page(): assertion `pd != NULL' failed.
+Call stack: 0xc01071fc 0xc010a06e 0xc010a32c 0xc010cfda 0xc010d039 0xc010984b 0xc0101017.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 2629 ticks
+Thread: 0 idle ticks, 339 kernel ticks, 2290 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 169 reads, 410 writes
+hd0:1: 168 reads, 410 writes
 hd1:0: 200 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1426 characters output
+Console: 1461 characters output
 Keyboard: 0 keys pressed
-Exception: 4 page faults
+Exception: 2 page faults
 Powering off...
