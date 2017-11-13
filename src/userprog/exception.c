@@ -156,8 +156,8 @@ page_fault (struct intr_frame *f)
   {
     // printf("not valid\n");
     // printf("%p\n", fault_addr);
-    /*printf("%x\n", f->esp);
-    ASSERT(!(fault_addr == NULL));*/
+    /*printf("%x\n", f->esp);*/
+    printf("?\n");
     syscall_exit (-1);
   }
 
@@ -166,7 +166,7 @@ page_fault (struct intr_frame *f)
   struct spage_entry *spte = spage_get_entry (rounded_addr);
 
   if (spte) {
-    if (spte->index >= 0)
+    if (!spte->valid) // swap된 상태면 load
     {
       spage_load (spte);
     }
@@ -176,6 +176,8 @@ page_fault (struct intr_frame *f)
     stack_growth (fault_addr);
   }
   else {
+    //printf("%x\n", f->esp);
+    //printf("%x\n", fault_addr);
     syscall_exit (-1);
   }
 

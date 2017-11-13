@@ -10,9 +10,12 @@ struct spage_entry {
 	struct hash_elem elem;
 
 	void *vaddr;
+	bool valid; // false면 swap out된 상태.
 	size_t index;
 	bool writable;
 };
+
+struct spage_entry* spage_create(void *addr, bool writable);
 
 void
 spage_load (struct spage_entry *spe);

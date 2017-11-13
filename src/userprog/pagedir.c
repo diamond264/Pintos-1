@@ -123,10 +123,19 @@ pagedir_set_page (uint32_t *pd, void *upage, void *kpage, bool writable)
 
       struct list_elem *e = get_frame_elem (kpage);
       struct frame_entry *f;
+
       if (e != NULL)
       {
         f = list_entry(e, struct frame_entry, elem);
+        struct spage_entry *spe = spage_get_entry(f->vaddr);
+
         f->vaddr = upage;
+
+        if(spe != NULL)
+        {
+          spe->vaddr = upage;
+          spe->writable = writable;
+        }
       }
 
       return true;

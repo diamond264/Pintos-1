@@ -28,11 +28,14 @@ swap_in (struct spage_entry *spe)
 	void *vaddr = spe->vaddr;
 
 	for(i=0;i<PAGE_SECTOR;i++)
+	{
 		disk_read (swap_disk, i+index, vaddr+i*DISK_SECTOR_SIZE);
+	}
 
 	// bitmap_flip (swap_bitmap, index);
 	bitmap_set_multiple(swap_bitmap, index, PAGE_SECTOR, 0);
-	spe->index = -1;
+	spe->valid = true;
+	spe->index = 0;
 
 	lock_release (&swap_lock);
 }
@@ -53,7 +56,12 @@ swap_out (struct spage_entry *spe)
 	}
 
 	for(i=0;i<PAGE_SECTOR;i++)
+	{
 		disk_write (swap_disk, i+index, vaddr+i*DISK_SECTOR_SIZE);
+	}
+
+	spe->valid = false;
+	spe->index = index;
 
 	lock_release (&swap_lock);
 

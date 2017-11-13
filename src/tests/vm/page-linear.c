@@ -24,9 +24,14 @@ test_main (void)
   int cnt = 0;
   while (size-- > 0)
   {
-    ASSERT(!(cnt == 1));
-    msg("%d\n", ++cnt);
-    *dst = 0x5a;
+    *dst = cnt;
+    if(cnt++ >= 10000)
+    {
+      msg("addr %x", dst);
+      msg("val %x", *dst);
+      if(dst < 0x80d70a8)
+        cnt = 0;
+    }
     dst++;
   }*/
 

@@ -31,6 +31,27 @@ spage_load (struct spage_entry *spe)
 	}
 }
 
+struct spage_entry* spage_create(void *vaddr, bool writable)
+{
+	struct spage_entry *spe = malloc(sizeof (struct spage_entry));
+
+	spe->vaddr = vaddr;
+	spe->writable = writable;
+	spe->index = -1;
+	spe->valid = true;
+
+	struct thread *curr = thread_current();
+
+	if(hash_insert(&curr->spage_table, &spe->elem) == NULL)
+	{
+		return spe;
+	}
+	else
+	{
+		free(spe);
+	}
+}
+
 struct spage_entry *
 spage_get_entry (void *vaddr)
 {
@@ -76,9 +97,9 @@ spage_insert_upage (uint8_t *upage, bool writable)
 	spe->index = -1;
 
 	struct hash *h = &thread_current ()->spage_table;
-	if (!hash_insert (h, &spe->elem))
+	if (hash_insert (h, &spe->elem))
 	{
-//		ASSERT(0);
+		ASSERT(0);
 		return NULL;
 	}
 
@@ -93,6 +114,13 @@ spage_insert_entry (struct spage_entry *spe)
 
 	return hash_insert (&curr->spage_table, &spe->elem);
 }
+/*
+void spage_create()
+{
+	struct spage_entry spe;
+	spe = malloc(sizeof struct space_entry);
+	spage_insert_entry(spe);
+}*/
 
 bool
 hash_comp_func (const struct hash_elem *x,
@@ -117,7 +145,9 @@ hash_free_func (const struct hash_elem *e, void *aux UNUSED)
 	if (spe == NULL) return;
 
 	//조건문에 넣어야 하려나?
-	bitmap_flip (swap_bitmap, spe->index);
+	if(spe->index <= PGSIZE / DISK_SECTOR_SIZE)
+		bitmap_set_multiple(swap_bitmap, spe->index, PGSIZE / DISK_SECTOR_SIZE, 0);
+	
 	free (spe);
 	return;
 }

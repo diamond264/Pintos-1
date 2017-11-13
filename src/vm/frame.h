@@ -7,7 +7,7 @@ struct frame_entry {
 	struct list_elem elem;
 
 	tid_t tid;
-	void *frame;
+	void *frame; // real frame address.
 	void *vaddr;
 	struct thread *thread;
 	// struct spage_entry spage;
@@ -19,7 +19,7 @@ init_frame_table ();
 struct frame *
 find_frame_with_vaddr (void * vaddr);
 
-void *
+void 
 evict_frame ();
 
 uint8_t *

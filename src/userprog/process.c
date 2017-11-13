@@ -613,8 +613,8 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
       // }
 
       /* Get a page of memory. */
-      uint8_t *kpage = allocate_frame (PAL_USER); // obtain frame, frame관련 작업을
-      // printf("%p\n",kpage);
+      spage_create(upage, writable);
+      uint8_t *kpage = allocate_frame (PAL_USER); // obtain frame
       if (kpage == NULL)
       {
         // printf("kpage is null\n");
@@ -625,7 +625,6 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
       if (file_read (file, kpage, page_read_bytes) != (int) page_read_bytes)
         {
           // frame 관련 작업
-          ASSERT(0);
           free_frame (kpage);
           palloc_free_page (kpage);
           return false;
@@ -634,9 +633,9 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 
       /* Add the page to the process's address space. */
       if (!install_page (upage, kpage, writable)) 
+        // frame에 writable 설정해줘야 한다.
         {
           // frame 관련 작업
-          ASSERT(0);
           free_frame (kpage);
           palloc_free_page (kpage);
           return false; 
