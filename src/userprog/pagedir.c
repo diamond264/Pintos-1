@@ -14,7 +14,7 @@ static void invalidate_pagedir (uint32_t *);
    Returns the new page directory, or a null pointer if memory
    allocation fails. */
 uint32_t *
-pagedir_create (void)
+pagedir_create (void) 
 {
   uint32_t *pd = palloc_get_page (0);
   if (pd != NULL)

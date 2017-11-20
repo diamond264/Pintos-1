@@ -5,7 +5,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <list.h>
 #include "userprog/gdt.h"
 #include "userprog/pagedir.h"
 #include "userprog/tss.h"
@@ -22,34 +21,6 @@
 static thread_func start_process NO_RETURN;
 static bool load (const char *cmdline, void (**eip) (void), void **esp);
 
-// parent thread의 chilren list에서 tid를 가지는 element를 꺼내오기 위한 함수
-struct child_elem* get_child(struct thread *parent, tid_t child_tid)
-{
-  struct list_elem *iter;
-  struct child_elem *t;
-
-  if (parent == NULL) return NULL;
-
-  if (list_empty (&parent->children)) return NULL;
-
-  for(iter = list_begin(&parent->children); iter != list_end(&parent->children); iter = list_next(iter))
-  {
-    t = list_entry(iter, struct child_elem, elem);
-    if (t == NULL) return NULL;
-
-    if(t->tid == child_tid)
-      return t;
-  }
-
-  return NULL;
-}
-
-// parent thread의 children list에서 child element를 제거한다.
-void remove_child(struct child_elem *child)
-{
-  list_remove(&child->elem);
-}
-
 /* Starts a new thread running a user program loaded from
    FILENAME.  The new thread may be scheduled (and may even exit)
    before process_execute() returns.  Returns the new process's
@@ -60,11 +31,6 @@ process_execute (const char *file_name)
   char *fn_copy;
   tid_t tid;
 
-  struct thread *curr = thread_current();
-
-  sema_init (&curr->sema_start,0);
-  sema_init (&curr->sema_exit,0);
-
   /* Make a copy of FILE_NAME.
      Otherwise there's a race between the caller and load(). */
   fn_copy = palloc_get_page (0);
@@ -72,43 +38,10 @@ process_execute (const char *file_name)
     return TID_ERROR;
   strlcpy (fn_copy, file_name, PGSIZE);
 
-  // File name을 parsing 하기 위해 한 번 더 copy 해준다. (to avoid race condition)
-  char *fn_copy2;
-
-  fn_copy2 = palloc_get_page(0);
-  if(fn_copy2 == NULL)
-    return TID_ERROR;
-  strlcpy(fn_copy2, file_name, PGSIZE);
-
-  // args[0]을 가져와 real filename을 parsing한다.
-  char *save_ptr;
-  char *rf_name = strtok_r(fn_copy2, " ", &save_ptr); // real file name
-
   /* Create a new thread to execute FILE_NAME. */
-  tid = thread_create (rf_name, PRI_DEFAULT, start_process, fn_copy);
-
-  if (tid == TID_ERROR) {
-    palloc_free_page (fn_copy);
-    palloc_free_page(fn_copy2);
-    free(rf_name);
-
-    return -1;
-  }
-
-  // thread_create에서 children list에 넣어준 tid를 꺼내 준다.
-  struct child_elem *child = get_child(curr, tid);
-
-  // start_process에서 sema_up을 기다리기 위해 sema_down
-  sema_down(&curr->sema_start);
-  
-  // load가 되지 않았을 때, -1을 return하기 위한 작업
-  if(child != NULL && !child->loaded) {
-    remove_child(child);
-    free (child);
-    return -1;
-  }
-
-  palloc_free_page(fn_copy2);
+  tid = thread_create (file_name, PRI_DEFAULT, start_process, fn_copy);
+  if (tid == TID_ERROR)
+    palloc_free_page (fn_copy); 
   return tid;
 }
 
@@ -120,98 +53,18 @@ start_process (void *f_name)
   char *file_name = f_name;
   struct intr_frame if_;
   bool success;
-  struct thread *curr = thread_current();
-
-  // Argument Passing
-
-  // file_name parse with spliting space
-  char args[100][100] = {0,}; // arguments를 저장할 array
-  char *args_addr[100] = {0,}; // args의 pointer를 저장할 array
-
-  int argc = 0;
-  char *token, *save_ptr;
-  token = strtok_r(file_name, " ", &save_ptr);
 
   /* Initialize interrupt frame and load executable. */
-
-  // File Deny Write를 먼저 해준다.
-  struct file *userprog = filesys_open(token);
-  if(userprog != NULL)
-  {
-    file_deny_write(userprog);
-  }
-  else
-  {
-    palloc_free_page(file_name);
-    file_close(userprog);
-    if (!list_empty (&curr->parent->sema_start.waiters))
-      sema_up(&curr->parent->sema_start);
-    syscall_exit(-1);
-  }
-
   memset (&if_, 0, sizeof if_);
   if_.gs = if_.fs = if_.es = if_.ds = if_.ss = SEL_UDSEG;
   if_.cs = SEL_UCSEG;
   if_.eflags = FLAG_IF | FLAG_MBS;
-  success = load (token, &if_.eip, &if_.esp);
-
-  if(!success)
-  {
-    palloc_free_page(file_name);
-    file_close(userprog);
-    if (!list_empty (&curr->parent->sema_start.waiters))
-      sema_up(&curr->parent->sema_start);
-    syscall_exit(-1);
-  }
-
-  struct thread *parent = curr->parent;
-  struct child_elem *curr_elem = get_child (parent, curr->tid);
-  curr_elem->loaded = success;
-
-  curr->program = userprog;
-
-  // load 끝나면 sema up 해준다.
-  if (!list_empty (&parent->sema_start.waiters))
-    sema_up(&curr->parent->sema_start);
-
-  for(; token != NULL; token = strtok_r(NULL, " ", &save_ptr))
-  {
-    int len = strlen(token) + 1;
-    if_.esp -= len;
-    memcpy(if_.esp, token, len);
-    args_addr[argc++] = if_.esp;
-  }
-
-  // Offset
-  if_.esp -= (uint32_t)if_.esp % 4;
-
-  // args[argc]
-  if_.esp -= 4;
-  *(int*)if_.esp = 0;
-
-  // args[0~argc-1]
-  int i;
-  for(i = argc - 1; i >= 0; i--)
-  {
-    if_.esp -= 4;
-    *(void**)if_.esp = args_addr[i];
-  }
-
-  // args 주소를 넣어준다.
-  if_.esp -= 4;
-  *(void**)if_.esp = if_.esp + 4;
-
-  // 그 다음 argc를 넣어준다.
-  if_.esp -= 4;
-  *(int*)if_.esp = argc;
-
-  // 마지막으로 return address를 넣어준다.
-  if_.esp -= 4;
-  *(int*)if_.esp = 0;
-
+  success = load (file_name, &if_.eip, &if_.esp);
 
   /* If load failed, quit. */
   palloc_free_page (file_name);
+  if (!success) 
+    thread_exit ();
 
   /* Start the user process by simulating a return from an
      interrupt, implemented by intr_exit (in
@@ -229,30 +82,13 @@ start_process (void *f_name)
    child of the calling process, or if process_wait() has already
    been successfully called for the given TID, returns -1
    immediately, without waiting.
+
    This function will be implemented in problem 2-2.  For now, it
    does nothing. */
 int
-process_wait (tid_t child_tid) 
+process_wait (tid_t child_tid UNUSED) 
 {
-  int status;
-  struct thread *t_parent;
-  struct child_elem *t_child;
-
-  t_parent = thread_current ();
-  t_child = get_child (t_parent, child_tid);
-  if (t_child == NULL)
-    return -1;
-
-  if (!t_child->terminated)
-  {
-    sema_down (&t_parent->sema_exit);
-  }
-
-  status = t_child->exit_status;
-  remove_child(t_child);
-  free(t_child);
-
-  return status;
+  return -1;
 }
 
 /* Free the current process's resources. */
@@ -266,58 +102,18 @@ process_exit (void)
      to the kernel-only page directory. */
   pd = curr->pagedir;
   if (pd != NULL) 
-  {
-    /* Correct ordering here is crucial.  We must set
-       cur->pagedir to NULL before switching page directories,
-       so that a timer interrupt can't switch back to the
-       process page directory.  We must activate the base page
-       directory before destroying the process's page
-       directory, or our active page directory will be one
-       that's been freed (and cleared). */
-    curr->pagedir = NULL;
-    pagedir_activate (NULL);
-    pagedir_destroy (pd);
-
-    struct thread *t_parent = curr->parent;
-    struct child_elem *curr_elem = get_child (t_parent, curr->tid);
-
-    curr_elem->terminated = true;
-    curr_elem->exit_status = curr->exit_status;
-
-    if(curr->program != NULL)
     {
-      file_close(curr->program);
-      curr->program = NULL;
+      /* Correct ordering here is crucial.  We must set
+         cur->pagedir to NULL before switching page directories,
+         so that a timer interrupt can't switch back to the
+         process page directory.  We must activate the base page
+         directory before destroying the process's page
+         directory, or our active page directory will be one
+         that's been freed (and cleared). */
+      curr->pagedir = NULL;
+      pagedir_activate (NULL);
+      pagedir_destroy (pd);
     }
-
-    // EDITED
-    printf("%s: exit(%d)\n", curr->name, curr->exit_status);
-    t_parent->child_exit_status = curr->exit_status;
-
-    if (!list_empty (&t_parent->sema_exit.waiters))
-    {
-      sema_up (&t_parent->sema_exit);
-    }
-
-    struct list_elem *t_elem;
-    struct child_elem *t;
-
-    struct list_elem *f_elem;
-    struct file_elem *f;
-
-    while (!list_empty (&curr->children)) {
-      t_elem = list_pop_front (&curr->children);
-      t = list_entry (t_elem, struct child_elem, elem);
-      free (t);
-    }
-
-    while (!list_empty (&curr->files)) {
-      f_elem = list_pop_front (&curr->files);
-      f = list_entry (f_elem, struct file_elem, elem);
-      free (f->file);
-      free (f);
-    }
-  }
 }
 
 /* Sets up the CPU for running user code in the current
@@ -343,7 +139,7 @@ process_activate (void)
 typedef uint32_t Elf32_Word, Elf32_Addr, Elf32_Off;
 typedef uint16_t Elf32_Half;
 
-/* For use with ELF types in ////printf(). */
+/* For use with ELF types in printf(). */
 #define PE32Wx PRIx32   /* Print Elf32_Word in hexadecimal. */
 #define PE32Ax PRIx32   /* Print Elf32_Addr in hexadecimal. */
 #define PE32Ox PRIx32   /* Print Elf32_Off in hexadecimal. */
@@ -409,9 +205,6 @@ static bool load_segment (struct file *file, off_t ofs, uint8_t *upage,
    Stores the executable's entry point into *EIP
    and its initial stack pointer into *ESP.
    Returns true if successful, false otherwise. */
-/*
-  load 함수에서 pagedir ptr을 새로 할당받아온다.
-*/
 bool
 load (const char *file_name, void (**eip) (void), void **esp) 
 {
@@ -575,11 +368,15 @@ validate_segment (const struct Elf32_Phdr *phdr, struct file *file)
 /* Loads a segment starting at offset OFS in FILE at address
    UPAGE.  In total, READ_BYTES + ZERO_BYTES bytes of virtual
    memory are initialized, as follows:
+
         - READ_BYTES bytes at UPAGE must be read from FILE
           starting at offset OFS.
+
         - ZERO_BYTES bytes at UPAGE + READ_BYTES must be zeroed.
+
    The pages initialized by this function must be writable by the
    user process if WRITABLE is true, read-only otherwise.
+
    Return true if successful, false if a memory allocation error
    or disk read error occurs. */
 static bool
@@ -665,17 +462,4 @@ install_page (void *upage, void *kpage, bool writable)
      address, then map our page there. */
   return (pagedir_get_page (t->pagedir, upage) == NULL
           && pagedir_set_page (t->pagedir, upage, kpage, writable));
-}
-
-void* validate_addr (void *addr)
-{
-  struct thread *curr = thread_current();
-
-  if (addr == NULL || is_kernel_vaddr(addr) || pagedir_get_page (curr->pagedir, addr) == NULL)
-  {
-    syscall_exit(-1);
-    return NULL;
-  }
-  else 
-    return addr;
 }

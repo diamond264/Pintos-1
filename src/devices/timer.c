@@ -50,27 +50,27 @@ timer_init (void)
 void
 timer_calibrate (void) 
 {
-  unsigned high_bit, test_bit;
+    unsigned high_bit, test_bit;
 
-  ASSERT (intr_get_level () == INTR_ON);
-  printf ("Calibrating timer...  ");
+    ASSERT (intr_get_level () == INTR_ON);
+    printf ("Calibrating timer...  ");
 
-  /* Approximate loops_per_tick as the largest power-of-two
+    /* Approximate loops_per_tick as the largest power-of-two
      still less than one timer tick. */
-  loops_per_tick = 1u << 10;
-  while (!too_many_loops (loops_per_tick << 1)) 
+    loops_per_tick = 1u << 10;
+    while (!too_many_loops (loops_per_tick << 1)) 
     {
-      loops_per_tick <<= 1;
-      ASSERT (loops_per_tick != 0);
+            loops_per_tick <<= 1;
+            ASSERT (loops_per_tick != 0);
     }
 
-  /* Refine the next 8 bits of loops_per_tick. */
-  high_bit = loops_per_tick;
-  for (test_bit = high_bit >> 1; test_bit != high_bit >> 10; test_bit >>= 1)
-    if (!too_many_loops (high_bit | test_bit))
-      loops_per_tick |= test_bit;
+    /* Refine the next 8 bits of loops_per_tick. */
+    high_bit = loops_per_tick;
+    for (test_bit = high_bit >> 1; test_bit != high_bit >> 10; test_bit >>= 1)
+            if (!too_many_loops (high_bit | test_bit))
+                    loops_per_tick |= test_bit;
 
-  printf ("%'"PRIu64" loops/s.\n", (uint64_t) loops_per_tick * TIMER_FREQ);
+    printf ("%'"PRIu64" loops/s.\n", (uint64_t) loops_per_tick * TIMER_FREQ);
 }
 
 /* Returns the number of timer ticks since the OS booted. */
@@ -92,21 +92,15 @@ timer_elapsed (int64_t then)
   return timer_ticks () - then;
 }
 
-// Edited
 /* Suspends execution for approximately TICKS timer ticks. */
 void
 timer_sleep (int64_t ticks) 
 {
   int64_t start = timer_ticks ();
 
-  ASSERT (intr_get_level () == INTR_ON);
-
-  /* disable BUSY WAIT */
-  //while (timer_elapsed (start) < ticks) 
-  //  thread_yield ();
-  
-  /* use sleep function described in thread.c */
-  thread_sleep (start, ticks);
+  ASSERT (intr_get_level () == INTR_ON); // INTR_ON이 아니면 왜 sleep 종료했을까?
+  while (timer_elapsed (start) < ticks) 
+    thread_yield ();
 }
 
 /* Suspends execution for approximately MS milliseconds. */
@@ -120,14 +114,14 @@ timer_msleep (int64_t ms)
 void
 timer_usleep (int64_t us) 
 {
-  real_time_sleep (us, 1000 * 1000);
+        real_time_sleep (us, 1000 * 1000);
 }
 
 /* Suspends execution for approximately NS nanoseconds. */
 void
 timer_nsleep (int64_t ns) 
 {
-  real_time_sleep (ns, 1000 * 1000 * 1000);
+        real_time_sleep (ns, 1000 * 1000 * 1000);
 }
 
 /* Prints timer statistics. */
@@ -137,21 +131,12 @@ timer_print_stats (void)
   printf ("Timer: %"PRId64" ticks\n", timer_ticks ());
 }
 
-// Edited
 /* Timer interrupt handler. */
 static void
 timer_interrupt (struct intr_frame *args UNUSED)
 {
   ticks++;
   thread_tick ();
-
-  /* When the tick goes on, we should check whether there is
-   * any thread to awake */
-  if (time_to_wakeup() != INT64_MAX)
-  {
-    while (ticks >= time_to_wakeup())
-      thread_wakeup ();
-  }
 }
 
 /* Returns true if LOOPS iterations waits for more than one timer

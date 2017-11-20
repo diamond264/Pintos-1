@@ -4,9 +4,6 @@
 #include <debug.h>
 #include <list.h>
 #include <stdint.h>
-#include "synch.h"
-
-#define DEBUG true
 
 /* States in a thread's life cycle. */
 enum thread_status
@@ -14,8 +11,7 @@ enum thread_status
     THREAD_RUNNING,     /* Running thread. */
     THREAD_READY,       /* Not running but ready to run. */
     THREAD_BLOCKED,     /* Waiting for an event to trigger. */
-    THREAD_DYING,       /* About to be destroyed. */
-    THREAD_SLEEPING     /* Sleeping for untilSleepTicks */
+    THREAD_DYING        /* About to be destroyed. */
   };
 
 /* Thread identifier type.
@@ -29,11 +25,13 @@ typedef int tid_t;
 #define PRI_MAX 63                      /* Highest priority. */
 
 /* A kernel thread or user process.
+
    Each thread structure is stored in its own 4 kB page.  The
    thread structure itself sits at the very bottom of the page
    (at offset 0).  The rest of the page is reserved for the
    thread's kernel stack, which grows downward from the top of
    the page (at offset 4 kB).  Here's an illustration:
+
         4 kB +---------------------------------+
              |          kernel stack           |
              |                |                |
@@ -55,18 +53,22 @@ typedef int tid_t;
              |               name              |
              |              status             |
         0 kB +---------------------------------+
+
    The upshot of this is twofold:
+
       1. First, `struct thread' must not be allowed to grow too
          big.  If it does, then there will not be enough room for
          the kernel stack.  Our base `struct thread' is only a
          few bytes in size.  It probably should stay well under 1
          kB.
+
       2. Second, kernel stacks must not be allowed to grow too
          large.  If a stack overflows, it will corrupt the thread
          state.  Thus, kernel functions should not allocate large
          structures or arrays as non-static local variables.  Use
          dynamic allocation with malloc() or palloc_get_page()
          instead.
+
    The first symptom of either of these problems will probably be
    an assertion failure in thread_current(), which checks that
    the `magic' member of the running thread's `struct thread' is
@@ -78,22 +80,6 @@ typedef int tid_t;
    only because they are mutually exclusive: only a thread in the
    ready state is on the run queue, whereas only a thread in the
    blocked state is on a semaphore wait list. */
-
-struct file_elem {
-  struct file *file;
-  int fd;
-  struct list_elem elem;
-};
-
-struct child_elem {
-  tid_t tid;
-  char *name;
-  bool terminated;
-  bool loaded;
-  int exit_status;
-  struct list_elem elem;
-};
-
 struct thread
   {
     /* Owned by thread.c. */
@@ -102,34 +88,14 @@ struct thread
     char name[16];                      /* Name (for debugging purposes). */
     uint8_t *stack;                     /* Saved stack pointer. */
     int priority;                       /* Priority. */
-    int64_t terminate_sleep;            /* ticks for sleep */
+    int untilSleepTick; // 언제까지 자야하는지.
 
     /* Shared between thread.c and synch.c. */
     struct list_elem elem;              /* List element. */
 
-    /* Edited : Variables for donation */
-    struct list acquired_locks;
-    struct list lost_locks;
-    struct lock *locked;
-    int real_priority;
-    struct thread *donated;
-    struct semaphore *sema_block;
-
 #ifdef USERPROG
     /* Owned by userprog/process.c. */
     uint32_t *pagedir;                  /* Page directory. */
-
-    int exit_status;
-    int child_exit_status;
-    struct thread *parent;
-    struct list children;
-    int next_fd;
-
-    struct semaphore sema_start;
-    struct semaphore sema_exit;
-
-    struct list files;
-    struct file *program; // executable file을 저장.
 #endif
 
     /* Owned by thread.c. */
@@ -141,17 +107,8 @@ struct thread
    Controlled by kernel command-line option "-o mlfqs". */
 extern bool thread_mlfqs;
 
-int64_t time_to_wakeup (void);
-
 void thread_init (void);
 void thread_start (void);
-
-bool priority_comp (const struct list_elem *x, const struct list_elem *y,
-    void *aux UNUSED);
-bool sleep_comp (const struct list_elem *x, const struct list_elem *y,
-    void *aux UNUSED);
-void thread_sleep (int64_t, int64_t);
-void thread_wakeup (void);
 
 void thread_tick (void);
 void thread_print_stats (void);
@@ -176,7 +133,5 @@ int thread_get_nice (void);
 void thread_set_nice (int);
 int thread_get_recent_cpu (void);
 int thread_get_load_avg (void);
-
-int print_thread_children(struct thread *t);
 
 #endif /* threads/thread.h */
