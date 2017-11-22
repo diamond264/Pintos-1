@@ -14,7 +14,7 @@ static void invalidate_pagedir (uint32_t *);
    Returns the new page directory, or a null pointer if memory
    allocation fails. */
 uint32_t *
-pagedir_create (void) 
+pagedir_create (void)
 {
   uint32_t *pd = palloc_get_page (0);
   if (pd != NULL)
@@ -247,7 +247,6 @@ active_pd (void)
    lookaside buffer (TLB) to become out-of-sync with the page
    table.  When this happens, we have to "invalidate" the TLB by
    re-activating it.
-
    This function invalidates the TLB if PD is the active page
    directory.  (If PD is not active then its entries are not in
    the TLB, so there is no need to invalidate anything.) */

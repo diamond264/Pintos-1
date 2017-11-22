@@ -4,6 +4,24 @@
 #include <debug.h>
 #include <list.h>
 #include <stdint.h>
+#include "synch.h"
+
+typedef int tid_t;
+
+struct file_elem {
+  struct file *file;
+  int fd;
+  struct list_elem elem;
+};
+
+struct child_elem {
+  tid_t tid;
+  char *name;
+  bool terminated;
+  bool loaded;
+  int exit_status;
+  struct list_elem elem;
+};
 
 /* States in a thread's life cycle. */
 enum thread_status
@@ -16,7 +34,6 @@ enum thread_status
 
 /* Thread identifier type.
    You can redefine this to whatever type you like. */
-typedef int tid_t;
 #define TID_ERROR ((tid_t) -1)          /* Error value for tid_t. */
 
 /* Thread priorities. */
@@ -96,6 +113,18 @@ struct thread
 #ifdef USERPROG
     /* Owned by userprog/process.c. */
     uint32_t *pagedir;                  /* Page directory. */
+
+    int exit_status;
+    int child_exit_status;
+    struct thread *parent;
+    struct list children;
+    int next_fd;
+
+    struct semaphore sema_start;
+    struct semaphore sema_exit;
+
+    struct list files;
+    struct file *program; // executable file을 저장.
 #endif
 
     /* Owned by thread.c. */

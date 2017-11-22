@@ -73,19 +73,6 @@ void schedule_tail (struct thread *prev);
 static tid_t allocate_tid (void);
 
 
-/* 여기서부터 상현 수정 부분 */
-static struct list sleepList;
-static int64_t wakeupTargetTick;
-
-void updateTargetTick(int64_t new_tick)
-{
-    if(wakeupTargetTick > new_tick)
-    {
-        wakeupTargetTick = new_tick;
-    }
-}
-
-
 /* Initializes the threading system by transforming the code
    that's currently running into a thread.  This can't work in
    general and it is possible in this case only because loader.S
@@ -112,9 +99,6 @@ thread_init (void)
   init_thread (initial_thread, "main", PRI_DEFAULT);
   initial_thread->status = THREAD_RUNNING;
   initial_thread->tid = allocate_tid ();
-
-  list_init(&sleepList);
-  wakeupTargetTick = 0;
 }
 
 /* Starts preemptive thread scheduling by enabling interrupts.
@@ -191,6 +175,12 @@ thread_create (const char *name, int priority,
 
   ASSERT (function != NULL);
 
+  // thread를 새로 만들기 전 current thread가 parent가 된다.
+  struct thread *curr = thread_current ();
+
+  sema_init (&curr->sema_start, 0);
+  sema_init (&curr->sema_exit, 0);
+
   /* Allocate thread. */
   t = palloc_get_page (PAL_ZERO);
   if (t == NULL)
@@ -213,6 +203,20 @@ thread_create (const char *name, int priority,
   /* Stack frame for switch_threads(). */
   sf = alloc_frame (t, sizeof *sf);
   sf->eip = switch_entry;
+
+  // parent thread인 curr의 children list에 새로 만든 tid의 element를 삽
+  t->parent = curr;
+  if (t != NULL)
+  {
+    struct child_elem *t_elem;
+    t_elem = (struct child_elem*)malloc (sizeof *t_elem);
+    t_elem->tid = tid;
+    t_elem->name = t->name;
+    t_elem->terminated = false;
+    t_elem->loaded = false;
+    t_elem->exit_status = NULL;
+    list_push_back (&curr->children, &t_elem->elem);
+  }
 
   /* Add to run queue. */
   thread_unblock (t);
@@ -458,6 +462,13 @@ init_thread (struct thread *t, const char *name, int priority)
   t->stack = (uint8_t *) t + PGSIZE;
   t->priority = priority;
   t->magic = THREAD_MAGIC;
+  
+  t->next_fd = (int) 2;
+  sema_init(&t->sema_start, 0);
+  sema_init(&t->sema_exit, 0);
+  list_init (&t->children);
+  list_init (&t->files);
+
 }
 
 /* Allocates a SIZE-byte frame at the top of thread T's stack and
@@ -573,42 +584,3 @@ allocate_tid (void)
 /* Offset of `stack' member within `struct thread'.
    Used by switch.S, which can't figure it out on its own. */
 uint32_t thread_stack_ofs = offsetof (struct thread, stack);
-
-
-// Thread Sleep 구현 부분
-void thread_sleep(int64_t ticks)
-{
-    // 중간 switching 방지하기 위해 인터럽트 차단해둔다.
-    enum intr_level old_level = intr_disable();
-    struct thread *curr = thread_current(); // thread_current는 현재 실행중인 thread 받아오는 getter.
-
-    ASSERT(!(curr == idle_thread)); // current thread가 idle Thread이면 sleep 하면 안된다.
-    if(ticks > 0)
-        curr->untilSleepTick = ticks;
-    updateTargetTick(curr->untilSleepTick);
-
-    list_push_back(&sleepList, &(cur->elem));
-    thread_block();
-
-    intr_set_level(old_level);
-}
-
-void thread_wakeup(int64_t deadline) // deadline이 지난 sleep thread를 모두 깨운다.
-{
-    struct list_elem *iter = list_begin(&sleepList);
-    while(iter != list_end(&sleepList))
-    {
-        struct thread *iterThread = list_entry(iter, struct thread, elem);
-
-        if(iterThread->untilSleepTick < deadline) // deadline이 지났으면
-        {
-            iter = list_remove(&(iterThread->elem));
-            thread_unblock(iterThread);
-        }
-        else
-        {
-            iter = list_next(iter);
-            
-        }
-    }
-}
