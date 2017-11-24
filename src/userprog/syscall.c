@@ -5,6 +5,7 @@
 #include "threads/thread.h"
 #include "filesys/off_t.h"
 #include "threads/vaddr.h"
+#include "vm/page.h"
 
 static void syscall_handler (struct intr_frame *);
 struct lock file_lock;
@@ -16,8 +17,8 @@ bool syscall_create (const char *file, unsigned initial_size);
 bool syscall_remove (const char *file);
 int syscall_open (const char *file);
 int syscall_filesize (int fd);
-int syscall_read (int fd, const void *buffer, unsigned size);
-int syscall_write (int fd, const void *buffer, unsigned size);
+int syscall_read (struct intr_frame *f, int fd, const void *buffer, unsigned size);
+int syscall_write (struct intr_frame *f, int fd, const void *buffer, unsigned size);
 void syscall_seek (int fd, unsigned position);
 unsigned syscall_tell (int fd);
 void syscall_close (int fd);
@@ -118,14 +119,14 @@ syscall_handler (struct intr_frame *f)
       argv[0] = get_argument (sp);
       argv[1] = get_argument (sp+1);
       argv[2] = get_argument (sp+2);
-      f->eax = (off_t) syscall_read ((int) *argv[0], (void *) *argv[1], (unsigned) *argv[2]);
+      f->eax = (off_t) syscall_read (f, (int) *argv[0], (void *) *argv[1], (unsigned) *argv[2]);
       break;
 
     case SYS_WRITE :
       argv[0] = get_argument (sp);
       argv[1] = get_argument (sp+1);
       argv[2] = get_argument (sp+2);
-      f->eax = (off_t) syscall_write ((int) *argv[0], (void *) *argv[1], (unsigned) *argv[2]);
+      f->eax = (off_t) syscall_write (f, (int) *argv[0], (void *) *argv[1], (unsigned) *argv[2]);
       break;
 
     case SYS_SEEK :
@@ -143,6 +144,17 @@ syscall_handler (struct intr_frame *f)
       argv[0] = get_argument (sp);
       syscall_close ((int) *argv[0]);
       break;
+
+    // case SYS_MMAP :
+    //   argv[0] = get_argument (sp);
+    //   argv[1] = get_argument (sp+1);
+    //   f->eax = syscall_mmap ((int) *argv[0], (void *) *argv[1]);
+    //   break;
+
+    // case SYS_MUNMAP :
+    //   argv[0] = get_argument (sp);
+    //   syscall_unmap ((int) *argv[0]);
+    //   break;
 
     default :
       break;
@@ -208,9 +220,13 @@ syscall_filesize (int fd) {
 
 
 int
-syscall_read (int fd, const void *buffer, unsigned size) {
-  validate_addr ((void *) buffer);
-  validate_addr((void *)(buffer + size));
+syscall_read (struct intr_frame *f, int fd, const void *buffer, unsigned size) {
+  if ((void *) buffer == NULL)
+  {
+    syscall_exit (-1);
+  }
+  validate_addr_syscall (f, (void *) buffer);
+  validate_addr_syscall (f, (void *)(buffer + size));
 
   if (fd == 1) syscall_exit (-1);
 
@@ -224,7 +240,11 @@ syscall_read (int fd, const void *buffer, unsigned size) {
 
       *(uint8_t *)buffer = input_getc();
       buffer++;
-      validate_addr ((void *) buffer);
+      validate_addr_syscall (f, (void *) buffer);
+      if ((void *) buffer == NULL)
+      {
+        syscall_exit (-1);
+      }
     }
     value = size;
   } else {
@@ -239,12 +259,13 @@ syscall_read (int fd, const void *buffer, unsigned size) {
 }
 
 int
-syscall_write (int fd, const void *buffer, unsigned size) {
-  validate_addr ((void *)buffer);
-  validate_addr ((void *)(buffer + size));
-
-  if(!is_user_vaddr(buffer)) syscall_exit(-1);
-  if(!is_user_vaddr(buffer + size)) syscall_exit(-1);
+syscall_write (struct intr_frame *f, int fd, const void *buffer, unsigned size) {
+  if ((void *) buffer == NULL)
+  {
+    syscall_exit (-1);
+  }
+  validate_addr_syscall (f, (void *) buffer);
+  validate_addr_syscall (f, (void *)(buffer + size));
 
   int value = -1;
 
@@ -311,3 +332,53 @@ syscall_close (int fd) {
   file_close (f);
   free (f_elem);
 }
+
+// int syscall_mmap (int fd, void *addr)
+// {
+//   if (fd == 1 || fd == 0
+//     || !addr
+//     || pg_ofs(addr) != 0)
+//     return -1;
+
+//   struct file_elem *f_elem;
+//   struct file *f;
+
+//   f_elem = get_file_elem (fd);
+//   f = get_file (fd);
+//   int length = file_length (f);
+
+//   if (!is_user_vaddr (addr + length)
+//     || length == 0
+//     || f_elem == NULL
+//     || f == NULL)
+//     return -1;
+  
+// }
+
+// void syscall_unmap (int mapid)
+// {
+//   struct thread *curr = thread_current ();
+//   struct list_elem *iter;
+//   struct mmap *mapping;
+
+//   for(iter = list_begin(&curr->mmap_list); iter != list_end(&curr->mmap_list); iter = list_next(iter))
+//   {
+//     mapping = list_entry(iter, struct mmap, elem);
+
+//     if (mapping->mapid == mapid)
+//     {
+//       list_remove (iter);
+//       break;
+//     }
+//   }
+
+//   if (mapping == NULL)
+//     syscall_exit (-1);
+
+//   // 여기서 뭐 해야함
+
+//   file_close (mapping->file);
+//   free (mapping);
+// }
+
+

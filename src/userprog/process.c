@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <list.h>
 #include "userprog/gdt.h"
 #include "userprog/pagedir.h"
 #include "userprog/tss.h"
@@ -17,6 +18,8 @@
 #include "threads/palloc.h"
 #include "threads/thread.h"
 #include "threads/vaddr.h"
+#include "vm/page.h"
+#include "vm/frame.h"
 
 static thread_func start_process NO_RETURN;
 static bool load (const char *cmdline, void (**eip) (void), void **esp);
@@ -53,7 +56,8 @@ void remove_child(struct child_elem *child)
    FILENAME.  The new thread may be scheduled (and may even exit)
    before process_execute() returns.  Returns the new process's
    thread id, or TID_ERROR if the thread cannot be created. */
-tid_t process_execute (const char *file_name) 
+tid_t
+process_execute (const char *file_name) 
 {
   char *fn_copy;
   tid_t tid;
@@ -110,7 +114,6 @@ tid_t process_execute (const char *file_name)
   return tid;
 }
 
-
 /* A thread function that loads a user process and makes it start
    running. */
 static void
@@ -120,6 +123,8 @@ start_process (void *f_name)
   struct intr_frame if_;
   bool success;
   struct thread *curr = thread_current();
+
+  hash_init (&curr->spage_table, hash_calc_func, hash_comp_func, NULL);
 
   // Argument Passing
 
@@ -222,14 +227,12 @@ start_process (void *f_name)
   NOT_REACHED ();
 }
 
-
 /* Waits for thread TID to die and returns its exit status.  If
    it was terminated by the kernel (i.e. killed due to an
    exception), returns -1.  If TID is invalid or if it was not a
    child of the calling process, or if process_wait() has already
    been successfully called for the given TID, returns -1
    immediately, without waiting.
-
    This function will be implemented in problem 2-2.  For now, it
    does nothing. */
 int
@@ -246,6 +249,7 @@ process_wait (tid_t child_tid)
 
   if (!t_child->terminated)
   {
+    t_parent->waiting = child_tid;
     sema_down (&t_parent->sema_exit);
   }
 
@@ -265,6 +269,8 @@ process_exit (void)
 
   /* Destroy the current process's page directory and switch back
      to the kernel-only page directory. */
+  hash_destroy(&curr->spage_table, hash_free_func);
+
   pd = curr->pagedir;
   if (pd != NULL) 
   {
@@ -275,9 +281,6 @@ process_exit (void)
        directory before destroying the process's page
        directory, or our active page directory will be one
        that's been freed (and cleared). */
-    curr->pagedir = NULL;
-    pagedir_activate (NULL);
-    pagedir_destroy (pd);
 
     struct thread *t_parent = curr->parent;
     struct child_elem *curr_elem = get_child (t_parent, curr->tid);
@@ -295,7 +298,7 @@ process_exit (void)
     printf("%s: exit(%d)\n", curr->name, curr->exit_status);
     t_parent->child_exit_status = curr->exit_status;
 
-    if (!list_empty (&t_parent->sema_exit.waiters))
+    if (curr_elem->tid == t_parent->waiting && !list_empty (&t_parent->sema_exit.waiters))
     {
       sema_up (&t_parent->sema_exit);
     }
@@ -318,9 +321,15 @@ process_exit (void)
       free (f->file);
       free (f);
     }
+    lock_acquire (&curr->page_lock);
+
+    curr->pagedir = NULL;
+    pagedir_activate (NULL);
+
+    lock_release (&curr->page_lock);
+    pagedir_destroy (pd);
   }
 }
-
 
 /* Sets up the CPU for running user code in the current
    thread.
@@ -345,7 +354,7 @@ process_activate (void)
 typedef uint32_t Elf32_Word, Elf32_Addr, Elf32_Off;
 typedef uint16_t Elf32_Half;
 
-/* For use with ELF types in printf(). */
+/* For use with ELF types in ////printf(). */
 #define PE32Wx PRIx32   /* Print Elf32_Word in hexadecimal. */
 #define PE32Ax PRIx32   /* Print Elf32_Addr in hexadecimal. */
 #define PE32Ox PRIx32   /* Print Elf32_Off in hexadecimal. */
@@ -411,6 +420,9 @@ static bool load_segment (struct file *file, off_t ofs, uint8_t *upage,
    Stores the executable's entry point into *EIP
    and its initial stack pointer into *ESP.
    Returns true if successful, false otherwise. */
+/*
+  load 함수에서 pagedir ptr을 새로 할당받아온다.
+*/
 bool
 load (const char *file_name, void (**eip) (void), void **esp) 
 {
@@ -574,15 +586,11 @@ validate_segment (const struct Elf32_Phdr *phdr, struct file *file)
 /* Loads a segment starting at offset OFS in FILE at address
    UPAGE.  In total, READ_BYTES + ZERO_BYTES bytes of virtual
    memory are initialized, as follows:
-
         - READ_BYTES bytes at UPAGE must be read from FILE
           starting at offset OFS.
-
         - ZERO_BYTES bytes at UPAGE + READ_BYTES must be zeroed.
-
    The pages initialized by this function must be writable by the
    user process if WRITABLE is true, read-only otherwise.
-
    Return true if successful, false if a memory allocation error
    or disk read error occurs. */
 static bool
@@ -602,10 +610,17 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
       size_t page_read_bytes = read_bytes < PGSIZE ? read_bytes : PGSIZE;
       size_t page_zero_bytes = PGSIZE - page_read_bytes;
 
+      struct spage *spe = spage_create(upage, PAGE, writable);
+      struct frame *f = frame_allocate(spe, PAL_USER);
+      uint8_t *kpage = f->addr;
+
       /* Get a page of memory. */
-      uint8_t *kpage = palloc_get_page (PAL_USER);
+      //uint8_t *kpage = palloc_get_page (PAL_USER);
       if (kpage == NULL)
+      {
+        ASSERT(0);
         return false;
+      }
 
       /* Load this page. */
       if (file_read (file, kpage, page_read_bytes) != (int) page_read_bytes)
@@ -637,8 +652,15 @@ setup_stack (void **esp)
 {
   uint8_t *kpage;
   bool success = false;
+  void *upage = ((uint8_t *) PHYS_BASE) - PGSIZE;
+  if (upage == 0) ASSERT(0);
 
-  kpage = palloc_get_page (PAL_USER | PAL_ZERO);
+  struct spage *spe = spage_create(upage, PAGE, true);
+  struct frame *f = frame_allocate(spe, PAL_USER | PAL_ZERO);
+
+  kpage = f->addr;
+
+  //kpage = palloc_get_page (PAL_USER | PAL_ZERO);
   if (kpage != NULL) 
     {
       success = install_page (((uint8_t *) PHYS_BASE) - PGSIZE, kpage, true);
@@ -681,4 +703,22 @@ void* validate_addr (void *addr)
   }
   else 
     return addr;
+}
+
+void validate_addr_syscall (struct intr_frame *f, void *fault_addr)
+{
+  struct thread * curr = thread_current ();
+  void *rounded_addr = pg_round_down (fault_addr);
+
+  if (fault_addr == NULL
+    || !is_user_vaddr(fault_addr))
+  {
+    syscall_exit (-1);
+  }
+
+  if (pagedir_get_page (curr->pagedir, fault_addr) == NULL)
+  {
+    if (fault_addr >= (f->esp - 32))
+      stack_growth (rounded_addr);
+  }
 }

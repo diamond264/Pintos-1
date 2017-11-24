@@ -1,7 +1,11 @@
+/* prints "hello, world!" */
+
 #include <stdio.h>
 #include "tests/threads/tests.h"
 
-void test_hello()
+void 
+test_hello(void)
 {
-  printf("hello, world!\n");
+  printf("hello, world!");
+  pass();
 }

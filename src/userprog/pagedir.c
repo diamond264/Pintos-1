@@ -5,6 +5,7 @@
 #include "threads/init.h"
 #include "threads/pte.h"
 #include "threads/palloc.h"
+#include "vm/frame.h"
 
 static uint32_t *active_pd (void);
 static void invalidate_pagedir (uint32_t *);
@@ -42,9 +43,12 @@ pagedir_destroy (uint32_t *pd)
         for (pte = pt; pte < pt + PGSIZE / sizeof *pte; pte++)
           if (*pte & PTE_P) 
             palloc_free_page (pte_get_page (*pte));
+            //frame_free_with_addr (pte_get_page (*pte));
+        //frame_free_with_addr (pt);
         palloc_free_page (pt);
       }
   palloc_free_page (pd);
+  //frame_free_with_addr (pd);
 }
 
 /* Returns the address of the page table entry for virtual
@@ -247,6 +251,7 @@ active_pd (void)
    lookaside buffer (TLB) to become out-of-sync with the page
    table.  When this happens, we have to "invalidate" the TLB by
    re-activating it.
+
    This function invalidates the TLB if PD is the active page
    directory.  (If PD is not active then its entries are not in
    the TLB, so there is no need to invalidate anything.) */

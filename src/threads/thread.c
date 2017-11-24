@@ -4,7 +4,6 @@
 #include <random.h>
 #include <stdio.h>
 #include <string.h>
-#include <list.h>
 #include "threads/flags.h"
 #include "threads/interrupt.h"
 #include "threads/intr-stubs.h"
@@ -72,20 +71,18 @@ static void schedule (void);
 void schedule_tail (struct thread *prev);
 static tid_t allocate_tid (void);
 
-
 /* Initializes the threading system by transforming the code
    that's currently running into a thread.  This can't work in
    general and it is possible in this case only because loader.S
    was careful to put the bottom of the stack at a page boundary.
-
    Also initializes the run queue and the tid lock.
-
    After calling this function, be sure to initialize the page
    allocator before trying to create any threads with
    thread_create().
-
    It is not safe to call thread_current() until this function
    finishes. */
+
+// Edited
 void
 thread_init (void) 
 {
@@ -144,22 +141,19 @@ thread_tick (void)
 void
 thread_print_stats (void) 
 {
-  printf ("Thread: %lld idle ticks, %lld kernel ticks, %lld user ticks\n",
-          idle_ticks, kernel_ticks, user_ticks);
+  printf ("Thread: %lld idle ticks, %lld kernel ticks, %lld user ticks\n", idle_ticks, kernel_ticks, user_ticks);
 }
 
 /* Creates a new kernel thread named NAME with the given initial
    PRIORITY, which executes FUNCTION passing AUX as the argument,
    and adds it to the ready queue.  Returns the thread identifier
    for the new thread, or TID_ERROR if creation fails.
-
    If thread_start() has been called, then the new thread may be
    scheduled before thread_create() returns.  It could even exit
    before thread_create() returns.  Contrariwise, the original
    thread may run for any amount of time before the new thread is
    scheduled.  Use a semaphore or some other form of
    synchronization if you need to ensure ordering.
-
    The code provided sets the new thread's `priority' member to
    PRIORITY, but no actual priority scheduling is implemented.
    Priority scheduling is the goal of Problem 1-3. */
@@ -220,13 +214,11 @@ thread_create (const char *name, int priority,
 
   /* Add to run queue. */
   thread_unblock (t);
-
   return tid;
 }
 
 /* Puts the current thread to sleep.  It will not be scheduled
    again until awoken by thread_unblock().
-
    This function must be called with interrupts turned off.  It
    is usually a better idea to use one of the synchronization
    primitives in synch.h. */
@@ -303,6 +295,7 @@ thread_exit (void)
   ASSERT (!intr_context ());
 
 #ifdef USERPROG
+  struct thread *curr = thread_current();
   process_exit ();
 #endif
 
@@ -378,7 +371,6 @@ thread_get_recent_cpu (void)
 }
 
 /* Idle thread.  Executes when no other thread is ready to run.
-
    The idle thread is initially put on the ready list by
    thread_start().  It will be scheduled once initially, at which
    point it initializes idle_thread, "up"s the semaphore passed
@@ -400,7 +392,6 @@ idle (void *idle_started_ UNUSED)
       thread_block ();
 
       /* Re-enable interrupts and wait for the next one.
-
          The `sti' instruction disables interrupts until the
          completion of the next instruction, so these two
          instructions are executed atomically.  This atomicity is
@@ -408,7 +399,6 @@ idle (void *idle_started_ UNUSED)
          between re-enabling interrupts and waiting for the next
          one to occur, wasting as much as one clock tick worth of
          time.
-
          See [IA32-v2a] "HLT", [IA32-v2b] "STI", and [IA32-v3a]
          7.11.1 "HLT Instruction". */
       asm volatile ("sti; hlt" : : : "memory");
@@ -462,13 +452,12 @@ init_thread (struct thread *t, const char *name, int priority)
   t->stack = (uint8_t *) t + PGSIZE;
   t->priority = priority;
   t->magic = THREAD_MAGIC;
-  
   t->next_fd = (int) 2;
   sema_init(&t->sema_start, 0);
   sema_init(&t->sema_exit, 0);
   list_init (&t->children);
   list_init (&t->files);
-
+  lock_init (&t->page_lock);
 }
 
 /* Allocates a SIZE-byte frame at the top of thread T's stack and
@@ -500,18 +489,15 @@ next_thread_to_run (void)
 
 /* Completes a thread switch by activating the new thread's page
    tables, and, if the previous thread is dying, destroying it.
-
    At this function's invocation, we just switched from thread
    PREV, the new thread is already running, and interrupts are
    still disabled.  This function is normally invoked by
    thread_schedule() as its final action before returning, but
    the first time a thread is scheduled it is called by
    switch_entry() (see switch.S).
-
-   It's not safe to call printf() until the thread switch is
-   complete.  In practice that means that printf()s should be
+   It's not safe to call //printf() until the thread switch is
+   complete.  In practice that means that //printf()s should be
    added at the end of the function.
-
    After this function and its caller returns, the thread switch
    is complete. */
 void
@@ -549,7 +535,7 @@ schedule_tail (struct thread *prev)
    running to some other state.  This function finds another
    thread to run and switches to it.
    
-   It's not safe to call printf() until schedule_tail() has
+   It's not safe to call //printf() until schedule_tail() has
    completed. */
 static void
 schedule (void) 
