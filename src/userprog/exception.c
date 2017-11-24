@@ -1,16 +1,24 @@
 #include "userprog/exception.h"
 #include <inttypes.h>
 #include <stdio.h>
+#include <stdint.h>
 #include "userprog/gdt.h"
 #include "threads/vaddr.h"
 #include "threads/interrupt.h"
 #include "threads/thread.h"
+#include "threads/palloc.h"
+#include "userprog/process.h"
+#include "userprog/pagedir.h"
+#include "vm/frame.h"
 
 /* Number of page faults processed. */
 static long long page_fault_cnt;
 
 static void kill (struct intr_frame *);
 static void page_fault (struct intr_frame *);
+
+extern struct lock page_lock;
+extern struct lock file_lock;
 
 /* Registers handlers for interrupts that can be caused by user
    programs.
@@ -156,18 +164,49 @@ page_fault (struct intr_frame *f)
 
   void *rounded_addr = pg_round_down (fault_addr);
   struct spage *spe = find_spage (rounded_addr);
+  struct thread *curr = thread_current();
 
-  if (spe) {
+  if (spe)
+  {
+    lock_acquire(&page_lock);
     spe->vaddr = rounded_addr;
     //printf("%p\n",spe->vaddr);
-    if (!spe->valid) // swap된 상태면 load
+    if (spe->status == SWAP) // swap된 상태면 load
     {
       //ASSERT(0);
       spage_load (spe);
     }
+    else if(spe->status == LAZY)
+    {
+      struct frame *f = frame_allocate(spe, PAL_USER | PAL_ZERO);
+      if(spe->is_zero)
+      {
+        pagedir_set_page (curr->pagedir, spe->vaddr, f->addr, spe->writable);
+      }
+      else
+      {
+        struct file *targetFile;
+
+        if(spe->fd == 0) // executable file
+        {
+          targetFile = curr->program;
+        }
+        else // opened file
+        {
+          targetFile = get_file(spe->fd);
+        }
+
+        lock_acquire(&file_lock);
+        file_read_at (targetFile, f->addr, PGSIZE, spe->offset);
+        lock_release(&file_lock);
+
+        pagedir_set_page (curr->pagedir, spe->vaddr, f->addr, spe->fd != 0);
+      }
+    }
+    lock_release(&page_lock);
+    spe->status = PAGE;
   }
-  else if (fault_addr >= (f->esp - 32)
-    && PHYS_BASE - fault_addr <= 262144)
+  else if (fault_addr >= (f->esp - 32) && PHYS_BASE - fault_addr <= 262144)
   {
     stack_growth (rounded_addr);
   }

@@ -7,8 +7,9 @@
 #include "threads/thread.h"
 
 static const int PAGE = 1;
-static const int SWAPED = 2;
+static const int SWAP = 2;
 static const int MM_FILE = 3;
+static const int LAZY = 4;
 
 struct spage {
 	struct hash_elem elem; // hash element
@@ -18,10 +19,10 @@ struct spage {
 	bool valid; // false면 swap out된 상태.
 	size_t index; // SWAP Index, swap된 상태일 때만 사용
 	bool writable;
+	int fd;
 
-	struct file *file;
-	size_t page_read_bytes;
-    size_t page_zero_bytes;
+	int offset; // lazy loading 할 때 file offset
+	bool is_zero; // lazy loading 할 때 zero fill 여부
 };
 
 struct mmap {
@@ -35,7 +36,6 @@ struct mmap {
 
 void spage_load (struct spage *spe);
 struct spage* spage_create(void *addr, int status, bool writable);
-void spage_ready_lazy(struct spage *spe, struct file *file, size_t read_bytes, size_t zero_bytes);
 int spage_free(struct spage* target);
 struct spage* find_spage(void *vaddr);
 void stack_growth (void *addr);

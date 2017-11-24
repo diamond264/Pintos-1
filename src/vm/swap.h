@@ -1,3 +1,6 @@
+#ifndef SWAP_H
+#define SWAP_H
+
 #include "devices/disk.h"
 #include <bitmap.h>
 
@@ -15,3 +18,5 @@ size_t
 swap_out (struct spage *spe, void *addr);
 
 void swap_bitmap_free (struct spage *spe);
+
+#endif

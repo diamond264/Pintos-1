@@ -6,16 +6,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <list.h>
+#include "userprog/syscall.h"
 
 struct list frame_list;
-struct lock frame_lock;
-struct lock evict_lock;
+extern struct lock file_lock;
 
 void frame_init()
 {
 	list_init(&frame_list);
-	lock_init(&frame_lock);
-	lock_init(&evict_lock);
 }
 
 struct frame* frame_create()
@@ -32,21 +30,16 @@ struct frame* frame_create()
 
 void frame_free(struct frame *f)
 {
-	lock_acquire(&frame_lock);
 	if(f->addr != NULL)
 	{
 		palloc_free_page(f->addr);
 		list_remove(&f->elem);
 	}
 	free(f);
-	lock_release(&frame_lock);
 }
 
 void frame_free_with_addr(void *addr)
 {
-	lock_acquire(&frame_lock);
-	ASSERT(0);
-
 	struct list_elem *iter;
 	for(iter = list_begin(&frame_list);iter != list_end(&frame_list);iter = list_next(iter)){
 	    if(list_entry(iter, struct frame, elem)->addr == addr){
@@ -56,30 +49,28 @@ void frame_free_with_addr(void *addr)
 	      break;
 	    }
 	}
-	lock_release(&frame_lock);
 }
 
 void frame_free_with_spage(struct spage *spe)
 {
-	lock_acquire(&frame_lock);
-
 	struct list_elem *iter;
 	for(iter = list_begin(&frame_list);iter != list_end(&frame_list);iter = list_next(iter)){
-	    if(list_entry(iter, struct frame, elem)->spe == spe){
-	    	// palloc_free_page(list_entry(iter, struct frame, elem)->addr);
-	     	list_remove(iter);
-	     	free(list_entry(iter, struct frame, elem));
-	     	break;
-	    }
+		struct frame *f = list_entry(iter, struct frame, elem);
+		if(f->spe == spe && f->thread == thread_current())
+		{
+			// palloc_free_page(list_entry(iter, struct frame, elem)->addr);
+			list_remove(iter);
+			free(f);
+			break;
+		}
 	}
-	lock_release(&frame_lock);
 }
 
 struct frame* frame_allocate(struct spage *spe, enum palloc_flags stat)
 {
 	if(stat & PAL_USER)
 	{
-		lock_acquire(&frame_lock);
+		//lock_acquire(&frame_lock);
 		struct frame *f = malloc(sizeof (struct frame));
 
 		uint8_t *addr = palloc_get_page(stat);
@@ -95,7 +86,7 @@ struct frame* frame_allocate(struct spage *spe, enum palloc_flags stat)
 
 		list_push_back(&frame_list, &f->elem);
 
-		lock_release(&frame_lock);
+		//lock_release(&frame_lock);
 
 		return f;
 	}
@@ -106,28 +97,40 @@ struct frame* frame_allocate(struct spage *spe, enum palloc_flags stat)
 	}
 }
 
-void * frame_evict()
+void* frame_evict()
 {
 	struct frame *f = NULL;
 	struct thread *t = NULL;
 	struct list_elem *iter;
+	struct thread *curr = thread_current();
 
 	iter = list_begin(&frame_list);
 
 	f = list_entry (iter, struct frame, elem);
 	t = f->thread;
 
-	lock_acquire(&t->page_lock);
+	//lock_acquire(&t->page_lock);
 	struct spage *spe = f->spe;
 
 	pagedir_clear_page (t->pagedir, spe->vaddr);
-	swap_out (spe, f->addr);
 
-	lock_release(&t->page_lock);
-	if(f->addr != NULL)
+	if(spe->status == PAGE)
 	{
-		palloc_free_page(f->addr);
-		list_remove(&f->elem);
+		swap_out (spe, f->addr);
+		spe->status = SWAP;
 	}
+	/*else if(spe->status == LAZY && spe->fd >= 2)
+	{
+		if(pagedir_is_dirty(t->pagedir, spe->vaddr))
+		{
+			struct file* file = get_file(spe->fd);
+			lock_acquire(&file_lock);
+			file_write_at(file, f->addr, PGSIZE, spe->offset);
+			lock_release(&file_lock);
+		}
+	}*/
+
+	palloc_free_page(f->addr);
+	list_remove(&f->elem);
 	free(f);
 }

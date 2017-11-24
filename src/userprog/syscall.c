@@ -8,6 +8,7 @@
 #include "vm/page.h"
 
 static void syscall_handler (struct intr_frame *);
+
 struct lock file_lock;
 
 void syscall_exit (int status);
@@ -166,6 +167,7 @@ syscall_exit (int status) {
   struct thread *t;
   t = thread_current ();
   t->exit_status = status;
+
   thread_exit ();
 }
 
@@ -183,7 +185,10 @@ syscall_wait (tid_t pid) {
 bool
 syscall_create (const char *file, unsigned initial_size) {
   validate_addr ((void *) file);
-  return filesys_create (file, initial_size);
+  lock_acquire(&file_lock);
+  bool res = filesys_create (file, initial_size);
+  lock_release(&file_lock);
+  return res;
 }
 
 bool
@@ -200,7 +205,9 @@ syscall_open (const char *file) {
   struct file_elem *f;
   f = (struct file_elem*)malloc (sizeof *f);
 
+  lock_acquire(&file_lock);
   f->file = filesys_open (file);
+  lock_release(&file_lock);
   if (!f->file) {
     free (f);
     return -1;
@@ -215,7 +222,11 @@ syscall_open (const char *file) {
 
 int
 syscall_filesize (int fd) {
-  return file_length (get_file (fd));
+  lock_acquire(&file_lock);
+  int length = file_length (get_file (fd));
+  lock_release(&file_lock);
+
+  return length;
 }
 
 
@@ -233,7 +244,6 @@ syscall_read (struct intr_frame *f, int fd, const void *buffer, unsigned size) {
   int value = -1;
   int i;
 
-  lock_acquire (&file_lock);
 
   if (fd == 0) {
     for (i = 0; i < (int) size; i++) {
@@ -250,11 +260,13 @@ syscall_read (struct intr_frame *f, int fd, const void *buffer, unsigned size) {
   } else {
     /// if no file, exit
     if (get_file (fd) == NULL)
+    {
       syscall_exit (-1);
+    }
+    lock_acquire (&file_lock);
     value  = file_read(get_file(fd), buffer, (off_t) size);
+    lock_release(&file_lock);
   }
-
-  lock_release(&file_lock);
   return value;
 }
 
@@ -271,21 +283,18 @@ syscall_write (struct intr_frame *f, int fd, const void *buffer, unsigned size) 
 
   if (fd == 0) syscall_exit (-1);
 
-  lock_acquire (&file_lock);
-
   if (fd == 1) {
     putbuf (buffer, size);
     value = size;
   } else {
     if (get_file (fd) == NULL)
     {
-      lock_release(&file_lock);
       syscall_exit (-1);
     }
+    lock_acquire (&file_lock);
     value  = file_write(get_file(fd), buffer, (off_t) size);
+    lock_release(&file_lock);
   }
-
-  lock_release(&file_lock);
   return value;
 }
 
@@ -297,7 +306,9 @@ syscall_seek (int fd, unsigned position) {
   struct file *f = get_file (fd);
   if (f == NULL) syscall_exit (-1);
 
-  return file_seek (f, position);
+  lock_acquire (&file_lock);
+  file_seek (f, position);
+  lock_release (&file_lock);
 }
 
 unsigned
@@ -308,7 +319,11 @@ syscall_tell (int fd) {
   struct file *f = get_file (fd);
   if (f == NULL) syscall_exit (-1);
 
-  return file_tell (f);
+  lock_acquire (&file_lock);
+  unsigned res = file_tell (f);
+  lock_release (&file_lock);
+
+  return res;
 }
 
 void
@@ -329,8 +344,13 @@ syscall_close (int fd) {
     syscall_exit (-1);
   
   list_remove (&f_elem->elem);
+
+  lock_acquire (&file_lock);
   file_close (f);
+  lock_release (&file_lock);
+
   free (f_elem);
+
 }
 
 // int syscall_mmap (int fd, void *addr)

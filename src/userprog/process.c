@@ -9,6 +9,7 @@
 #include "userprog/gdt.h"
 #include "userprog/pagedir.h"
 #include "userprog/tss.h"
+#include "userprog/syscall.h"
 #include "filesys/directory.h"
 #include "filesys/file.h"
 #include "filesys/filesys.h"
@@ -20,9 +21,13 @@
 #include "threads/vaddr.h"
 #include "vm/page.h"
 #include "vm/frame.h"
+#include "vm/swap.h"
 
 static thread_func start_process NO_RETURN;
 static bool load (const char *cmdline, void (**eip) (void), void **esp);
+
+extern struct lock page_lock;
+extern struct lock file_lock;
 
 // parent thread의 chilren list에서 tid를 가지는 element를 꺼내오기 위한 함수
 struct child_elem* get_child(struct thread *parent, tid_t child_tid)
@@ -250,6 +255,7 @@ process_wait (tid_t child_tid)
   if (!t_child->terminated)
   {
     t_parent->waiting = child_tid;
+
     sema_down (&t_parent->sema_exit);
   }
 
@@ -269,7 +275,6 @@ process_exit (void)
 
   /* Destroy the current process's page directory and switch back
      to the kernel-only page directory. */
-  hash_destroy(&curr->spage_table, hash_free_func);
 
   pd = curr->pagedir;
   if (pd != NULL) 
@@ -321,13 +326,17 @@ process_exit (void)
       free (f->file);
       free (f);
     }
-    lock_acquire (&curr->page_lock);
+    
+    lock_acquire (&page_lock);
+
+    // spage table의 spage들을 모두 free.
+    hash_destroy(&curr->spage_table, hash_free_func);
 
     curr->pagedir = NULL;
     pagedir_activate (NULL);
-
-    lock_release (&curr->page_lock);
     pagedir_destroy (pd);
+
+    lock_release (&page_lock);
   }
 }
 
@@ -602,15 +611,32 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
   ASSERT (ofs % PGSIZE == 0);
 
   file_seek (file, ofs);
-  while (read_bytes > 0 || zero_bytes > 0) 
-    {
-      /* Do calculate how to fill this page.
-         We will read PAGE_READ_BYTES bytes from FILE
-         and zero the final PAGE_ZERO_BYTES bytes. */
-      size_t page_read_bytes = read_bytes < PGSIZE ? read_bytes : PGSIZE;
-      size_t page_zero_bytes = PGSIZE - page_read_bytes;
 
-      struct spage *spe = spage_create(upage, PAGE, writable);
+  lock_acquire(&page_lock);
+  while (read_bytes > 0 || zero_bytes > 0) 
+  {
+    /* Do calculate how to fill this page.
+       We will read PAGE_READ_BYTES bytes from FILE
+       and zero the final PAGE_ZERO_BYTES bytes. */
+    size_t page_read_bytes = read_bytes < PGSIZE ? read_bytes : PGSIZE;
+    size_t page_zero_bytes = PGSIZE - page_read_bytes;
+
+    struct spage *spe;
+
+    if(PGSIZE == page_zero_bytes)
+    {
+      spe = spage_create(upage, LAZY, writable);
+      spe->is_zero = true;
+    }
+    else if(PGSIZE == page_read_bytes)
+    {
+      spe = spage_create(upage, LAZY, writable);
+      spe->offset = file_tell(file); // 현재 파일 포인터 저장
+      file_seek(file, file_tell(file) + PGSIZE);
+    }
+    else
+    {
+      spe = spage_create(upage, PAGE, writable);
       struct frame *f = frame_allocate(spe, PAL_USER);
       uint8_t *kpage = f->addr;
 
@@ -624,24 +650,29 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 
       /* Load this page. */
       if (file_read (file, kpage, page_read_bytes) != (int) page_read_bytes)
-        {
-          palloc_free_page (kpage);
-          return false; 
-        }
+      {
+        frame_free(f);
+        lock_release(&page_lock);
+        //palloc_free_page (kpage);
+        return false; 
+      }
       memset (kpage + page_read_bytes, 0, page_zero_bytes);
 
       /* Add the page to the process's address space. */
       if (!install_page (upage, kpage, writable)) 
-        {
-          palloc_free_page (kpage);
-          return false; 
-        }
-
-      /* Advance. */
-      read_bytes -= page_read_bytes;
-      zero_bytes -= page_zero_bytes;
-      upage += PGSIZE;
+      {
+        frame_free(f);
+        //palloc_free_page (kpage);
+        lock_release(&page_lock);
+        return false; 
+      }
     }
+    /* Advance. */
+    read_bytes -= page_read_bytes;
+    zero_bytes -= page_zero_bytes;
+    upage += PGSIZE;
+  }
+  lock_release(&page_lock);
   return true;
 }
 
@@ -655,6 +686,7 @@ setup_stack (void **esp)
   void *upage = ((uint8_t *) PHYS_BASE) - PGSIZE;
   if (upage == 0) ASSERT(0);
 
+  lock_acquire(&page_lock);
   struct spage *spe = spage_create(upage, PAGE, true);
   struct frame *f = frame_allocate(spe, PAL_USER | PAL_ZERO);
 
@@ -662,13 +694,18 @@ setup_stack (void **esp)
 
   //kpage = palloc_get_page (PAL_USER | PAL_ZERO);
   if (kpage != NULL) 
+  {
+    success = install_page (((uint8_t *) PHYS_BASE) - PGSIZE, kpage, true);
+    if (success)
     {
-      success = install_page (((uint8_t *) PHYS_BASE) - PGSIZE, kpage, true);
-      if (success)
-        *esp = PHYS_BASE;
-      else
-        palloc_free_page (kpage);
+      *esp = PHYS_BASE;
     }
+    else
+      //palloc_free_page (kpage);
+      frame_free(f);
+  }
+  lock_release(&page_lock);
+
   return success;
 }
 
@@ -713,6 +750,8 @@ void validate_addr_syscall (struct intr_frame *f, void *fault_addr)
   if (fault_addr == NULL
     || !is_user_vaddr(fault_addr))
   {
+    if(lock_held_by_current_thread(&file_lock))
+      lock_release(&file_lock);
     syscall_exit (-1);
   }
 

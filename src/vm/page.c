@@ -8,6 +8,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+extern struct lock page_lock;
+
 void spage_load (struct spage *spe)
 {
 	struct thread *curr = thread_current();
@@ -19,8 +21,6 @@ void spage_load (struct spage *spe)
 	if(pagedir_get_page(curr->pagedir, spe->vaddr)!=NULL || !pagedir_set_page(curr->pagedir, spe->vaddr, kpage, spe->writable)){
 		ASSERT(0);
 	}
-
-	spe->valid = true;
 }
 
 struct spage* spage_create(void *vaddr, int status, bool writable)
@@ -32,8 +32,10 @@ struct spage* spage_create(void *vaddr, int status, bool writable)
 	spe->status = status;
 	spe->vaddr = pg_round_down (vaddr);
 	spe->writable = writable;
-	spe->index = -1;
-	spe->valid = true;
+	spe->index = 0;
+	spe->offset = 0;
+	spe->is_zero = false;
+	spe->fd = 0;
 
 	struct thread *curr = thread_current();
 
@@ -46,13 +48,6 @@ struct spage* spage_create(void *vaddr, int status, bool writable)
 		free(spe);
 		return NULL;
 	}
-}
-
-void spage_ready_lazy(struct spage* spe, struct file *file, size_t read_bytes, size_t zero_bytes)
-{
-	spe->file = file;
-	spe->page_read_bytes = read_bytes;
-	spe->page_zero_bytes = zero_bytes;
 }
 
 int spage_free(struct spage* spe)
@@ -93,7 +88,7 @@ void hash_free_func (const struct hash_elem *e, void *aux UNUSED)
 	if (spe == NULL) return;
 
 	//조건문에 넣어야 하려나?
-	if (!spe->valid)
+	if (spe->status == SWAP)
 		swap_bitmap_free (spe);
 	
 	frame_free_with_spage (spe);
@@ -104,10 +99,13 @@ void hash_free_func (const struct hash_elem *e, void *aux UNUSED)
 
 void stack_growth (void *addr)
 {
+	lock_acquire(&page_lock);
 	addr = pg_round_down (addr);
 	struct spage *spe = spage_create (addr, PAGE, true);
 	struct frame *f = frame_allocate (spe, PAL_USER | PAL_ZERO);
 	ASSERT(f && spe);
+
+	lock_release(&page_lock);
 
 	if(pagedir_get_page(thread_current ()->pagedir, addr)!=NULL 
 		|| !pagedir_set_page(thread_current ()->pagedir, addr, f->addr, spe->writable))

@@ -81,6 +81,7 @@ typedef int tid_t;
 struct file_elem {
   struct file *file;
   int fd;
+  char name[50];
   struct list_elem elem;
 };
 
@@ -108,7 +109,6 @@ struct thread
 #ifdef USERPROG
     /* Owned by userprog/process.c. */
     uint32_t *pagedir;                  /* Page directory. */
-    struct lock page_lock;
 
     int exit_status;
     int child_exit_status;
@@ -127,6 +127,7 @@ struct thread
     /* Owned by thread.c. */
     struct hash spage_table;
     struct list mmap_list;
+    void* esp;
     unsigned magic;                     /* Detects stack overflow. */
   };
 
