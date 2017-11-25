@@ -42,7 +42,7 @@ exception_init (void)
   intr_register_int (3, 3, INTR_ON, kill, "#BP Breakpoint Exception");
   intr_register_int (4, 3, INTR_ON, kill, "#OF Overflow Exception");
   intr_register_int (5, 3, INTR_ON, kill,
-                     "#BR BOUND Range Exceeded Exception");
+   "#BR BOUND Range Exceeded Exception");
 
   /* These exceptions have DPL==0, preventing user processes from
      invoking them via the INT instruction.  They can still be
@@ -52,13 +52,13 @@ exception_init (void)
   intr_register_int (1, 0, INTR_ON, kill, "#DB Debug Exception");
   intr_register_int (6, 0, INTR_ON, kill, "#UD Invalid Opcode Exception");
   intr_register_int (7, 0, INTR_ON, kill,
-                     "#NM Device Not Available Exception");
+   "#NM Device Not Available Exception");
   intr_register_int (11, 0, INTR_ON, kill, "#NP Segment Not Present");
   intr_register_int (12, 0, INTR_ON, kill, "#SS Stack Fault Exception");
   intr_register_int (13, 0, INTR_ON, kill, "#GP General Protection Exception");
   intr_register_int (16, 0, INTR_ON, kill, "#MF x87 FPU Floating-Point Error");
   intr_register_int (19, 0, INTR_ON, kill,
-                     "#XF SIMD Floating-Point Exception");
+   "#XF SIMD Floating-Point Exception");
 
   /* Most exceptions can be handled with interrupts turned on.
      We need to disable interrupts for page faults because the
@@ -84,36 +84,36 @@ kill (struct intr_frame *f)
      the kernel.  Real Unix-like operating systems pass most
      exceptions back to the process via signals, but we don't
      implement them. */
-     
+
   /* The interrupt frame's code segment value tells us where the
      exception originated. */
   switch (f->cs)
-    {
+  {
     case SEL_UCSEG:
       /* User's code segment, so it's a user exception, as we
          expected.  Kill the user process.  */
-      printf ("%s: dying due to interrupt %#04x (%s).\n",
-              thread_name (), f->vec_no, intr_name (f->vec_no));
-      intr_dump_frame (f);
-      thread_current()->exit_status = -1;
-      syscall_exit (); 
+    printf ("%s: dying due to interrupt %#04x (%s).\n",
+      thread_name (), f->vec_no, intr_name (f->vec_no));
+    intr_dump_frame (f);
+    thread_current()->exit_status = -1;
+    syscall_exit (); 
 
     case SEL_KCSEG:
       /* Kernel's code segment, which indicates a kernel bug.
          Kernel code shouldn't throw exceptions.  (Page faults
          may cause kernel exceptions--but they shouldn't arrive
          here.)  Panic the kernel to make the point.  */
-      intr_dump_frame (f);
-      PANIC ("Kernel bug - unexpected interrupt in kernel"); 
+    intr_dump_frame (f);
+    PANIC ("Kernel bug - unexpected interrupt in kernel"); 
 
     default:
       /* Some other code segment?  Shouldn't happen.  Panic the
          kernel. */
-      printf ("Interrupt %#04x (%s) in unknown segment %04x\n",
-             f->vec_no, intr_name (f->vec_no), f->cs);
-      thread_current()->exit_status = -1;
-      syscall_exit ();
-    }
+    printf ("Interrupt %#04x (%s) in unknown segment %04x\n",
+       f->vec_no, intr_name (f->vec_no), f->cs);
+    thread_current()->exit_status = -1;
+    syscall_exit ();
+}
 }
 
 /* Page fault handler.  This is a skeleton that must be filled in
@@ -129,98 +129,109 @@ kill (struct intr_frame *f)
 static void
 page_fault (struct intr_frame *f) 
 {
-  bool not_present;  /* True: not-present page, false: writing r/o page. */
-  bool write;        /* True: access was write, false: access was read. */
-  bool user;         /* True: access by user, false: access by kernel. */
-  void *fault_addr;  /* Fault address. */
+    bool not_present;  /* True: not-present page, false: writing r/o page. */
+    bool write;        /* True: access was write, false: access was read. */
+    bool user;         /* True: access by user, false: access by kernel. */
+    void *fault_addr;  /* Fault address. */
 
-  /* Obtain faulting address, the virtual address that was
+    /* Obtain faulting address, the virtual address that was
      accessed to cause the fault.  It may point to code or to
      data.  It is not necessarily the address of the instruction
      that caused the fault (that's f->eip).
      See [IA32-v2a] "MOV--Move to/from Control Registers" and
      [IA32-v3a] 5.15 "Interrupt 14--Page Fault Exception
      (#PF)". */
-  asm ("movl %%cr2, %0" : "=r" (fault_addr));
+    asm ("movl %%cr2, %0" : "=r" (fault_addr));
 
-  /* Turn interrupts back on (they were only off so that we could
+    /* Turn interrupts back on (they were only off so that we could
      be assured of reading CR2 before it changed). */
-  intr_enable ();
+    intr_enable ();
 
-  /* Count page faults. */
-  page_fault_cnt++;
+    /* Count page faults. */
+    page_fault_cnt++;
 
-  /* Determine cause. */
-  not_present = (f->error_code & PF_P) == 0;
-  write = (f->error_code & PF_W) != 0;
-  user = (f->error_code & PF_U) != 0;
+    /* Determine cause. */
+    not_present = (f->error_code & PF_P) == 0;
+    write = (f->error_code & PF_W) != 0;
+    user = (f->error_code & PF_U) != 0;
 
-  if (!not_present
-    || fault_addr == NULL
-    || !is_user_vaddr(fault_addr))
-  {
-    syscall_exit (-1);
-  }
-
-  void *rounded_addr = pg_round_down (fault_addr);
-  struct spage *spe = find_spage (rounded_addr);
-  struct thread *curr = thread_current();
-
-  if (spe)
-  {
-    lock_acquire(&page_lock);
-    spe->vaddr = rounded_addr;
-    //printf("%p\n",spe->vaddr);
-    if (spe->status == SWAP) // swap된 상태면 load
+    if (!not_present
+        || fault_addr == NULL
+        || !is_user_vaddr(fault_addr))
     {
-      //ASSERT(0);
-      spage_load (spe);
+        syscall_exit (-1);
     }
-    else if(spe->status == LAZY)
+
+    void *rounded_addr = pg_round_down (fault_addr);
+    struct spage *spe = find_spage (rounded_addr);
+    struct thread *curr = thread_current();
+
+    if (spe)
     {
-      struct frame *f = frame_allocate(spe, PAL_USER | PAL_ZERO);
-      if(spe->is_zero)
-      {
-        pagedir_set_page (curr->pagedir, spe->vaddr, f->addr, spe->writable);
-      }
-      else
-      {
-        struct file *targetFile;
+        lock_acquire(&page_lock);
+        spe->vaddr = rounded_addr;
 
-        if(spe->fd == 0) // executable file
+        if (spe->status == SWAP) // swap된 상태면 load
         {
-          targetFile = curr->program;
+            spage_load (spe);
+            spe->status = PAGE;
         }
-        else // opened file
+        else if(spe->status == LAZY || spe->status == SWAP_MM)
         {
-          targetFile = get_file(spe->fd);
+            struct frame *f;
+            if(spe->is_zero)
+            {
+                f = frame_allocate(spe, PAL_USER | PAL_ZERO);
+                spe->status = PAGE;
+                pagedir_set_page (curr->pagedir, spe->vaddr, f->addr, spe->writable);
+            }
+            else
+            {
+                f = frame_allocate(spe, PAL_USER);
+
+                struct file *targetFile;
+                int read_len = PGSIZE;
+
+                if(spe->fd == 0) // executable file
+                {
+                    targetFile = curr->program;
+                    spe->status = PAGE;
+                }
+                else // opened file
+                {
+                    targetFile = get_file(spe->fd);
+                    spe->status = MM_FILE;
+
+                    if(spe->is_over)
+                        read_len = spe->length_over;
+                }
+
+                lock_acquire(&file_lock);
+                //printf("read status=%d f.a.=%p vaddr=%p addr=%p %d\n", spe->status, fault_addr, spe->vaddr, f->addr, spe->offset);
+                file_read_at (targetFile, f->addr, read_len, spe->offset);
+                //printf("read end\n");
+                lock_release(&file_lock);
+
+                pagedir_set_page (curr->pagedir, spe->vaddr, f->addr, spe->fd != 0);
+            }
         }
-
-        lock_acquire(&file_lock);
-        file_read_at (targetFile, f->addr, PGSIZE, spe->offset);
-        lock_release(&file_lock);
-
-        pagedir_set_page (curr->pagedir, spe->vaddr, f->addr, spe->fd != 0);
-      }
+        lock_release(&page_lock);
     }
-    lock_release(&page_lock);
-    spe->status = PAGE;
-  }
-  else if (fault_addr >= (f->esp - 32) && PHYS_BASE - fault_addr <= 262144)
-  {
-    stack_growth (rounded_addr);
-  }
-  else {
-    syscall_exit (-1);
-  }
+    else if (fault_addr >= (f->esp - 32) && PHYS_BASE - fault_addr <= 262144)
+    {
+        stack_growth (rounded_addr);
+    }
+    else {
+        syscall_exit (-1);
+    }
 
-  /* To implement virtual memory, delete the rest of the function
+    /* To implement virtual memory, delete the rest of the function
      body, and replace it with code that brings in the page to
      which fault_addr refers. */
-  // printf ("Page fault at %p: %s error %s page in %s context.\n",
-  //         fault_addr,
-  //         not_present ? "not present" : "rights violation",
-  //         write ? "writing" : "reading",
-  //         user ? "user" : "kernel");
-  // kill (f);
+    // printf ("Page fault at %p: %s error %s page in %s context.\n",
+    //         fault_addr,
+    //         not_present ? "not present" : "rights violation",
+    //         write ? "writing" : "reading",
+    //         user ? "user" : "kernel");
+    // kill (f);
 }

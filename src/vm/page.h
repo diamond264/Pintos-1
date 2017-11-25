@@ -10,6 +10,7 @@ static const int PAGE = 1;
 static const int SWAP = 2;
 static const int MM_FILE = 3;
 static const int LAZY = 4;
+static const int SWAP_MM = 5;
 
 struct spage {
 	struct hash_elem elem; // hash element
@@ -23,13 +24,15 @@ struct spage {
 
 	int offset; // lazy loading 할 때 file offset
 	bool is_zero; // lazy loading 할 때 zero fill 여부
+	bool is_over;
+	int length_over; // 튀어나온 길
 };
 
 struct mmap {
 	struct list_elem elem;
 
 	int mapid;
-	struct file *file;
+	int fd;
 	void *addr;
 	uint32_t size;
 };

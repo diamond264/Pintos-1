@@ -314,6 +314,9 @@ process_exit (void)
     struct list_elem *f_elem;
     struct file_elem *f;
 
+    struct list_elem *m_elem;
+    struct mmap *m;
+
     while (!list_empty (&curr->children)) {
       t_elem = list_pop_front (&curr->children);
       t = list_entry (t_elem, struct child_elem, elem);
@@ -325,6 +328,14 @@ process_exit (void)
       f = list_entry (f_elem, struct file_elem, elem);
       free (f->file);
       free (f);
+    }
+
+    while(!list_empty(&curr->mmap_list))
+    {
+      m_elem = list_pop_front(&curr->mmap_list);
+      m = list_entry(m_elem, struct mmap, elem);
+      syscall_unmap(m->mapid);
+      free(m);
     }
     
     lock_acquire (&page_lock);
@@ -610,6 +621,7 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
   ASSERT (pg_ofs (upage) == 0);
   ASSERT (ofs % PGSIZE == 0);
 
+  //printf("parameter offset : %d\n", ofs);
   file_seek (file, ofs);
 
   lock_acquire(&page_lock);
@@ -631,6 +643,7 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
     else if(PGSIZE == page_read_bytes)
     {
       spe = spage_create(upage, LAZY, writable);
+      //printf("VADDR = %p OFFSET : %d\n", upage, file_tell(file));
       spe->offset = file_tell(file); // 현재 파일 포인터 저장
       file_seek(file, file_tell(file) + PGSIZE);
     }

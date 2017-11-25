@@ -66,6 +66,19 @@ void frame_free_with_spage(struct spage *spe)
 	}
 }
 
+struct frame* find_frame(struct spage *spe)
+{
+	struct list_elem *iter;
+	for(iter = list_begin(&frame_list);iter != list_end(&frame_list);iter = list_next(iter)){
+		struct frame *f = list_entry(iter, struct frame, elem);
+		if(f->spe == spe && f->thread == thread_current())
+		{
+			// palloc_free_page(list_entry(iter, struct frame, elem)->addr);
+			return f;
+		}
+	}
+}
+
 struct frame* frame_allocate(struct spage *spe, enum palloc_flags stat)
 {
 	if(stat & PAL_USER)
@@ -114,23 +127,26 @@ void* frame_evict()
 
 	pagedir_clear_page (t->pagedir, spe->vaddr);
 
-	if(spe->status == PAGE)
-	{
-		swap_out (spe, f->addr);
-		spe->status = SWAP;
-	}
-	/*else if(spe->status == LAZY && spe->fd >= 2)
+	if(spe->status == MM_FILE)
 	{
 		if(pagedir_is_dirty(t->pagedir, spe->vaddr))
 		{
 			struct file* file = get_file(spe->fd);
 			lock_acquire(&file_lock);
-			file_write_at(file, f->addr, PGSIZE, spe->offset);
+			int write_len = spe->is_over ? spe->length_over : PGSIZE;
+			file_write_at(file, f->addr, write_len, spe->offset);
 			lock_release(&file_lock);
+			spe->status = SWAP_MM;
 		}
-	}*/
+	}
+	//else if (spe->fd >= 2)
+	else if(spe->status == PAGE)
+	{
+		swap_out (spe, f->addr);
+		spe->status = SWAP;
+	}
+	else printf("ㅅㅂ?\n");
 
-	palloc_free_page(f->addr);
-	list_remove(&f->elem);
-	free(f);
+	//palloc_free_page(f->addr);
+	frame_free(f);
 }

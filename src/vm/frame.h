@@ -27,5 +27,6 @@ struct frame * find_frame_with_vaddr (void * vaddr);
 void  evict_frame ();
 
 void frame_free_with_addr(void *addr);
+void find_frame_with_spage(struct spage *spe);
 
 #endif

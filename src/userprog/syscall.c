@@ -6,10 +6,13 @@
 #include "filesys/off_t.h"
 #include "threads/vaddr.h"
 #include "vm/page.h"
+#include "vm/swap.h"
+#include "vm/frame.h"
 
 static void syscall_handler (struct intr_frame *);
 
 struct lock file_lock;
+extern struct lock page_lock;
 
 void syscall_exit (int status);
 tid_t syscall_exec (const char *cmd_line);
@@ -146,16 +149,16 @@ syscall_handler (struct intr_frame *f)
       syscall_close ((int) *argv[0]);
       break;
 
-    // case SYS_MMAP :
-    //   argv[0] = get_argument (sp);
-    //   argv[1] = get_argument (sp+1);
-    //   f->eax = syscall_mmap ((int) *argv[0], (void *) *argv[1]);
-    //   break;
+    case SYS_MMAP :
+     argv[0] = get_argument (sp);
+     argv[1] = get_argument (sp+1);
+     f->eax = syscall_mmap ((int) *argv[0], (void *) *argv[1]);
+    break;
 
-    // case SYS_MUNMAP :
-    //   argv[0] = get_argument (sp);
-    //   syscall_unmap ((int) *argv[0]);
-    //   break;
+    case SYS_MUNMAP :
+      argv[0] = get_argument (sp);
+      syscall_unmap ((int) *argv[0]);
+      break;
 
     default :
       break;
@@ -164,10 +167,39 @@ syscall_handler (struct intr_frame *f)
 
 void
 syscall_exit (int status) {
-  struct thread *t;
-  t = thread_current ();
-  t->exit_status = status;
+  struct thread *curr;
+  curr = thread_current ();
+  curr->exit_status = status;
 
+  struct list_elem *t_elem;
+    struct child_elem *t;
+
+    struct list_elem *f_elem;
+    struct file_elem *f;
+
+    struct list_elem *m_elem;
+    struct mmap *m;
+
+  while (!list_empty (&curr->children)) {
+      t_elem = list_pop_front (&curr->children);
+      t = list_entry (t_elem, struct child_elem, elem);
+      free (t);
+    }
+
+    while (!list_empty (&curr->files)) {
+      f_elem = list_pop_front (&curr->files);
+      f = list_entry (f_elem, struct file_elem, elem);
+      free (f->file);
+      free (f);
+    }
+
+    while(!list_empty(&curr->mmap_list))
+    {
+      m_elem = list_pop_front(&curr->mmap_list);
+      m = list_entry(m_elem, struct mmap, elem);
+      syscall_unmap(m->mapid);
+      free(m);
+    }
   thread_exit ();
 }
 
@@ -353,52 +385,110 @@ syscall_close (int fd) {
 
 }
 
-// int syscall_mmap (int fd, void *addr)
-// {
-//   if (fd == 1 || fd == 0
-//     || !addr
-//     || pg_ofs(addr) != 0)
-//     return -1;
+int syscall_mmap (int fd, void *addr)
+{
+  if (fd == 1 || fd == 0 || !addr || pg_ofs(addr) != 0)
+    return -1;
 
-//   struct file_elem *f_elem;
-//   struct file *f;
+  // addr이 이미 프레임과 매핑되어 있으면 return -1
+  struct file *f = get_file(fd);
 
-//   f_elem = get_file_elem (fd);
-//   f = get_file (fd);
-//   int length = file_length (f);
+  lock_acquire(&file_lock);
+  unsigned length = file_length (f);
+  f = file_reopen(f);
+  lock_release(&file_lock);
 
-//   if (!is_user_vaddr (addr + length)
-//     || length == 0
-//     || f_elem == NULL
-//     || f == NULL)
-//     return -1;
+  if (!is_user_vaddr (addr + length) || length == 0 || f == NULL)
+    return -1;
+
+  struct mmap *map_file = (struct mmap*)malloc(sizeof (struct mmap));
+
+  void *fp;
+  // 파일 사이즈만큼 페이지가 늘어날 때 까지 for문 돌면서 할당
+  lock_acquire(&page_lock);
+  for(fp = addr; fp <= addr + length - PGSIZE; fp += PGSIZE)
+  {
+    struct spage *spe = spage_create(fp, LAZY, true);
+    spe->fd = fd;
+    spe->offset = fp - addr;
+  }
+
+  if(length % PGSIZE != 0) // 파일이 페이지 사이즈만큼 안떨어지고 조금 삐져나오면
+  {
+    struct spage *spe = spage_create(fp, LAZY, true);
+    spe->fd = fd;
+    spe->offset = fp - addr;
+    spe->is_over = true;
+    spe->length_over = length % PGSIZE;
+  }
+  lock_release(&page_lock);
   
-// }
+  map_file->fd = fd;
+  map_file->addr = addr;
+  map_file->size = length;
+  map_file->mapid = thread_current()->next_mapid;
 
-// void syscall_unmap (int mapid)
-// {
-//   struct thread *curr = thread_current ();
-//   struct list_elem *iter;
-//   struct mmap *mapping;
+  list_push_back(&thread_current()->mmap_list, &map_file->elem);
 
-//   for(iter = list_begin(&curr->mmap_list); iter != list_end(&curr->mmap_list); iter = list_next(iter))
-//   {
-//     mapping = list_entry(iter, struct mmap, elem);
+  return map_file->mapid;
+}
 
-//     if (mapping->mapid == mapid)
-//     {
-//       list_remove (iter);
-//       break;
-//     }
-//   }
+void syscall_unmap (int mapid)
+{
+  struct thread *curr = thread_current ();
+  struct list_elem *iter;
+  struct mmap *mapping;
 
-//   if (mapping == NULL)
-//     syscall_exit (-1);
+  for(iter = list_begin(&curr->mmap_list); iter != list_end(&curr->mmap_list); iter = list_next(iter))
+  {
+    mapping = list_entry(iter, struct mmap, elem);
 
-//   // 여기서 뭐 해야함
+    if (mapping->mapid == mapid)
+    {
+      list_remove (iter);
+      break;
+    }
+  }
 
-//   file_close (mapping->file);
-//   free (mapping);
-// }
+  if (mapping == NULL)
+    syscall_exit (-1);
+
+  // 여기서 뭐 해야함
+  unsigned size = mapping->size;
+  void *fp = mapping->addr;
+
+  struct file *targetFile;
+
+  lock_acquire(&page_lock);
+  int write_len = PGSIZE;
+  while(size > 0)
+  {
+    if(size - PGSIZE < 0) write_len = size;
+    struct spage *spe = find_spage(fp);
+    struct frame *f = find_frame(spe);
+
+    if(pagedir_is_dirty(curr->pagedir, spe->vaddr))
+    {
+      targetFile = get_file(mapping->fd);
+      lock_acquire(&file_lock);
+      file_write_at(targetFile, f->addr, write_len, spe->offset);
+      lock_release(&file_lock);
+
+      pagedir_clear_page (curr->pagedir, spe->vaddr);
+      spage_free(spe);
+      frame_free(f);
+    }
+
+    size -= PGSIZE;
+    fp += PGSIZE;
+  }
+
+  lock_release(&page_lock);
+
+  syscall_close(mapping->fd);
+
+  //file_close (mapping->file);
+  free (mapping);
+}
 
 

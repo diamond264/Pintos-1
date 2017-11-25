@@ -127,6 +127,7 @@ struct thread
     /* Owned by thread.c. */
     struct hash spage_table;
     struct list mmap_list;
+    int next_mapid;
     void* esp;
     unsigned magic;                     /* Detects stack overflow. */
   };
