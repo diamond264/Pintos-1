@@ -77,6 +77,8 @@ struct frame* find_frame(struct spage *spe)
 			return f;
 		}
 	}
+
+	return NULL;
 }
 
 struct frame* frame_allocate(struct spage *spe, enum palloc_flags stat)
@@ -131,7 +133,7 @@ void* frame_evict()
 	{
 		if(pagedir_is_dirty(t->pagedir, spe->vaddr))
 		{
-			struct file* file = get_file(spe->fd);
+			struct file* file = spe->file;
 			lock_acquire(&file_lock);
 			int write_len = spe->is_over ? spe->length_over : PGSIZE;
 			file_write_at(file, f->addr, write_len, spe->offset);

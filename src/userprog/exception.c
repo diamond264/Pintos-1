@@ -192,14 +192,14 @@ page_fault (struct intr_frame *f)
                 struct file *targetFile;
                 int read_len = PGSIZE;
 
-                if(spe->fd == 0) // executable file
+                if(spe->file == NULL) // executable file
                 {
                     targetFile = curr->program;
                     spe->status = PAGE;
                 }
                 else // opened file
                 {
-                    targetFile = get_file(spe->fd);
+                    targetFile = spe->file;
                     spe->status = MM_FILE;
 
                     if(spe->is_over)

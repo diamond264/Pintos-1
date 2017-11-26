@@ -21,6 +21,7 @@ struct spage {
 	size_t index; // SWAP Index, swap된 상태일 때만 사용
 	bool writable;
 	int fd;
+	struct file *file;
 
 	int offset; // lazy loading 할 때 file offset
 	bool is_zero; // lazy loading 할 때 zero fill 여부
@@ -32,9 +33,10 @@ struct mmap {
 	struct list_elem elem;
 
 	int mapid;
-	int fd;
+	struct file *file;
 	void *addr;
 	uint32_t size;
+	struct thread *owner;
 };
 
 void spage_load (struct spage *spe);

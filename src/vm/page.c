@@ -36,6 +36,7 @@ struct spage* spage_create(void *vaddr, int status, bool writable)
 	spe->offset = 0;
 	spe->is_zero = false;
 	spe->fd = 0;
+	spe->file = NULL;
 	spe->is_over = false;
 	spe->length_over = 0;
 

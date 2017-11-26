@@ -49,8 +49,7 @@ get_file (int fd) {
   return NULL;
 }
 
-struct file_elem* 
-get_file_elem (int fd) {
+struct file_elem* get_file_elem (int fd) {
   struct thread *curr = thread_current ();
   struct list_elem *i;
 
@@ -230,22 +229,24 @@ syscall_remove (const char *file) {
 }
 
 int
-syscall_open (const char *file) {
-  validate_addr ((void *) file);
+syscall_open (const char *filename) {
+  validate_addr ((void *) filename);
 
   struct thread *t = thread_current ();
   struct file_elem *f;
-  f = (struct file_elem*)malloc (sizeof *f);
+  f = malloc (sizeof (struct file_elem));
 
   lock_acquire(&file_lock);
-  f->file = filesys_open (file);
+  f->file = filesys_open (filename);
   lock_release(&file_lock);
-  if (!f->file) {
-    free (f);
+  if (f->file == NULL) {
     return -1;
   }
 
   f->fd = t->next_fd;
+  //printf("%s %d\n", filename, strlen(filename));
+  strlcpy(f->name, filename, strlen(filename) + 1); // filename 저장
+  //printf("%s\n", f->name);
   t->next_fd++;
   list_push_back (&t->files, &f->elem);
 
@@ -373,7 +374,9 @@ syscall_close (int fd) {
     free (f_elem);
 
   if (f == NULL || f_elem == NULL) 
+  {
     syscall_exit (-1);
+  }
   
   list_remove (&f_elem->elem);
 
@@ -391,46 +394,70 @@ int syscall_mmap (int fd, void *addr)
     return -1;
 
   // addr이 이미 프레임과 매핑되어 있으면 return -1
-  struct file *f = get_file(fd);
+  struct list_elem *iter;
+  struct thread *curr = thread_current();
+
+  // over mapping을 검사한다.
+  struct spage *overlap = find_spage(addr);
+  if(overlap != NULL)
+    return -1;
+  /*for(iter = list_begin(&curr->mmap_list); iter != list_end(&curr->mmap_list); iter = list_next(iter))
+  {
+    printf("test\n");
+    struct mmap *m = list_entry(iter, struct mmap, elem);
+    printf("test 3 %p %p\n", m->addr, addr);
+    printf("test 4 %p %p\n", m->addr, pg_round_down(addr));
+    if(m->addr == pg_round_down(addr))
+    {
+      printf("overlapping\n");
+      return -1;
+    }
+  }*/
 
   lock_acquire(&file_lock);
-  unsigned length = file_length (f);
-  f = file_reopen(f);
+  struct file *mapped_file = filesys_open(get_file_elem(fd)->name);
+  int length = file_length(mapped_file);
   lock_release(&file_lock);
 
-  if (!is_user_vaddr (addr + length) || length == 0 || f == NULL)
+  if (!is_user_vaddr (addr + length) || length == 0 || mapped_file == NULL)
     return -1;
 
-  struct mmap *map_file = (struct mmap*)malloc(sizeof (struct mmap));
+  struct mmap *mapping = (struct mmap*)malloc(sizeof (struct mmap));
 
   void *fp;
   // 파일 사이즈만큼 페이지가 늘어날 때 까지 for문 돌면서 할당
   lock_acquire(&page_lock);
+
   for(fp = addr; fp <= addr + length - PGSIZE; fp += PGSIZE)
   {
     struct spage *spe = spage_create(fp, LAZY, true);
-    spe->fd = fd;
+
+    // 파일 이름을 가져온다.
+    // 원래 thread의 파일을 쓰려했는데, close 한 후에도 사용할 수 있어야 하므로 새로 오픈한다.
+    spe->file = mapped_file;
     spe->offset = fp - addr;
   }
 
   if(length % PGSIZE != 0) // 파일이 페이지 사이즈만큼 안떨어지고 조금 삐져나오면
   {
     struct spage *spe = spage_create(fp, LAZY, true);
-    spe->fd = fd;
+
+    spe->file = mapped_file;
     spe->offset = fp - addr;
     spe->is_over = true;
     spe->length_over = length % PGSIZE;
   }
   lock_release(&page_lock);
   
-  map_file->fd = fd;
-  map_file->addr = addr;
-  map_file->size = length;
-  map_file->mapid = thread_current()->next_mapid;
+  mapping->file = mapped_file;
+  mapping->addr = addr;
+  mapping->size = length;
+  mapping->mapid = curr->next_mapid++;
+  mapping->owner = curr;
 
-  list_push_back(&thread_current()->mmap_list, &map_file->elem);
+  list_push_back(&curr->mmap_list, &mapping->elem);
 
-  return map_file->mapid;
+  return mapping->mapid;
 }
 
 void syscall_unmap (int mapid)
@@ -439,6 +466,8 @@ void syscall_unmap (int mapid)
   struct list_elem *iter;
   struct mmap *mapping;
 
+  bool exists = false;
+
   for(iter = list_begin(&curr->mmap_list); iter != list_end(&curr->mmap_list); iter = list_next(iter))
   {
     mapping = list_entry(iter, struct mmap, elem);
@@ -446,18 +475,21 @@ void syscall_unmap (int mapid)
     if (mapping->mapid == mapid)
     {
       list_remove (iter);
+      exists = true;
       break;
     }
   }
 
   if (mapping == NULL)
+  {
     syscall_exit (-1);
+  }
 
   // 여기서 뭐 해야함
-  unsigned size = mapping->size;
+  int size = mapping->size;
   void *fp = mapping->addr;
 
-  struct file *targetFile;
+  struct file *targetFile = mapping->file;
 
   lock_acquire(&page_lock);
   int write_len = PGSIZE;
@@ -465,19 +497,24 @@ void syscall_unmap (int mapid)
   {
     if(size - PGSIZE < 0) write_len = size;
     struct spage *spe = find_spage(fp);
+
+    //printf("T or F : %d %p\n", spe == NULL, spe->vaddr);
     struct frame *f = find_frame(spe);
 
-    if(pagedir_is_dirty(curr->pagedir, spe->vaddr))
+    if(spe->status == MM_FILE || spe->status == SWAP_MM)
     {
-      targetFile = get_file(mapping->fd);
-      lock_acquire(&file_lock);
-      file_write_at(targetFile, f->addr, write_len, spe->offset);
-      lock_release(&file_lock);
+      if(pagedir_is_dirty(curr->pagedir, spe->vaddr))
+      {
+        lock_acquire(&file_lock);
+        file_write_at(targetFile, f->addr, write_len, spe->offset);
+        lock_release(&file_lock);
+      }
 
       pagedir_clear_page (curr->pagedir, spe->vaddr);
-      spage_free(spe);
       frame_free(f);
     }
+
+    spage_free(spe);
 
     size -= PGSIZE;
     fp += PGSIZE;
@@ -485,10 +522,13 @@ void syscall_unmap (int mapid)
 
   lock_release(&page_lock);
 
-  syscall_close(mapping->fd);
+  //syscall_close(mapping->fd);
 
-  //file_close (mapping->file);
-  free (mapping);
+  if(exists)
+  {
+    file_close (mapping->file);
+    free (mapping);
+  }
 }
 
 
