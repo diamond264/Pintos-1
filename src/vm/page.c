@@ -6,7 +6,7 @@
 #include "threads/palloc.h"
 #include "threads/thread.h"
 #include <stdio.h>
-#include <stdlib.h>
+#include <stdb.h>
 
 extern struct lock page_lock;
 

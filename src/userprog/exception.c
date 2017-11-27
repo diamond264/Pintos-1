@@ -166,6 +166,8 @@ page_fault (struct intr_frame *f)
     struct spage *spe = find_spage (rounded_addr);
     struct thread *curr = thread_current();
 
+    //printf("fault by %s\n", curr->name);
+
     if (spe)
     {
         lock_acquire(&page_lock);
@@ -207,12 +209,11 @@ page_fault (struct intr_frame *f)
                 }
 
                 lock_acquire(&file_lock);
-                //printf("read status=%d f.a.=%p vaddr=%p addr=%p %d\n", spe->status, fault_addr, spe->vaddr, f->addr, spe->offset);
                 file_read_at (targetFile, f->addr, read_len, spe->offset);
-                //printf("read end\n");
                 lock_release(&file_lock);
 
-                pagedir_set_page (curr->pagedir, spe->vaddr, f->addr, spe->fd != 0);
+                pagedir_set_page (curr->pagedir, spe->vaddr, f->addr, spe->file != NULL);
+                //pagedir_set_page (curr->pagedir, spe->vaddr, f->addr, true);
             }
         }
         lock_release(&page_lock);

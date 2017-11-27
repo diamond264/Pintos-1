@@ -14,12 +14,11 @@
 void
 test_main (void)
 {
-  int handle;
+	int handle;
 
-  CHECK (create ("sample.txt", sizeof sample), "create \"sample.txt\"");
-  CHECK ((handle = open ("sample.txt")) > 1, "open \"sample.txt\"");
-  CHECK (mmap (handle, ACTUAL) != MAP_FAILED, "mmap \"sample.txt\"");
-  memcpy (ACTUAL, sample, sizeof sample);
-  msg("일단 여기까지");
+	CHECK (create ("sample.txt", sizeof sample), "create \"sample.txt\"");
+	CHECK ((handle = open ("sample.txt")) > 1, "open \"sample.txt\"");
+	CHECK (mmap (handle, ACTUAL) != MAP_FAILED, "mmap \"sample.txt\"");
+	memcpy (ACTUAL, sample, sizeof sample);
 }
 

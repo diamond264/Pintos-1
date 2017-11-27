@@ -194,10 +194,10 @@ syscall_exit (int status) {
 
     while(!list_empty(&curr->mmap_list))
     {
-      m_elem = list_pop_front(&curr->mmap_list);
+      m_elem = list_front(&curr->mmap_list);
       m = list_entry(m_elem, struct mmap, elem);
       syscall_unmap(m->mapid);
-      free(m);
+      //free(m);
     }
   thread_exit ();
 }
@@ -486,7 +486,7 @@ void syscall_unmap (int mapid)
   }
 
   // 여기서 뭐 해야함
-  int size = mapping->size;
+  int size = mapping->size;;
   void *fp = mapping->addr;
 
   struct file *targetFile = mapping->file;

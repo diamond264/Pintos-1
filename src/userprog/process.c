@@ -116,6 +116,7 @@ process_execute (const char *file_name)
   }
 
   palloc_free_page(fn_copy2);
+
   return tid;
 }
 
@@ -349,6 +350,11 @@ process_exit (void)
 
     lock_release (&page_lock);
   }
+
+  if(lock_held_by_current_thread(&page_lock))
+    lock_release(&page_lock);
+  if(lock_held_by_current_thread(&file_lock))
+    lock_release(&file_lock);
 }
 
 /* Sets up the CPU for running user code in the current
@@ -621,7 +627,6 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
   ASSERT (pg_ofs (upage) == 0);
   ASSERT (ofs % PGSIZE == 0);
 
-  //printf("parameter offset : %d\n", ofs);
   file_seek (file, ofs);
 
   lock_acquire(&page_lock);
