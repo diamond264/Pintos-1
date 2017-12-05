@@ -1,6 +1,6 @@
-Copying tests/userprog/close-normal into /tmp/dHOA1JmgTm.dsk...
-Copying ../../tests/userprog/sample.txt into /tmp/dHOA1JmgTm.dsk...
-Writing command line to /tmp/Kd0UifwH9d.dsk...
+Copying tests/userprog/close-normal into /tmp/TbuE7HsCXF.dsk...
+Copying ../../tests/userprog/sample.txt into /tmp/TbuE7HsCXF.dsk...
+Writing command line to /tmp/aJrU97quc8.dsk...
 warning: can't find squish-pty, so terminal input will fail
 bochs -q
 Kernel command line: -q -f put close-normal put sample.txt run close-normal
@@ -23,13 +23,13 @@ Executing 'close-normal':
 (close-normal) end
 close-normal: exit(0)
 Execution of 'close-normal' complete.
-Timer: 350 ticks
-Thread: 0 idle ticks, 312 kernel ticks, 41 user ticks
+Timer: 348 ticks
+Thread: 30 idle ticks, 275 kernel ticks, 46 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 92 reads, 210 writes
 hd1:0: 100 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1064 characters output
+Console: 1065 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

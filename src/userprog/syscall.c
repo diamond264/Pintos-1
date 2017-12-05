@@ -15,18 +15,14 @@ struct lock file_lock;
 extern struct lock page_lock;
 
 void syscall_exit (int status);
-tid_t syscall_exec (struct intr_frame *f, const char *cmd_line);
+tid_t syscall_exec (const char *cmd_line);
 int syscall_wait (tid_t pid);
 bool syscall_create (const char *file, unsigned initial_size);
 bool syscall_remove (const char *file);
 int syscall_open (const char *file);
 int syscall_filesize (int fd);
 int syscall_read (struct intr_frame *f, int fd, const void *buffer, unsigned size);
-<<<<<<< HEAD
-int syscall_write (int fd, const void *buffer, unsigned size);
-=======
 int syscall_write (struct intr_frame *f, int fd, const void *buffer, unsigned size);
->>>>>>> PJ-3-2
 void syscall_seek (int fd, unsigned position);
 unsigned syscall_tell (int fd);
 void syscall_close (int fd);
@@ -93,7 +89,7 @@ syscall_handler (struct intr_frame *f)
 
     case SYS_EXEC :
       argv[0] = get_argument (sp);
-      f->eax = syscall_exec (f, (char *) *argv[0]);
+      f->eax = syscall_exec ((char *) *argv[0]);
       break;
 
     case SYS_WAIT :
@@ -170,12 +166,6 @@ syscall_handler (struct intr_frame *f)
 
 void
 syscall_exit (int status) {
-<<<<<<< HEAD
-  struct thread *t;
-  t = thread_current ();
-  t->exit_status = status;
-  //ASSERT(0);
-=======
   struct thread *curr;
   curr = thread_current ();
   curr->exit_status = status;
@@ -209,17 +199,12 @@ syscall_exit (int status) {
       syscall_unmap(m->mapid);
       //free(m);
     }
->>>>>>> PJ-3-2
   thread_exit ();
 }
 
 tid_t
-syscall_exec (struct intr_frame *f, const char *cmd_line) {
-  if ((void *) cmd_line == NULL)
-  {
-    syscall_exit (-1);
-  }
-  validate_addr_syscall (f, (void *) cmd_line);
+syscall_exec (const char *cmd_line) {
+  validate_addr ((void *) cmd_line);
   return (tid_t) process_execute (cmd_line);
 }
 

@@ -12,8 +12,6 @@
 #include "threads/synch.h"
 #include "threads/vaddr.h"
 #ifdef USERPROG
-#include "vm/frame.h"
-#include "vm/page.h"
 #include "userprog/process.h"
 #endif
 
@@ -242,10 +240,6 @@ thread_block (void)
    be important: if the caller had disabled interrupts itself,
    it may expect that it can atomically unblock a thread and
    update other data. */
-<<<<<<< HEAD
-
-=======
->>>>>>> PJ-3-2
 void
 thread_unblock (struct thread *t) 
 {
@@ -301,6 +295,7 @@ thread_exit (void)
   ASSERT (!intr_context ());
 
 #ifdef USERPROG
+  struct thread *curr = thread_current();
   process_exit ();
 #endif
 
@@ -330,10 +325,6 @@ thread_yield (void)
   intr_set_level (old_level);
 }
 
-<<<<<<< HEAD
-// Edited
-=======
->>>>>>> PJ-3-2
 /* Sets the current thread's priority to NEW_PRIORITY. */
 void
 thread_set_priority (int new_priority) 
@@ -378,10 +369,8 @@ thread_get_recent_cpu (void)
   /* Not yet implemented. */
   return 0;
 }
-
 
 /* Idle thread.  Executes when no other thread is ready to run.
-
    The idle thread is initially put on the ready list by
    thread_start().  It will be scheduled once initially, at which
    point it initializes idle_thread, "up"s the semaphore passed
@@ -403,7 +392,6 @@ idle (void *idle_started_ UNUSED)
       thread_block ();
 
       /* Re-enable interrupts and wait for the next one.
-
          The `sti' instruction disables interrupts until the
          completion of the next instruction, so these two
          instructions are executed atomically.  This atomicity is
@@ -411,7 +399,6 @@ idle (void *idle_started_ UNUSED)
          between re-enabling interrupts and waiting for the next
          one to occur, wasting as much as one clock tick worth of
          time.
-
          See [IA32-v2a] "HLT", [IA32-v2b] "STI", and [IA32-v3a]
          7.11.1 "HLT Instruction". */
       asm volatile ("sti; hlt" : : : "memory");
@@ -466,11 +453,7 @@ init_thread (struct thread *t, const char *name, int priority)
   t->priority = priority;
   t->magic = THREAD_MAGIC;
   t->next_fd = (int) 2;
-<<<<<<< HEAD
-  t->waiting = NULL;
-=======
   t->next_mapid = (int) 2;
->>>>>>> PJ-3-2
   sema_init(&t->sema_start, 0);
   sema_init(&t->sema_exit, 0);
   list_init (&t->children);
@@ -507,18 +490,15 @@ next_thread_to_run (void)
 
 /* Completes a thread switch by activating the new thread's page
    tables, and, if the previous thread is dying, destroying it.
-
    At this function's invocation, we just switched from thread
    PREV, the new thread is already running, and interrupts are
    still disabled.  This function is normally invoked by
    thread_schedule() as its final action before returning, but
    the first time a thread is scheduled it is called by
    switch_entry() (see switch.S).
-
-   It's not safe to call printf() until the thread switch is
-   complete.  In practice that means that printf()s should be
+   It's not safe to call //printf() until the thread switch is
+   complete.  In practice that means that //printf()s should be
    added at the end of the function.
-
    After this function and its caller returns, the thread switch
    is complete. */
 void
@@ -556,7 +536,7 @@ schedule_tail (struct thread *prev)
    running to some other state.  This function finds another
    thread to run and switches to it.
    
-   It's not safe to call printf() until schedule_tail() has
+   It's not safe to call //printf() until schedule_tail() has
    completed. */
 static void
 schedule (void) 
@@ -590,26 +570,4 @@ allocate_tid (void)
 
 /* Offset of `stack' member within `struct thread'.
    Used by switch.S, which can't figure it out on its own. */
-<<<<<<< HEAD
 uint32_t thread_stack_ofs = offsetof (struct thread, stack);
-
-int print_thread_children(struct thread *t)
-{
-  if (list_empty (&t->children))
-    return NULL;
-
-  int length = 0;
-  struct list_elem *iter;
-  struct child_elem *iter_thread;
-
-  for(iter = list_begin(&t->children); iter != list_end(&t->children); iter = list_next(iter))
-  {
-    iter_thread = list_entry(iter, struct child_elem, elem);
-    if (iter_thread == NULL) return NULL;
-  }
-
-  return length;
-}
-=======
-uint32_t thread_stack_ofs = offsetof (struct thread, stack);
->>>>>>> PJ-3-2

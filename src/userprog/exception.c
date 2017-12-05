@@ -129,21 +129,12 @@ kill (struct intr_frame *f)
 static void
 page_fault (struct intr_frame *f) 
 {
-<<<<<<< HEAD
-  bool not_present;  /* True: not-present page, false: writing r/o page. */
-  bool write;        /* True: access was write, false: access was read. */
-  bool user;         /* True: access by user, false: access by kernel. */
-  void *fault_addr;  /* Fault address. */
-
-  /* Obtain faulting address, the virtual address that was
-=======
     bool not_present;  /* True: not-present page, false: writing r/o page. */
     bool write;        /* True: access was write, false: access was read. */
     bool user;         /* True: access by user, false: access by kernel. */
     void *fault_addr;  /* Fault address. */
 
     /* Obtain faulting address, the virtual address that was
->>>>>>> PJ-3-2
      accessed to cause the fault.  It may point to code or to
      data.  It is not necessarily the address of the instruction
      that caused the fault (that's f->eip).
@@ -175,39 +166,6 @@ page_fault (struct intr_frame *f)
     struct spage *spe = find_spage (rounded_addr);
     struct thread *curr = thread_current();
 
-<<<<<<< HEAD
-  // Check errors
-  void *rounded_addr = pg_round_down (fault_addr);
-
-  if (!not_present
-    || fault_addr == NULL
-    || !is_user_vaddr(fault_addr))
-  {
-    // printf("not valid\n");
-    // printf("%p\n", fault_addr);
-    /*printf("%x\n", f->esp);
-    ASSERT(!(fault_addr == NULL));*/
-    syscall_exit (-1);
-  }
-
-  // Get current thread's supplemental page table entry
-  // if it is not null, and not loaded, load it.
-  struct spage_entry *spte = spage_get_entry (rounded_addr);
-
-  if (spte) {
-    if (spte->index >= 0)
-    {
-      spage_load (spte);
-    }
-  }
-  else if (fault_addr >= (f->esp - 32))
-  {
-    stack_growth (fault_addr);
-  }
-  else {
-    syscall_exit (-1);
-  }
-=======
     //printf("fault by %s\n", curr->name);
 
     if (spe)
@@ -267,24 +225,14 @@ page_fault (struct intr_frame *f)
     else {
         syscall_exit (-1);
     }
->>>>>>> PJ-3-2
 
     /* To implement virtual memory, delete the rest of the function
      body, and replace it with code that brings in the page to
      which fault_addr refers. */
-<<<<<<< HEAD
-  // printf ("Page fault at %p: %s error %s page in %s context.\n",
-  //         fault_addr,
-  //         not_present ? "not present" : "rights violation",
-  //         write ? "writing" : "reading",
-  //         user ? "user" : "kernel");
-  // kill (f);
-=======
     // printf ("Page fault at %p: %s error %s page in %s context.\n",
     //         fault_addr,
     //         not_present ? "not present" : "rights violation",
     //         write ? "writing" : "reading",
     //         user ? "user" : "kernel");
     // kill (f);
->>>>>>> PJ-3-2
 }

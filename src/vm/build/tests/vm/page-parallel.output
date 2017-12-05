@@ -1,6 +1,6 @@
-Copying tests/vm/page-parallel into /tmp/RSmxb0yr8d.dsk...
-Copying tests/vm/child-linear into /tmp/RSmxb0yr8d.dsk...
-Writing command line to /tmp/6ciAx57w67.dsk...
+Copying tests/vm/page-parallel into /tmp/JzfAT85VYi.dsk...
+Copying tests/vm/child-linear into /tmp/JzfAT85VYi.dsk...
+Writing command line to /tmp/Cq2KqSAi4B.dsk...
 warning: can't find squish-pty, so terminal input will fail
 bochs -q
 Kernel command line: -q -f put page-parallel put child-linear run page-parallel
@@ -20,28 +20,16 @@ Executing 'page-parallel':
 (page-parallel) begin
 (page-parallel) exec "child-linear"
 (page-parallel) exec "child-linear"
-ffff
-ffff
-ffff
-ffff
-ffff
-ffff
-child-linear: exit(-1)
-page-parallel: dying due to interrupt 0x03 (#BP Breakpoint Exception).
-Interrupt 0x03 (#BP Breakpoint Exception) at eip=0x804a123
- cr2=0804a122 error=00000000
- eax=00000005 ebx=00000002 ecx=00000024 edx=0804bc00
- esi=bfffff90 edi=00000000 esp=bfffff70 ebp=bfffff78
- cs=001b ds=0023 es=0023 ss=0023
-page-parallel: exit(-1072570448)
+(page-parallel) exec "child-linear": FAILED
+page-parallel: exit(1)
 Execution of 'page-parallel' complete.
-Timer: 3751 ticks
-Thread: 0 idle ticks, 851 kernel ticks, 2907 user ticks
+Timer: 2192 ticks
+Thread: 30 idle ticks, 387 kernel ticks, 1786 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 169 reads, 410 writes
+hd0:1: 168 reads, 410 writes
 hd1:0: 200 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1426 characters output
+Console: 1110 characters output
 Keyboard: 0 keys pressed
-Exception: 4 page faults
+Exception: 0 page faults
 Powering off...

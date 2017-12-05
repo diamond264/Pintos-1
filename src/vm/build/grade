@@ -1,4 +1,4 @@
-TOTAL TESTING SCORE: 58.5%
+TOTAL TESTING SCORE: 44.9%
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -6,13 +6,13 @@ SUMMARY BY TEST SET
 
 Test Set                                      Pts Max  % Ttl  % Max
 --------------------------------------------- --- --- ------ ------
-tests/vm/Rubric.functionality                  17/ 55  15.5%/ 50.0%
+tests/vm/Rubric.functionality                   5/ 55   4.5%/ 50.0%
 tests/vm/Rubric.robustness                     15/ 28   8.0%/ 15.0%
 tests/userprog/Rubric.functionality           108/108  10.0%/ 10.0%
 tests/userprog/Rubric.robustness               88/ 88   5.0%/  5.0%
-tests/filesys/base/Rubric                      30/ 30  20.0%/ 20.0%
+tests/filesys/base/Rubric                      26/ 30  17.3%/ 20.0%
 --------------------------------------------- --- --- ------ ------
-Total                                                  58.5%/100.0%
+Total                                                  44.9%/100.0%
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -20,10 +20,10 @@ SUMMARY OF INDIVIDUAL TESTS
 
 Functionality of virtual memory subsystem (tests/vm/Rubric.functionality):
 	- Test stack growth.
-	     3/ 3 tests/vm/pt-grow-stack
-	     3/ 3 tests/vm/pt-grow-stk-sc
-	     3/ 3 tests/vm/pt-big-stk-obj
-	     3/ 3 tests/vm/pt-grow-pusha
+	  ** 0/ 3 tests/vm/pt-grow-stack
+	  ** 0/ 3 tests/vm/pt-grow-stk-sc
+	  ** 0/ 3 tests/vm/pt-big-stk-obj
+	  ** 0/ 3 tests/vm/pt-grow-pusha
 
 	- Test paging behavior.
 	  ** 0/ 3 tests/vm/page-linear
@@ -50,8 +50,8 @@ Functionality of virtual memory subsystem (tests/vm/Rubric.functionality):
 	  ** 0/ 2 tests/vm/mmap-remove
 
 	- Section summary.
-	      6/ 20 tests passed
-	     17/ 55 points subtotal
+	      2/ 20 tests passed
+	      5/ 55 points subtotal
 
 Robustness of virtual memory subsystem (tests/vm/Rubric.robustness):
 	- Test robustness of page table support.
@@ -205,43 +205,239 @@ Functionality of base file system (tests/filesys/base/Rubric):
 	     3/ 3 tests/filesys/base/lg-seq-random
 
 	- Test synchronized multiprogram access to files.
-	     4/ 4 tests/filesys/base/syn-read
+	  ** 0/ 4 tests/filesys/base/syn-read
 	     4/ 4 tests/filesys/base/syn-write
 	     2/ 2 tests/filesys/base/syn-remove
 
 	- Section summary.
-	     13/ 13 tests passed
-	     30/ 30 points subtotal
+	     12/ 13 tests passed
+	     26/ 30 points subtotal
 
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/vm/pt-grow-stack FAILURE:
+
+Test output failed to match any acceptable form.
+
+Acceptable output:
+  (pt-grow-stack) begin
+  (pt-grow-stack) cksum: 3424492700
+  (pt-grow-stack) end
+Differences in `diff -u' format:
+  (pt-grow-stack) begin
+- (pt-grow-stack) cksum: 3424492700
+- (pt-grow-stack) end
+
+(Process exit codes are excluded for matching purposes.)
+
+OUTPUT FROM tests/vm/pt-grow-stack:
+
+Copying tests/vm/pt-grow-stack into /tmp/Jz1zWBAzWT.dsk...
+Writing command line to /tmp/MQtiBIMceF.dsk...
+warning: can't find squish-pty, so terminal input will fail
+bochs -q
+Kernel command line: -q -f put pt-grow-stack run pt-grow-stack
+Pintos booting with 4,096 kB RAM...
+374 pages available in kernel pool.
+374 pages available in user pool.
+Calibrating timer...  204,600 loops/s.
+hd0:0: detected 1,008 sector (504 kB) disk, model "Generic 1234", serial "BXHD00011"
+hd0:1: detected 4,032 sector (1 MB) disk, model "Generic 1234", serial "BXHD00012"
+hd1:0: detected 1,008 sector (504 kB) disk, model "Generic 1234", serial "BXHD00021"
+hd1:1: detected 8,064 sector (3 MB) disk, model "Generic 1234", serial "BXHD00022"
+Formatting file system...done.
+Boot complete.
+Putting 'pt-grow-stack' into the file system...
+Executing 'pt-grow-stack':
+(pt-grow-stack) begin
+pt-grow-stack: exit(-1)
+Execution of 'pt-grow-stack' complete.
+Timer: 283 ticks
+Thread: 30 idle ticks, 229 kernel ticks, 27 user ticks
+hd0:0: 0 reads, 0 writes
+hd0:1: 64 reads, 222 writes
+hd1:0: 107 reads, 0 writes
+hd1:1: 0 reads, 0 writes
+Console: 927 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/vm/pt-grow-stk-sc FAILURE:
+
+Test output failed to match any acceptable form.
+
+Acceptable output:
+  (pt-grow-stk-sc) begin
+  (pt-grow-stk-sc) create "sample.txt"
+  (pt-grow-stk-sc) open "sample.txt"
+  (pt-grow-stk-sc) write "sample.txt"
+  (pt-grow-stk-sc) 2nd open "sample.txt"
+  (pt-grow-stk-sc) read "sample.txt"
+  (pt-grow-stk-sc) compare written data against read data
+  (pt-grow-stk-sc) end
+Differences in `diff -u' format:
+  (pt-grow-stk-sc) begin
+- (pt-grow-stk-sc) create "sample.txt"
+- (pt-grow-stk-sc) open "sample.txt"
+- (pt-grow-stk-sc) write "sample.txt"
+- (pt-grow-stk-sc) 2nd open "sample.txt"
+- (pt-grow-stk-sc) read "sample.txt"
+- (pt-grow-stk-sc) compare written data against read data
+- (pt-grow-stk-sc) end
+
+(Process exit codes are excluded for matching purposes.)
+
+OUTPUT FROM tests/vm/pt-grow-stk-sc:
+
+Copying tests/vm/pt-grow-stk-sc into /tmp/y97d5HItjw.dsk...
+Writing command line to /tmp/sXGTsuLw0L.dsk...
+warning: can't find squish-pty, so terminal input will fail
+bochs -q
+Kernel command line: -q -f put pt-grow-stk-sc run pt-grow-stk-sc
+Pintos booting with 4,096 kB RAM...
+374 pages available in kernel pool.
+374 pages available in user pool.
+Calibrating timer...  204,600 loops/s.
+hd0:0: detected 1,008 sector (504 kB) disk, model "Generic 1234", serial "BXHD00011"
+hd0:1: detected 4,032 sector (1 MB) disk, model "Generic 1234", serial "BXHD00012"
+hd1:0: detected 1,008 sector (504 kB) disk, model "Generic 1234", serial "BXHD00021"
+hd1:1: detected 8,064 sector (3 MB) disk, model "Generic 1234", serial "BXHD00022"
+Formatting file system...done.
+Boot complete.
+Putting 'pt-grow-stk-sc' into the file system...
+Executing 'pt-grow-stk-sc':
+(pt-grow-stk-sc) begin
+pt-grow-stk-sc: exit(-1)
+Execution of 'pt-grow-stk-sc' complete.
+Timer: 280 ticks
+Thread: 30 idle ticks, 225 kernel ticks, 28 user ticks
+hd0:0: 0 reads, 0 writes
+hd0:1: 71 reads, 210 writes
+hd1:0: 101 reads, 0 writes
+hd1:1: 0 reads, 0 writes
+Console: 934 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/vm/pt-big-stk-obj FAILURE:
+
+Test output failed to match any acceptable form.
+
+Acceptable output:
+  (pt-big-stk-obj) begin
+  (pt-big-stk-obj) cksum: 3256410166
+  (pt-big-stk-obj) end
+Differences in `diff -u' format:
+  (pt-big-stk-obj) begin
+- (pt-big-stk-obj) cksum: 3256410166
+- (pt-big-stk-obj) end
+
+(Process exit codes are excluded for matching purposes.)
+
+OUTPUT FROM tests/vm/pt-big-stk-obj:
+
+Copying tests/vm/pt-big-stk-obj into /tmp/TQ50SpSUZR.dsk...
+Writing command line to /tmp/j4EVjeGMy9.dsk...
+warning: can't find squish-pty, so terminal input will fail
+bochs -q
+Kernel command line: -q -f put pt-big-stk-obj run pt-big-stk-obj
+Pintos booting with 4,096 kB RAM...
+374 pages available in kernel pool.
+374 pages available in user pool.
+Calibrating timer...  204,600 loops/s.
+hd0:0: detected 1,008 sector (504 kB) disk, model "Generic 1234", serial "BXHD00011"
+hd0:1: detected 4,032 sector (1 MB) disk, model "Generic 1234", serial "BXHD00012"
+hd1:0: detected 1,008 sector (504 kB) disk, model "Generic 1234", serial "BXHD00021"
+hd1:1: detected 8,064 sector (3 MB) disk, model "Generic 1234", serial "BXHD00022"
+Formatting file system...done.
+Boot complete.
+Putting 'pt-big-stk-obj' into the file system...
+Executing 'pt-big-stk-obj':
+(pt-big-stk-obj) begin
+pt-big-stk-obj: exit(-1)
+Execution of 'pt-big-stk-obj' complete.
+Timer: 285 ticks
+Thread: 30 idle ticks, 230 kernel ticks, 28 user ticks
+hd0:0: 0 reads, 0 writes
+hd0:1: 64 reads, 222 writes
+hd1:0: 107 reads, 0 writes
+hd1:1: 0 reads, 0 writes
+Console: 934 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/vm/pt-grow-pusha FAILURE:
+
+Test output failed to match any acceptable form.
+
+Acceptable output:
+  (pt-grow-pusha) begin
+  (pt-grow-pusha) end
+Differences in `diff -u' format:
+  (pt-grow-pusha) begin
+- (pt-grow-pusha) end
+
+(Process exit codes are excluded for matching purposes.)
+
+OUTPUT FROM tests/vm/pt-grow-pusha:
+
+Copying tests/vm/pt-grow-pusha into /tmp/BWquO90ttq.dsk...
+Writing command line to /tmp/10uYHhBf6d.dsk...
+warning: can't find squish-pty, so terminal input will fail
+bochs -q
+Kernel command line: -q -f put pt-grow-pusha run pt-grow-pusha
+Pintos booting with 4,096 kB RAM...
+374 pages available in kernel pool.
+374 pages available in user pool.
+Calibrating timer...  204,600 loops/s.
+hd0:0: detected 1,008 sector (504 kB) disk, model "Generic 1234", serial "BXHD00011"
+hd0:1: detected 4,032 sector (1 MB) disk, model "Generic 1234", serial "BXHD00012"
+hd1:0: detected 1,008 sector (504 kB) disk, model "Generic 1234", serial "BXHD00021"
+hd1:1: detected 8,064 sector (3 MB) disk, model "Generic 1234", serial "BXHD00022"
+Formatting file system...done.
+Boot complete.
+Putting 'pt-grow-pusha' into the file system...
+Executing 'pt-grow-pusha':
+(pt-grow-pusha) begin
+pt-grow-pusha: exit(-1)
+Execution of 'pt-grow-pusha' complete.
+Timer: 277 ticks
+Thread: 30 idle ticks, 223 kernel ticks, 27 user ticks
+hd0:0: 0 reads, 0 writes
+hd0:1: 61 reads, 204 writes
+hd1:0: 98 reads, 0 writes
+hd1:1: 0 reads, 0 writes
+Console: 926 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 DETAILS OF tests/vm/page-linear FAILURE:
 
-Kernel panic in run: PANIC at ../../threads/palloc.c:147 in palloc_free_multiple(): assertion `bitmap_all (pool->used_map, page_idx, page_cnt)' failed.
-Call stack: 0xc01077ec 0xc0103447 0xc010348b 0xc010a519 0xc01098d1 0xc0100f13 0xc010b0be 0xc010ae5a 0xc0101a8d 0xc0101bbf
-Translation of call stack:
-0xc01077ec: debug_panic (.../../lib/kernel/debug.c:34)
-0xc0103447: palloc_free_multiple (..../../threads/palloc.c:148)
-0xc010348b: palloc_free_page (..../../threads/palloc.c:156)
-0xc010a519: pagedir_destroy (.../../userprog/pagedir.c:43)
-0xc01098d1: process_exit (...../userprog/process.c:284)
-0xc0100f13: thread_exit (..../../threads/thread.c:340)
-0xc010b0be: syscall_exec (...../userprog/syscall.c:161)
-0xc010ae5a: page_fault (.../userprog/exception.c:162)
-0xc0101a8d: intr_handler (..../threads/interrupt.c:361)
-0xc0101bbf: intr_entry (threads/intr-stubs.S:38)
+Run didn't produce any output
 
 OUTPUT FROM tests/vm/page-linear:
 
-Copying tests/vm/page-linear into /tmp/X0q30rcVed.dsk...
-Writing command line to /tmp/u1bZAjN5VE.dsk...
+Copying tests/vm/page-linear into /tmp/tYqqj9o4XP.dsk...
+Writing command line to /tmp/8ZSbMWc4fp.dsk...
 warning: can't find squish-pty, so terminal input will fail
 bochs -q
 Kernel command line: -q -f put page-linear run page-linear
 Pintos booting with 4,096 kB RAM...
 374 pages available in kernel pool.
-373 pages available in user pool.
+374 pages available in user pool.
 Calibrating timer...  204,600 loops/s.
 hd0:0: detected 1,008 sector (504 kB) disk, model "Generic 1234", serial "BXHD00011"
 hd0:1: detected 4,032 sector (1 MB) disk, model "Generic 1234", serial "BXHD00012"
@@ -251,64 +447,35 @@ Formatting file system...done.
 Boot complete.
 Putting 'page-linear' into the file system...
 Executing 'page-linear':
-Kernel PANIC at ../../threads/palloc.c:147 in palloc_free_multiple(): assertion `bitmap_all (pool->used_map, page_idx, page_cnt)' failed.
-Call stack: 0xc01077ec 0xc0103447 0xc010348b 0xc010a519 0xc01098d1 0xc0100f13 0xc010b0be 0xc010ae5a 0xc0101a8d 0xc0101bbf.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Timer: 3575 ticks
-Thread: 30 idle ticks, 1100 kernel ticks, 2445 user ticks
+Execution of 'page-linear' complete.
+Timer: 1474 ticks
+Thread: 30 idle ticks, 235 kernel ticks, 1216 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 62 reads, 216 writes
+hd0:1: 61 reads, 216 writes
 hd1:0: 104 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1253 characters output
+Console: 874 characters output
 Keyboard: 0 keys pressed
-Exception: 1 page faults
+Exception: 0 page faults
 Powering off...
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 DETAILS OF tests/vm/page-parallel FAILURE:
 
-Test output failed to match any acceptable form.
-
-Acceptable output:
-  (page-parallel) begin
-  (page-parallel) exec "child-linear"
-  (page-parallel) exec "child-linear"
-  (page-parallel) exec "child-linear"
-  (page-parallel) exec "child-linear"
-  (page-parallel) wait for child 0
-  (page-parallel) wait for child 1
-  (page-parallel) wait for child 2
-  (page-parallel) wait for child 3
-  (page-parallel) end
-Differences in `diff -u' format:
-  (page-parallel) begin
-  (page-parallel) exec "child-linear"
-  (page-parallel) exec "child-linear"
-- (page-parallel) exec "child-linear"
-- (page-parallel) exec "child-linear"
-- (page-parallel) wait for child 0
-- (page-parallel) wait for child 1
-- (page-parallel) wait for child 2
-- (page-parallel) wait for child 3
-- (page-parallel) end
-
-(Process exit codes are excluded for matching purposes.)
+run: exec "child-linear": FAILED
 
 OUTPUT FROM tests/vm/page-parallel:
 
-Copying tests/vm/page-parallel into /tmp/MtSw8dTGZe.dsk...
-Copying tests/vm/child-linear into /tmp/MtSw8dTGZe.dsk...
-Writing command line to /tmp/YC9KZhipF0.dsk...
+Copying tests/vm/page-parallel into /tmp/JzfAT85VYi.dsk...
+Copying tests/vm/child-linear into /tmp/JzfAT85VYi.dsk...
+Writing command line to /tmp/Cq2KqSAi4B.dsk...
 warning: can't find squish-pty, so terminal input will fail
 bochs -q
 Kernel command line: -q -f put page-parallel put child-linear run page-parallel
 Pintos booting with 4,096 kB RAM...
 374 pages available in kernel pool.
-373 pages available in user pool.
+374 pages available in user pool.
 Calibrating timer...  204,600 loops/s.
 hd0:0: detected 1,008 sector (504 kB) disk, model "Generic 1234", serial "BXHD00011"
 hd0:1: detected 4,032 sector (1 MB) disk, model "Generic 1234", serial "BXHD00012"
@@ -322,48 +489,37 @@ Executing 'page-parallel':
 (page-parallel) begin
 (page-parallel) exec "child-linear"
 (page-parallel) exec "child-linear"
-page-parallel: exit(-1)
+(page-parallel) exec "child-linear": FAILED
+page-parallel: exit(1)
 Execution of 'page-parallel' complete.
-Timer: 4681 ticks
-Thread: 30 idle ticks, 396 kernel ticks, 4266 user ticks
+Timer: 2192 ticks
+Thread: 30 idle ticks, 387 kernel ticks, 1786 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 169 reads, 410 writes
+hd0:1: 168 reads, 410 writes
 hd1:0: 200 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1067 characters output
+Console: 1110 characters output
 Keyboard: 0 keys pressed
-Exception: 1 page faults
+Exception: 0 page faults
 Powering off...
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 DETAILS OF tests/vm/page-merge-seq FAILURE:
 
-Kernel panic in run: PANIC at ../../threads/palloc.c:147 in palloc_free_multiple(): assertion `bitmap_all (pool->used_map, page_idx, page_cnt)' failed.
-Call stack: 0xc01077ec 0xc0103447 0xc010348b 0xc010a519 0xc01098d1 0xc0100f13 0xc010b0be 0xc010ae5a 0xc0101a8d 0xc0101bbf
-Translation of call stack:
-0xc01077ec: debug_panic (.../../lib/kernel/debug.c:34)
-0xc0103447: palloc_free_multiple (..../../threads/palloc.c:148)
-0xc010348b: palloc_free_page (..../../threads/palloc.c:156)
-0xc010a519: pagedir_destroy (.../../userprog/pagedir.c:43)
-0xc01098d1: process_exit (...../userprog/process.c:284)
-0xc0100f13: thread_exit (..../../threads/thread.c:340)
-0xc010b0be: syscall_exec (...../userprog/syscall.c:161)
-0xc010ae5a: page_fault (.../userprog/exception.c:162)
-0xc0101a8d: intr_handler (..../threads/interrupt.c:361)
-0xc0101bbf: intr_entry (threads/intr-stubs.S:38)
+Run didn't produce any output
 
 OUTPUT FROM tests/vm/page-merge-seq:
 
-Copying tests/vm/page-merge-seq into /tmp/Y1kkCKcED8.dsk...
-Copying tests/vm/child-sort into /tmp/Y1kkCKcED8.dsk...
-Writing command line to /tmp/nHZF4iV3q1.dsk...
+Copying tests/vm/page-merge-seq into /tmp/cYPIEPlcgv.dsk...
+Copying tests/vm/child-sort into /tmp/cYPIEPlcgv.dsk...
+Writing command line to /tmp/bKlgjIBInq.dsk...
 warning: can't find squish-pty, so terminal input will fail
 bochs -q
 Kernel command line: -q -f put page-merge-seq put child-sort run page-merge-seq
 Pintos booting with 4,096 kB RAM...
 374 pages available in kernel pool.
-373 pages available in user pool.
+374 pages available in user pool.
 Calibrating timer...  204,600 loops/s.
 hd0:0: detected 1,008 sector (504 kB) disk, model "Generic 1234", serial "BXHD00011"
 hd0:1: detected 4,032 sector (1 MB) disk, model "Generic 1234", serial "BXHD00012"
@@ -374,51 +530,35 @@ Boot complete.
 Putting 'page-merge-seq' into the file system...
 Putting 'child-sort' into the file system...
 Executing 'page-merge-seq':
-Kernel PANIC at ../../threads/palloc.c:147 in palloc_free_multiple(): assertion `bitmap_all (pool->used_map, page_idx, page_cnt)' failed.
-Call stack: 0xc01077ec 0xc0103447 0xc010348b 0xc010a519 0xc01098d1 0xc0100f13 0xc010b0be 0xc010ae5a 0xc0101a8d 0xc0101bbf.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Timer: 3622 ticks
-Thread: 30 idle ticks, 1196 kernel ticks, 2396 user ticks
+Execution of 'page-merge-seq' complete.
+Timer: 1570 ticks
+Thread: 30 idle ticks, 331 kernel ticks, 1216 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 90 reads, 420 writes
+hd0:1: 89 reads, 420 writes
 hd1:0: 205 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1325 characters output
+Console: 949 characters output
 Keyboard: 0 keys pressed
-Exception: 1 page faults
+Exception: 0 page faults
 Powering off...
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 DETAILS OF tests/vm/page-merge-par FAILURE:
 
-Kernel panic in run: PANIC at ../../threads/palloc.c:147 in palloc_free_multiple(): assertion `bitmap_all (pool->used_map, page_idx, page_cnt)' failed.
-Call stack: 0xc01077ec 0xc0103447 0xc010348b 0xc010a519 0xc01098d1 0xc0100f13 0xc010b0be 0xc010ae5a 0xc0101a8d 0xc0101bbf
-Translation of call stack:
-0xc01077ec: debug_panic (.../../lib/kernel/debug.c:34)
-0xc0103447: palloc_free_multiple (..../../threads/palloc.c:148)
-0xc010348b: palloc_free_page (..../../threads/palloc.c:156)
-0xc010a519: pagedir_destroy (.../../userprog/pagedir.c:43)
-0xc01098d1: process_exit (...../userprog/process.c:284)
-0xc0100f13: thread_exit (..../../threads/thread.c:340)
-0xc010b0be: syscall_exec (...../userprog/syscall.c:161)
-0xc010ae5a: page_fault (.../userprog/exception.c:162)
-0xc0101a8d: intr_handler (..../threads/interrupt.c:361)
-0xc0101bbf: intr_entry (threads/intr-stubs.S:38)
+Run didn't produce any output
 
 OUTPUT FROM tests/vm/page-merge-par:
 
-Copying tests/vm/page-merge-par into /tmp/esRhE3nyi7.dsk...
-Copying tests/vm/child-sort into /tmp/esRhE3nyi7.dsk...
-Writing command line to /tmp/OtphwZ4sIC.dsk...
+Copying tests/vm/page-merge-par into /tmp/srT7IppY1t.dsk...
+Copying tests/vm/child-sort into /tmp/srT7IppY1t.dsk...
+Writing command line to /tmp/sYskPBszc5.dsk...
 warning: can't find squish-pty, so terminal input will fail
 bochs -q
 Kernel command line: -q -f put page-merge-par put child-sort run page-merge-par
 Pintos booting with 4,096 kB RAM...
 374 pages available in kernel pool.
-373 pages available in user pool.
+374 pages available in user pool.
 Calibrating timer...  204,600 loops/s.
 hd0:0: detected 1,008 sector (504 kB) disk, model "Generic 1234", serial "BXHD00011"
 hd0:1: detected 4,032 sector (1 MB) disk, model "Generic 1234", serial "BXHD00012"
@@ -429,51 +569,35 @@ Boot complete.
 Putting 'page-merge-par' into the file system...
 Putting 'child-sort' into the file system...
 Executing 'page-merge-par':
-Kernel PANIC at ../../threads/palloc.c:147 in palloc_free_multiple(): assertion `bitmap_all (pool->used_map, page_idx, page_cnt)' failed.
-Call stack: 0xc01077ec 0xc0103447 0xc010348b 0xc010a519 0xc01098d1 0xc0100f13 0xc010b0be 0xc010ae5a 0xc0101a8d 0xc0101bbf.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Timer: 3675 ticks
-Thread: 30 idle ticks, 1200 kernel ticks, 2445 user ticks
+Execution of 'page-merge-par' complete.
+Timer: 1571 ticks
+Thread: 30 idle ticks, 332 kernel ticks, 1216 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 91 reads, 424 writes
+hd0:1: 90 reads, 424 writes
 hd1:0: 207 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1325 characters output
+Console: 949 characters output
 Keyboard: 0 keys pressed
-Exception: 1 page faults
+Exception: 0 page faults
 Powering off...
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 DETAILS OF tests/vm/page-merge-mm FAILURE:
 
-Kernel panic in run: PANIC at ../../threads/palloc.c:147 in palloc_free_multiple(): assertion `bitmap_all (pool->used_map, page_idx, page_cnt)' failed.
-Call stack: 0xc01077ec 0xc0103447 0xc010348b 0xc010a519 0xc01098d1 0xc0100f13 0xc010b0be 0xc010ae5a 0xc0101a8d 0xc0101bbf
-Translation of call stack:
-0xc01077ec: debug_panic (.../../lib/kernel/debug.c:34)
-0xc0103447: palloc_free_multiple (..../../threads/palloc.c:148)
-0xc010348b: palloc_free_page (..../../threads/palloc.c:156)
-0xc010a519: pagedir_destroy (.../../userprog/pagedir.c:43)
-0xc01098d1: process_exit (...../userprog/process.c:284)
-0xc0100f13: thread_exit (..../../threads/thread.c:340)
-0xc010b0be: syscall_exec (...../userprog/syscall.c:161)
-0xc010ae5a: page_fault (.../userprog/exception.c:162)
-0xc0101a8d: intr_handler (..../threads/interrupt.c:361)
-0xc0101bbf: intr_entry (threads/intr-stubs.S:38)
+Run didn't produce any output
 
 OUTPUT FROM tests/vm/page-merge-mm:
 
-Copying tests/vm/page-merge-mm into /tmp/vzeoNWV3VG.dsk...
-Copying tests/vm/child-qsort-mm into /tmp/vzeoNWV3VG.dsk...
-Writing command line to /tmp/iE76BIjB5v.dsk...
+Copying tests/vm/page-merge-mm into /tmp/Qlj1p2lS9S.dsk...
+Copying tests/vm/child-qsort-mm into /tmp/Qlj1p2lS9S.dsk...
+Writing command line to /tmp/ncwjT2l9IG.dsk...
 warning: can't find squish-pty, so terminal input will fail
 bochs -q
 Kernel command line: -q -f put page-merge-mm put child-qsort-mm run page-merge-mm
 Pintos booting with 4,096 kB RAM...
 374 pages available in kernel pool.
-373 pages available in user pool.
+374 pages available in user pool.
 Calibrating timer...  204,600 loops/s.
 hd0:0: detected 1,008 sector (504 kB) disk, model "Generic 1234", serial "BXHD00011"
 hd0:1: detected 4,032 sector (1 MB) disk, model "Generic 1234", serial "BXHD00012"
@@ -484,51 +608,35 @@ Boot complete.
 Putting 'page-merge-mm' into the file system...
 Putting 'child-qsort-mm' into the file system...
 Executing 'page-merge-mm':
-Kernel PANIC at ../../threads/palloc.c:147 in palloc_free_multiple(): assertion `bitmap_all (pool->used_map, page_idx, page_cnt)' failed.
-Call stack: 0xc01077ec 0xc0103447 0xc010348b 0xc010a519 0xc01098d1 0xc0100f13 0xc010b0be 0xc010ae5a 0xc0101a8d 0xc0101bbf.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Timer: 3679 ticks
-Thread: 30 idle ticks, 1204 kernel ticks, 2445 user ticks
+Execution of 'page-merge-mm' complete.
+Timer: 1576 ticks
+Thread: 30 idle ticks, 337 kernel ticks, 1216 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 91 reads, 436 writes
+hd0:1: 90 reads, 436 writes
 hd1:0: 213 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1329 characters output
+Console: 952 characters output
 Keyboard: 0 keys pressed
-Exception: 1 page faults
+Exception: 0 page faults
 Powering off...
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 DETAILS OF tests/vm/page-merge-stk FAILURE:
 
-Kernel panic in run: PANIC at ../../threads/palloc.c:147 in palloc_free_multiple(): assertion `bitmap_all (pool->used_map, page_idx, page_cnt)' failed.
-Call stack: 0xc01077ec 0xc0103447 0xc010348b 0xc010a519 0xc01098d1 0xc0100f13 0xc010b0be 0xc010ae5a 0xc0101a8d 0xc0101bbf
-Translation of call stack:
-0xc01077ec: debug_panic (.../../lib/kernel/debug.c:34)
-0xc0103447: palloc_free_multiple (..../../threads/palloc.c:148)
-0xc010348b: palloc_free_page (..../../threads/palloc.c:156)
-0xc010a519: pagedir_destroy (.../../userprog/pagedir.c:43)
-0xc01098d1: process_exit (...../userprog/process.c:284)
-0xc0100f13: thread_exit (..../../threads/thread.c:340)
-0xc010b0be: syscall_exec (...../userprog/syscall.c:161)
-0xc010ae5a: page_fault (.../userprog/exception.c:162)
-0xc0101a8d: intr_handler (..../threads/interrupt.c:361)
-0xc0101bbf: intr_entry (threads/intr-stubs.S:38)
+Run didn't produce any output
 
 OUTPUT FROM tests/vm/page-merge-stk:
 
-Copying tests/vm/page-merge-stk into /tmp/lU27dcut6T.dsk...
-Copying tests/vm/child-qsort into /tmp/lU27dcut6T.dsk...
-Writing command line to /tmp/u0m0qjppUQ.dsk...
+Copying tests/vm/page-merge-stk into /tmp/TgqfTOrBEy.dsk...
+Copying tests/vm/child-qsort into /tmp/TgqfTOrBEy.dsk...
+Writing command line to /tmp/YHQ23JosXV.dsk...
 warning: can't find squish-pty, so terminal input will fail
 bochs -q
 Kernel command line: -q -f put page-merge-stk put child-qsort run page-merge-stk
 Pintos booting with 4,096 kB RAM...
 374 pages available in kernel pool.
-373 pages available in user pool.
+374 pages available in user pool.
 Calibrating timer...  204,600 loops/s.
 hd0:0: detected 1,008 sector (504 kB) disk, model "Generic 1234", serial "BXHD00011"
 hd0:1: detected 4,032 sector (1 MB) disk, model "Generic 1234", serial "BXHD00012"
@@ -539,20 +647,16 @@ Boot complete.
 Putting 'page-merge-stk' into the file system...
 Putting 'child-qsort' into the file system...
 Executing 'page-merge-stk':
-Kernel PANIC at ../../threads/palloc.c:147 in palloc_free_multiple(): assertion `bitmap_all (pool->used_map, page_idx, page_cnt)' failed.
-Call stack: 0xc01077ec 0xc0103447 0xc010348b 0xc010a519 0xc01098d1 0xc0100f13 0xc010b0be 0xc010ae5a 0xc0101a8d 0xc0101bbf.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Timer: 3679 ticks
-Thread: 30 idle ticks, 1204 kernel ticks, 2445 user ticks
+Execution of 'page-merge-stk' complete.
+Timer: 1576 ticks
+Thread: 30 idle ticks, 337 kernel ticks, 1216 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 91 reads, 436 writes
+hd0:1: 90 reads, 436 writes
 hd1:0: 213 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1327 characters output
+Console: 951 characters output
 Keyboard: 0 keys pressed
-Exception: 1 page faults
+Exception: 0 page faults
 Powering off...
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -576,15 +680,15 @@ Differences in `diff -u' format:
 
 OUTPUT FROM tests/vm/mmap-read:
 
-Copying tests/vm/mmap-read into /tmp/fYfnejAtYm.dsk...
-Copying ../../tests/vm/sample.txt into /tmp/fYfnejAtYm.dsk...
-Writing command line to /tmp/uW3L9Qn2Xb.dsk...
+Copying tests/vm/mmap-read into /tmp/6g0EPkGXIB.dsk...
+Copying ../../tests/vm/sample.txt into /tmp/6g0EPkGXIB.dsk...
+Writing command line to /tmp/i4w9YjM3qY.dsk...
 warning: can't find squish-pty, so terminal input will fail
 bochs -q
 Kernel command line: -q -f put mmap-read put sample.txt run mmap-read
 Pintos booting with 4,096 kB RAM...
 374 pages available in kernel pool.
-373 pages available in user pool.
+374 pages available in user pool.
 Calibrating timer...  204,600 loops/s.
 hd0:0: detected 1,008 sector (504 kB) disk, model "Generic 1234", serial "BXHD00011"
 hd0:1: detected 4,032 sector (1 MB) disk, model "Generic 1234", serial "BXHD00012"
@@ -600,15 +704,15 @@ Executing 'mmap-read':
 (mmap-read) mmap "sample.txt"
 mmap-read: exit(-1)
 Execution of 'mmap-read' complete.
-Timer: 385 ticks
-Thread: 30 idle ticks, 316 kernel ticks, 42 user ticks
+Timer: 321 ticks
+Thread: 30 idle ticks, 254 kernel ticks, 40 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 101 reads, 218 writes
 hd1:0: 104 reads, 0 writes
 hd1:1: 0 reads, 0 writes
 Console: 1020 characters output
 Keyboard: 0 keys pressed
-Exception: 1 page faults
+Exception: 0 page faults
 Powering off...
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -636,14 +740,14 @@ Differences in `diff -u' format:
 
 OUTPUT FROM tests/vm/mmap-write:
 
-Copying tests/vm/mmap-write into /tmp/EqCQXDJCXR.dsk...
-Writing command line to /tmp/RB8iZSIiJ5.dsk...
+Copying tests/vm/mmap-write into /tmp/X447P1g4Qw.dsk...
+Writing command line to /tmp/IeJvbsgScH.dsk...
 warning: can't find squish-pty, so terminal input will fail
 bochs -q
 Kernel command line: -q -f put mmap-write run mmap-write
 Pintos booting with 4,096 kB RAM...
 374 pages available in kernel pool.
-373 pages available in user pool.
+374 pages available in user pool.
 Calibrating timer...  204,600 loops/s.
 hd0:0: detected 1,008 sector (504 kB) disk, model "Generic 1234", serial "BXHD00011"
 hd0:1: detected 4,032 sector (1 MB) disk, model "Generic 1234", serial "BXHD00012"
@@ -659,15 +763,15 @@ Executing 'mmap-write':
 (mmap-write) mmap "sample.txt"
 mmap-write: exit(-1)
 Execution of 'mmap-write' complete.
-Timer: 377 ticks
-Thread: 30 idle ticks, 284 kernel ticks, 66 user ticks
+Timer: 316 ticks
+Thread: 30 idle ticks, 224 kernel ticks, 65 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 97 reads, 216 writes
 hd1:0: 101 reads, 0 writes
 hd1:1: 0 reads, 0 writes
 Console: 1001 characters output
 Keyboard: 0 keys pressed
-Exception: 1 page faults
+Exception: 0 page faults
 Powering off...
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -715,14 +819,14 @@ Differences in `diff -u' format:
 
 OUTPUT FROM tests/vm/mmap-shuffle:
 
-Copying tests/vm/mmap-shuffle into /tmp/7xdbsYs419.dsk...
-Writing command line to /tmp/sPLS2FBTqf.dsk...
+Copying tests/vm/mmap-shuffle into /tmp/to55FafLN4.dsk...
+Writing command line to /tmp/eMRvQj7p6q.dsk...
 warning: can't find squish-pty, so terminal input will fail
 bochs -q
 Kernel command line: -q -f put mmap-shuffle run mmap-shuffle
 Pintos booting with 4,096 kB RAM...
 374 pages available in kernel pool.
-373 pages available in user pool.
+374 pages available in user pool.
 Calibrating timer...  204,600 loops/s.
 hd0:0: detected 1,008 sector (504 kB) disk, model "Generic 1234", serial "BXHD00011"
 hd0:1: detected 4,032 sector (1 MB) disk, model "Generic 1234", serial "BXHD00012"
@@ -738,15 +842,15 @@ Executing 'mmap-shuffle':
 (mmap-shuffle) mmap "buffer"
 mmap-shuffle: exit(-1)
 Execution of 'mmap-shuffle' complete.
-Timer: 437 ticks
-Thread: 30 idle ticks, 289 kernel ticks, 121 user ticks
+Timer: 377 ticks
+Thread: 30 idle ticks, 230 kernel ticks, 120 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 91 reads, 484 writes
 hd1:0: 108 reads, 0 writes
 hd1:1: 0 reads, 0 writes
 Console: 1010 characters output
 Keyboard: 0 keys pressed
-Exception: 1 page faults
+Exception: 0 page faults
 Powering off...
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -778,15 +882,15 @@ Differences in `diff -u' format:
 
 OUTPUT FROM tests/vm/mmap-twice:
 
-Copying tests/vm/mmap-twice into /tmp/KHXtD9cW1l.dsk...
-Copying ../../tests/vm/sample.txt into /tmp/KHXtD9cW1l.dsk...
-Writing command line to /tmp/dfBWPiQ8mm.dsk...
+Copying tests/vm/mmap-twice into /tmp/2q7ctXGq33.dsk...
+Copying ../../tests/vm/sample.txt into /tmp/2q7ctXGq33.dsk...
+Writing command line to /tmp/xw0Il94bhA.dsk...
 warning: can't find squish-pty, so terminal input will fail
 bochs -q
 Kernel command line: -q -f put mmap-twice put sample.txt run mmap-twice
 Pintos booting with 4,096 kB RAM...
 374 pages available in kernel pool.
-373 pages available in user pool.
+374 pages available in user pool.
 Calibrating timer...  204,600 loops/s.
 hd0:0: detected 1,008 sector (504 kB) disk, model "Generic 1234", serial "BXHD00011"
 hd0:1: detected 4,032 sector (1 MB) disk, model "Generic 1234", serial "BXHD00012"
@@ -805,15 +909,15 @@ Executing 'mmap-twice':
 (mmap-twice) compare mmap'd file 0 against data
 mmap-twice: exit(-1)
 Execution of 'mmap-twice' complete.
-Timer: 408 ticks
-Thread: 30 idle ticks, 315 kernel ticks, 66 user ticks
+Timer: 346 ticks
+Thread: 30 idle ticks, 255 kernel ticks, 64 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 104 reads, 218 writes
 hd1:0: 104 reads, 0 writes
 hd1:1: 0 reads, 0 writes
 Console: 1179 characters output
 Keyboard: 0 keys pressed
-Exception: 1 page faults
+Exception: 0 page faults
 Powering off...
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -824,15 +928,15 @@ run: wait for child (should return 0): FAILED
 
 OUTPUT FROM tests/vm/mmap-exit:
 
-Copying tests/vm/mmap-exit into /tmp/eAK0MhqrNw.dsk...
-Copying tests/vm/child-mm-wrt into /tmp/eAK0MhqrNw.dsk...
-Writing command line to /tmp/RFo2gQw6ia.dsk...
+Copying tests/vm/mmap-exit into /tmp/Urfgu1rMKO.dsk...
+Copying tests/vm/child-mm-wrt into /tmp/Urfgu1rMKO.dsk...
+Writing command line to /tmp/uh18HS5I3X.dsk...
 warning: can't find squish-pty, so terminal input will fail
 bochs -q
 Kernel command line: -q -f put mmap-exit put child-mm-wrt run mmap-exit
 Pintos booting with 4,096 kB RAM...
 374 pages available in kernel pool.
-373 pages available in user pool.
+374 pages available in user pool.
 Calibrating timer...  204,600 loops/s.
 hd0:0: detected 1,008 sector (504 kB) disk, model "Generic 1234", serial "BXHD00011"
 hd0:1: detected 4,032 sector (1 MB) disk, model "Generic 1234", serial "BXHD00012"
@@ -852,15 +956,15 @@ child-mm-wrt: exit(-1)
 (mmap-exit) wait for child (should return 0): FAILED
 mmap-exit: exit(1)
 Execution of 'mmap-exit' complete.
-Timer: 548 ticks
-Thread: 30 idle ticks, 408 kernel ticks, 113 user ticks
+Timer: 480 ticks
+Thread: 30 idle ticks, 344 kernel ticks, 109 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 166 reads, 416 writes
 hd1:0: 200 reads, 0 writes
 hd1:1: 0 reads, 0 writes
 Console: 1162 characters output
 Keyboard: 0 keys pressed
-Exception: 1 page faults
+Exception: 0 page faults
 Powering off...
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -894,15 +998,15 @@ Differences in `diff -u' format:
 
 OUTPUT FROM tests/vm/mmap-clean:
 
-Copying tests/vm/mmap-clean into /tmp/hSsM4jRWvm.dsk...
-Copying ../../tests/vm/sample.txt into /tmp/hSsM4jRWvm.dsk...
-Writing command line to /tmp/4oglzQbNeZ.dsk...
+Copying tests/vm/mmap-clean into /tmp/zynF6Qn047.dsk...
+Copying ../../tests/vm/sample.txt into /tmp/zynF6Qn047.dsk...
+Writing command line to /tmp/ObZZpo46rT.dsk...
 warning: can't find squish-pty, so terminal input will fail
 bochs -q
 Kernel command line: -q -f put mmap-clean put sample.txt run mmap-clean
 Pintos booting with 4,096 kB RAM...
 374 pages available in kernel pool.
-373 pages available in user pool.
+374 pages available in user pool.
 Calibrating timer...  204,600 loops/s.
 hd0:0: detected 1,008 sector (504 kB) disk, model "Generic 1234", serial "BXHD00011"
 hd0:1: detected 4,032 sector (1 MB) disk, model "Generic 1234", serial "BXHD00012"
@@ -918,15 +1022,15 @@ Executing 'mmap-clean':
 (mmap-clean) mmap "sample.txt"
 mmap-clean: exit(-1)
 Execution of 'mmap-clean' complete.
-Timer: 386 ticks
-Thread: 30 idle ticks, 317 kernel ticks, 42 user ticks
+Timer: 323 ticks
+Thread: 30 idle ticks, 255 kernel ticks, 41 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 103 reads, 220 writes
 hd1:0: 105 reads, 0 writes
 hd1:1: 0 reads, 0 writes
 Console: 1029 characters output
 Keyboard: 0 keys pressed
-Exception: 1 page faults
+Exception: 0 page faults
 Powering off...
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -950,15 +1054,15 @@ Differences in `diff -u' format:
 
 OUTPUT FROM tests/vm/mmap-close:
 
-Copying tests/vm/mmap-close into /tmp/gCmybFwUDh.dsk...
-Copying ../../tests/vm/sample.txt into /tmp/gCmybFwUDh.dsk...
-Writing command line to /tmp/4SqbzRriVH.dsk...
+Copying tests/vm/mmap-close into /tmp/TIMSjkdSnU.dsk...
+Copying ../../tests/vm/sample.txt into /tmp/TIMSjkdSnU.dsk...
+Writing command line to /tmp/os1nYozSvS.dsk...
 warning: can't find squish-pty, so terminal input will fail
 bochs -q
 Kernel command line: -q -f put mmap-close put sample.txt run mmap-close
 Pintos booting with 4,096 kB RAM...
 374 pages available in kernel pool.
-373 pages available in user pool.
+374 pages available in user pool.
 Calibrating timer...  204,600 loops/s.
 hd0:0: detected 1,008 sector (504 kB) disk, model "Generic 1234", serial "BXHD00011"
 hd0:1: detected 4,032 sector (1 MB) disk, model "Generic 1234", serial "BXHD00012"
@@ -974,15 +1078,15 @@ Executing 'mmap-close':
 (mmap-close) mmap "sample.txt"
 mmap-close: exit(-1)
 Execution of 'mmap-close' complete.
-Timer: 387 ticks
-Thread: 30 idle ticks, 317 kernel ticks, 43 user ticks
+Timer: 325 ticks
+Thread: 30 idle ticks, 255 kernel ticks, 43 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 101 reads, 218 writes
 hd1:0: 104 reads, 0 writes
 hd1:1: 0 reads, 0 writes
 Console: 1029 characters output
 Keyboard: 0 keys pressed
-Exception: 1 page faults
+Exception: 0 page faults
 Powering off...
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -1012,15 +1116,15 @@ Differences in `diff -u' format:
 
 OUTPUT FROM tests/vm/mmap-remove:
 
-Copying tests/vm/mmap-remove into /tmp/sI1n8TpEP3.dsk...
-Copying ../../tests/vm/sample.txt into /tmp/sI1n8TpEP3.dsk...
-Writing command line to /tmp/OxwcpZTtvz.dsk...
+Copying tests/vm/mmap-remove into /tmp/AQAvzW5XdH.dsk...
+Copying ../../tests/vm/sample.txt into /tmp/AQAvzW5XdH.dsk...
+Writing command line to /tmp/s8R0W2gJCW.dsk...
 warning: can't find squish-pty, so terminal input will fail
 bochs -q
 Kernel command line: -q -f put mmap-remove put sample.txt run mmap-remove
 Pintos booting with 4,096 kB RAM...
 374 pages available in kernel pool.
-373 pages available in user pool.
+374 pages available in user pool.
 Calibrating timer...  204,600 loops/s.
 hd0:0: detected 1,008 sector (504 kB) disk, model "Generic 1234", serial "BXHD00011"
 hd0:1: detected 4,032 sector (1 MB) disk, model "Generic 1234", serial "BXHD00012"
@@ -1039,15 +1143,15 @@ Executing 'mmap-remove':
 (mmap-remove) create "another"
 mmap-remove: exit(-1)
 Execution of 'mmap-remove' complete.
-Timer: 458 ticks
-Thread: 30 idle ticks, 317 kernel ticks, 114 user ticks
+Timer: 398 ticks
+Thread: 30 idle ticks, 255 kernel ticks, 116 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 148 reads, 305 writes
 hd1:0: 104 reads, 0 writes
 hd1:1: 0 reads, 0 writes
 Console: 1143 characters output
 Keyboard: 0 keys pressed
-Exception: 1 page faults
+Exception: 0 page faults
 Powering off...
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -1058,14 +1162,14 @@ run: try to mmap invalid fd: FAILED
 
 OUTPUT FROM tests/vm/mmap-bad-fd:
 
-Copying tests/vm/mmap-bad-fd into /tmp/wUrLF50kIv.dsk...
-Writing command line to /tmp/lPCyNswGI8.dsk...
+Copying tests/vm/mmap-bad-fd into /tmp/w9bIgTAOih.dsk...
+Writing command line to /tmp/eJJdv79syv.dsk...
 warning: can't find squish-pty, so terminal input will fail
 bochs -q
 Kernel command line: -q -f put mmap-bad-fd run mmap-bad-fd
 Pintos booting with 4,096 kB RAM...
 374 pages available in kernel pool.
-373 pages available in user pool.
+374 pages available in user pool.
 Calibrating timer...  204,600 loops/s.
 hd0:0: detected 1,008 sector (504 kB) disk, model "Generic 1234", serial "BXHD00011"
 hd0:1: detected 4,032 sector (1 MB) disk, model "Generic 1234", serial "BXHD00012"
@@ -1080,8 +1184,8 @@ Executing 'mmap-bad-fd':
 (mmap-bad-fd) try to mmap invalid fd: FAILED
 mmap-bad-fd: exit(1)
 Execution of 'mmap-bad-fd' complete.
-Timer: 350 ticks
-Thread: 30 idle ticks, 283 kernel ticks, 40 user ticks
+Timer: 310 ticks
+Thread: 30 idle ticks, 244 kernel ticks, 39 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 61 reads, 204 writes
 hd1:0: 98 reads, 0 writes
@@ -1123,16 +1227,16 @@ Differences in `diff -u' format:
 
 OUTPUT FROM tests/vm/mmap-inherit:
 
-Copying tests/vm/mmap-inherit into /tmp/JrJwtnfC7J.dsk...
-Copying ../../tests/vm/sample.txt into /tmp/JrJwtnfC7J.dsk...
-Copying tests/vm/child-inherit into /tmp/JrJwtnfC7J.dsk...
-Writing command line to /tmp/d42FYeiaIz.dsk...
+Copying tests/vm/mmap-inherit into /tmp/5ECBx9vEDA.dsk...
+Copying ../../tests/vm/sample.txt into /tmp/5ECBx9vEDA.dsk...
+Copying tests/vm/child-inherit into /tmp/5ECBx9vEDA.dsk...
+Writing command line to /tmp/SLxTexYzCH.dsk...
 warning: can't find squish-pty, so terminal input will fail
 bochs -q
 Kernel command line: -q -f put mmap-inherit put sample.txt put child-inherit run mmap-inherit
 Pintos booting with 4,096 kB RAM...
 374 pages available in kernel pool.
-373 pages available in user pool.
+374 pages available in user pool.
 Calibrating timer...  204,600 loops/s.
 hd0:0: detected 1,008 sector (504 kB) disk, model "Generic 1234", serial "BXHD00011"
 hd0:1: detected 4,032 sector (1 MB) disk, model "Generic 1234", serial "BXHD00012"
@@ -1149,15 +1253,15 @@ Executing 'mmap-inherit':
 (mmap-inherit) mmap "sample.txt"
 mmap-inherit: exit(-1)
 Execution of 'mmap-inherit' complete.
-Timer: 486 ticks
-Thread: 30 idle ticks, 416 kernel ticks, 43 user ticks
+Timer: 421 ticks
+Thread: 30 idle ticks, 353 kernel ticks, 41 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 131 reads, 420 writes
 hd1:0: 204 reads, 0 writes
 hd1:1: 0 reads, 0 writes
 Console: 1113 characters output
 Keyboard: 0 keys pressed
-Exception: 1 page faults
+Exception: 0 page faults
 Powering off...
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -1168,15 +1272,15 @@ run: try to mmap at address 0: FAILED
 
 OUTPUT FROM tests/vm/mmap-null:
 
-Copying tests/vm/mmap-null into /tmp/J1gORTiIQF.dsk...
-Copying ../../tests/vm/sample.txt into /tmp/J1gORTiIQF.dsk...
-Writing command line to /tmp/z6n0PYZYV6.dsk...
+Copying tests/vm/mmap-null into /tmp/PWG9xJ9C8d.dsk...
+Copying ../../tests/vm/sample.txt into /tmp/PWG9xJ9C8d.dsk...
+Writing command line to /tmp/5VAl91o111.dsk...
 warning: can't find squish-pty, so terminal input will fail
 bochs -q
 Kernel command line: -q -f put mmap-null put sample.txt run mmap-null
 Pintos booting with 4,096 kB RAM...
 374 pages available in kernel pool.
-373 pages available in user pool.
+374 pages available in user pool.
 Calibrating timer...  204,600 loops/s.
 hd0:0: detected 1,008 sector (504 kB) disk, model "Generic 1234", serial "BXHD00011"
 hd0:1: detected 4,032 sector (1 MB) disk, model "Generic 1234", serial "BXHD00012"
@@ -1193,8 +1297,8 @@ Executing 'mmap-null':
 (mmap-null) try to mmap at address 0: FAILED
 mmap-null: exit(1)
 Execution of 'mmap-null' complete.
-Timer: 389 ticks
-Thread: 30 idle ticks, 314 kernel ticks, 48 user ticks
+Timer: 347 ticks
+Thread: 30 idle ticks, 274 kernel ticks, 46 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 92 reads, 212 writes
 hd1:0: 101 reads, 0 writes
@@ -1212,15 +1316,15 @@ run: try to mmap at misaligned address: FAILED
 
 OUTPUT FROM tests/vm/mmap-misalign:
 
-Copying tests/vm/mmap-misalign into /tmp/rqOCl9D3d1.dsk...
-Copying ../../tests/vm/sample.txt into /tmp/rqOCl9D3d1.dsk...
-Writing command line to /tmp/xjsWrdWl0P.dsk...
+Copying tests/vm/mmap-misalign into /tmp/MPkP8qimAR.dsk...
+Copying ../../tests/vm/sample.txt into /tmp/MPkP8qimAR.dsk...
+Writing command line to /tmp/H25JRao2nC.dsk...
 warning: can't find squish-pty, so terminal input will fail
 bochs -q
 Kernel command line: -q -f put mmap-misalign put sample.txt run mmap-misalign
 Pintos booting with 4,096 kB RAM...
 374 pages available in kernel pool.
-373 pages available in user pool.
+374 pages available in user pool.
 Calibrating timer...  204,600 loops/s.
 hd0:0: detected 1,008 sector (504 kB) disk, model "Generic 1234", serial "BXHD00011"
 hd0:1: detected 4,032 sector (1 MB) disk, model "Generic 1234", serial "BXHD00012"
@@ -1237,8 +1341,8 @@ Executing 'mmap-misalign':
 (mmap-misalign) try to mmap at misaligned address: FAILED
 mmap-misalign: exit(1)
 Execution of 'mmap-misalign' complete.
-Timer: 394 ticks
-Thread: 30 idle ticks, 316 kernel ticks, 51 user ticks
+Timer: 353 ticks
+Thread: 30 idle ticks, 276 kernel ticks, 50 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 92 reads, 212 writes
 hd1:0: 101 reads, 0 writes
@@ -1256,15 +1360,15 @@ run: try to mmap over code segment: FAILED
 
 OUTPUT FROM tests/vm/mmap-over-code:
 
-Copying tests/vm/mmap-over-code into /tmp/eYSHiOcDcT.dsk...
-Copying ../../tests/vm/sample.txt into /tmp/eYSHiOcDcT.dsk...
-Writing command line to /tmp/t809wmJlr8.dsk...
+Copying tests/vm/mmap-over-code into /tmp/vw4FDOikuu.dsk...
+Copying ../../tests/vm/sample.txt into /tmp/vw4FDOikuu.dsk...
+Writing command line to /tmp/PSyywSkXGZ.dsk...
 warning: can't find squish-pty, so terminal input will fail
 bochs -q
 Kernel command line: -q -f put mmap-over-code put sample.txt run mmap-over-code
 Pintos booting with 4,096 kB RAM...
 374 pages available in kernel pool.
-373 pages available in user pool.
+374 pages available in user pool.
 Calibrating timer...  204,600 loops/s.
 hd0:0: detected 1,008 sector (504 kB) disk, model "Generic 1234", serial "BXHD00011"
 hd0:1: detected 4,032 sector (1 MB) disk, model "Generic 1234", serial "BXHD00012"
@@ -1281,8 +1385,8 @@ Executing 'mmap-over-code':
 (mmap-over-code) try to mmap over code segment: FAILED
 mmap-over-code: exit(1)
 Execution of 'mmap-over-code' complete.
-Timer: 395 ticks
-Thread: 30 idle ticks, 317 kernel ticks, 51 user ticks
+Timer: 354 ticks
+Thread: 30 idle ticks, 276 kernel ticks, 51 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 92 reads, 212 writes
 hd1:0: 101 reads, 0 writes
@@ -1300,15 +1404,15 @@ run: try to mmap over data segment: FAILED
 
 OUTPUT FROM tests/vm/mmap-over-data:
 
-Copying tests/vm/mmap-over-data into /tmp/hEeacoNB3y.dsk...
-Copying ../../tests/vm/sample.txt into /tmp/hEeacoNB3y.dsk...
-Writing command line to /tmp/KQaD9Grnam.dsk...
+Copying tests/vm/mmap-over-data into /tmp/iwikeAnZBR.dsk...
+Copying ../../tests/vm/sample.txt into /tmp/iwikeAnZBR.dsk...
+Writing command line to /tmp/GfxzOI6c0N.dsk...
 warning: can't find squish-pty, so terminal input will fail
 bochs -q
 Kernel command line: -q -f put mmap-over-data put sample.txt run mmap-over-data
 Pintos booting with 4,096 kB RAM...
 374 pages available in kernel pool.
-373 pages available in user pool.
+374 pages available in user pool.
 Calibrating timer...  204,600 loops/s.
 hd0:0: detected 1,008 sector (504 kB) disk, model "Generic 1234", serial "BXHD00011"
 hd0:1: detected 4,032 sector (1 MB) disk, model "Generic 1234", serial "BXHD00012"
@@ -1325,8 +1429,8 @@ Executing 'mmap-over-data':
 (mmap-over-data) try to mmap over data segment: FAILED
 mmap-over-data: exit(1)
 Execution of 'mmap-over-data' complete.
-Timer: 395 ticks
-Thread: 30 idle ticks, 317 kernel ticks, 51 user ticks
+Timer: 353 ticks
+Thread: 30 idle ticks, 276 kernel ticks, 50 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 92 reads, 212 writes
 hd1:0: 101 reads, 0 writes
@@ -1344,15 +1448,15 @@ run: try to mmap over stack segment: FAILED
 
 OUTPUT FROM tests/vm/mmap-over-stk:
 
-Copying tests/vm/mmap-over-stk into /tmp/wuCnEzf5ph.dsk...
-Copying ../../tests/vm/sample.txt into /tmp/wuCnEzf5ph.dsk...
-Writing command line to /tmp/OtvlmLdfgQ.dsk...
+Copying tests/vm/mmap-over-stk into /tmp/KSYx3WFH06.dsk...
+Copying ../../tests/vm/sample.txt into /tmp/KSYx3WFH06.dsk...
+Writing command line to /tmp/JvBvHkPSRj.dsk...
 warning: can't find squish-pty, so terminal input will fail
 bochs -q
 Kernel command line: -q -f put mmap-over-stk put sample.txt run mmap-over-stk
 Pintos booting with 4,096 kB RAM...
 374 pages available in kernel pool.
-373 pages available in user pool.
+374 pages available in user pool.
 Calibrating timer...  204,600 loops/s.
 hd0:0: detected 1,008 sector (504 kB) disk, model "Generic 1234", serial "BXHD00011"
 hd0:1: detected 4,032 sector (1 MB) disk, model "Generic 1234", serial "BXHD00012"
@@ -1369,8 +1473,8 @@ Executing 'mmap-over-stk':
 (mmap-over-stk) try to mmap over stack segment: FAILED
 mmap-over-stk: exit(1)
 Execution of 'mmap-over-stk' complete.
-Timer: 393 ticks
-Thread: 30 idle ticks, 315 kernel ticks, 51 user ticks
+Timer: 351 ticks
+Thread: 30 idle ticks, 275 kernel ticks, 49 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 92 reads, 212 writes
 hd1:0: 101 reads, 0 writes
@@ -1388,15 +1492,15 @@ run: try to mmap "zeros" again: FAILED
 
 OUTPUT FROM tests/vm/mmap-overlap:
 
-Copying tests/vm/mmap-overlap into /tmp/0wpJqkgtjK.dsk...
-Copying tests/vm/zeros into /tmp/0wpJqkgtjK.dsk...
-Writing command line to /tmp/Ggi80HP86H.dsk...
+Copying tests/vm/mmap-overlap into /tmp/E7d6WxakY2.dsk...
+Copying tests/vm/zeros into /tmp/E7d6WxakY2.dsk...
+Writing command line to /tmp/kBB03SD19S.dsk...
 warning: can't find squish-pty, so terminal input will fail
 bochs -q
 Kernel command line: -q -f put mmap-overlap put zeros run mmap-overlap
 Pintos booting with 4,096 kB RAM...
 374 pages available in kernel pool.
-373 pages available in user pool.
+374 pages available in user pool.
 Calibrating timer...  204,600 loops/s.
 hd0:0: detected 1,008 sector (504 kB) disk, model "Generic 1234", serial "BXHD00011"
 hd0:1: detected 4,032 sector (1 MB) disk, model "Generic 1234", serial "BXHD00012"
@@ -1415,13 +1519,73 @@ Executing 'mmap-overlap':
 (mmap-overlap) try to mmap "zeros" again: FAILED
 mmap-overlap: exit(1)
 Execution of 'mmap-overlap' complete.
-Timer: 411 ticks
-Thread: 30 idle ticks, 321 kernel ticks, 63 user ticks
+Timer: 369 ticks
+Thread: 30 idle ticks, 281 kernel ticks, 61 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 103 reads, 236 writes
 hd1:0: 113 reads, 0 writes
 hd1:1: 0 reads, 0 writes
 Console: 1155 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/filesys/base/syn-read FAILURE:
+
+run: wait for child 2 of 10 returned 0 (expected 1): FAILED
+
+OUTPUT FROM tests/filesys/base/syn-read:
+
+Copying tests/filesys/base/syn-read into /tmp/BrJzXzE4Kr.dsk...
+Copying tests/filesys/base/child-syn-read into /tmp/BrJzXzE4Kr.dsk...
+Writing command line to /tmp/Tl3PkNGc4V.dsk...
+warning: can't find squish-pty, so terminal input will fail
+bochs -q
+Kernel command line: -q -f put syn-read put child-syn-read run syn-read
+Pintos booting with 4,096 kB RAM...
+374 pages available in kernel pool.
+374 pages available in user pool.
+Calibrating timer...  204,600 loops/s.
+hd0:0: detected 1,008 sector (504 kB) disk, model "Generic 1234", serial "BXHD00011"
+hd0:1: detected 4,032 sector (1 MB) disk, model "Generic 1234", serial "BXHD00012"
+hd1:0: detected 1,008 sector (504 kB) disk, model "Generic 1234", serial "BXHD00021"
+hd1:1: detected 8,064 sector (3 MB) disk, model "Generic 1234", serial "BXHD00022"
+Formatting file system...done.
+Boot complete.
+Putting 'syn-read' into the file system...
+Putting 'child-syn-read' into the file system...
+Executing 'syn-read':
+(syn-read) begin
+(syn-read) create "data"
+(syn-read) open "data"
+(syn-read) write "data"
+(syn-read) close "data"
+(syn-read) exec child 1 of 10: "child-syn-read 0"
+(syn-read) exec child 2 of 10: "child-syn-read 1"
+(syn-read) exec child 3 of 10: "child-syn-read 2"
+(syn-read) exec child 4 of 10: "child-syn-read 3"
+(syn-read) exec child 5 of 10: "child-syn-read 4"
+(syn-read) exec child 6 of 10: "child-syn-read 5"
+(syn-read) exec child 7 of 10: "child-syn-read 6"
+(syn-read) exec child 8 of 10: "child-syn-read 7"
+(syn-read) exec child 9 of 10: "child-syn-read 8"
+(syn-read) exec child 10 of 10: "child-syn-read 9"
+child-syn-read: exit(2)
+(syn-read) wait for child 1 of 10 returned 0 (expected 0)
+child-syn-read: exit(5)
+(syn-read) wait for child 2 of 10 returned 0 (expected 1)
+(syn-read) wait for child 2 of 10 returned 0 (expected 1): FAILED
+syn-read: exit(1)
+Execution of 'syn-read' complete.
+Timer: 8061 ticks
+Thread: 30 idle ticks, 437 kernel ticks, 7601 user ticks
+hd0:0: 0 reads, 0 writes
+hd0:1: 6738 reads, 448 writes
+hd1:0: 215 reads, 0 writes
+hd1:1: 0 reads, 0 writes
+Console: 1791 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

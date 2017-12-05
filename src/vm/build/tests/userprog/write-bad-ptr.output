@@ -1,6 +1,6 @@
-Copying tests/userprog/write-bad-ptr into /tmp/2Yiee2rvoM.dsk...
-Copying ../../tests/userprog/sample.txt into /tmp/2Yiee2rvoM.dsk...
-Writing command line to /tmp/NZEsFZJhcV.dsk...
+Copying tests/userprog/write-bad-ptr into /tmp/wdQDL5lhKo.dsk...
+Copying ../../tests/userprog/sample.txt into /tmp/wdQDL5lhKo.dsk...
+Writing command line to /tmp/TJHNrAsFmw.dsk...
 warning: can't find squish-pty, so terminal input will fail
 bochs -q
 Kernel command line: -q -f put write-bad-ptr put sample.txt run write-bad-ptr
@@ -21,13 +21,13 @@ Executing 'write-bad-ptr':
 (write-bad-ptr) open "sample.txt"
 write-bad-ptr: exit(-1)
 Execution of 'write-bad-ptr' complete.
-Timer: 341 ticks
-Thread: 0 idle ticks, 311 kernel ticks, 33 user ticks
+Timer: 337 ticks
+Thread: 30 idle ticks, 274 kernel ticks, 36 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 92 reads, 210 writes
 hd1:0: 100 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1020 characters output
+Console: 1021 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

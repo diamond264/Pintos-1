@@ -4,16 +4,8 @@
 #include <debug.h>
 #include <list.h>
 #include <stdint.h>
-#include <hash.h>
 #include "synch.h"
-<<<<<<< HEAD
-#include "lib/kernel/hash.h"
 #include "vm/page.h"
-
-#define DEBUG true
-=======
-#include "vm/page.h"
->>>>>>> PJ-3-2
 
 /* States in a thread's life cycle. */
 enum thread_status
@@ -21,7 +13,8 @@ enum thread_status
     THREAD_RUNNING,     /* Running thread. */
     THREAD_READY,       /* Not running but ready to run. */
     THREAD_BLOCKED,     /* Waiting for an event to trigger. */
-    THREAD_DYING        /* About to be destroyed. */
+    THREAD_DYING,       /* About to be destroyed. */
+    THREAD_SLEEPING     /* Sleeping for untilSleepTicks */
   };
 
 /* Thread identifier type.
@@ -113,18 +106,6 @@ struct thread
     /* Shared between thread.c and synch.c. */
     struct list_elem elem;              /* List element. */
 
-<<<<<<< HEAD
-    /* Edited : Variables for donation */
-    struct list acquired_locks;
-    struct list lost_locks;
-    struct lock *locked;
-    int real_priority;
-    struct thread *donated;
-    struct semaphore *sema_block;
-    struct hash spage_table;
-
-=======
->>>>>>> PJ-3-2
 #ifdef USERPROG
     /* Owned by userprog/process.c. */
     uint32_t *pagedir;                  /* Page directory. */
@@ -155,6 +136,8 @@ struct thread
    If true, use multi-level feedback queue scheduler.
    Controlled by kernel command-line option "-o mlfqs". */
 extern bool thread_mlfqs;
+
+int64_t time_to_wakeup (void);
 
 void thread_init (void);
 void thread_start (void);

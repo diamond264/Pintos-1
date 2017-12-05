@@ -98,11 +98,7 @@ timer_sleep (int64_t ticks)
 {
   int64_t start = timer_ticks ();
 
-<<<<<<< HEAD
-  ASSERT (intr_get_level () == INTR_ON);
-=======
   ASSERT (intr_get_level () == INTR_ON); // INTR_ON이 아니면 왜 sleep 종료했을까?
->>>>>>> PJ-3-2
   while (timer_elapsed (start) < ticks) 
     thread_yield ();
 }

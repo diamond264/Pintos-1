@@ -1,5 +1,5 @@
-Copying tests/userprog/args-dbl-space into /tmp/IeDlNMGWS0.dsk...
-Writing command line to /tmp/OHoO5lnC6P.dsk...
+Copying tests/userprog/args-dbl-space into /tmp/ZCvTShq0fG.dsk...
+Writing command line to /tmp/Yt14rWL3N9.dsk...
 warning: can't find squish-pty, so terminal input will fail
 bochs -q
 Kernel command line: -q -f put args-dbl-space run 'args-dbl-space two  spaces!'
@@ -24,13 +24,13 @@ Executing 'args-dbl-space two  spaces!':
 (args) end
 args-dbl-space: exit(0)
 Execution of 'args-dbl-space two  spaces!' complete.
-Timer: 331 ticks
-Thread: 0 idle ticks, 289 kernel ticks, 45 user ticks
+Timer: 322 ticks
+Thread: 30 idle ticks, 246 kernel ticks, 49 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 61 reads, 202 writes
 hd1:0: 97 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1095 characters output
+Console: 1096 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

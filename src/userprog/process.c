@@ -19,13 +19,9 @@
 #include "threads/palloc.h"
 #include "threads/thread.h"
 #include "threads/vaddr.h"
-<<<<<<< HEAD
-#include "vm/frame.h"
-=======
 #include "vm/page.h"
 #include "vm/frame.h"
 #include "vm/swap.h"
->>>>>>> PJ-3-2
 
 static thread_func start_process NO_RETURN;
 static bool load (const char *cmdline, void (**eip) (void), void **esp);
@@ -133,7 +129,6 @@ start_process (void *f_name)
   struct intr_frame if_;
   bool success;
   struct thread *curr = thread_current();
-  hash_table_init (&curr->spage_table);
 
   hash_init (&curr->spage_table, hash_calc_func, hash_comp_func, NULL);
 
@@ -261,10 +256,7 @@ process_wait (tid_t child_tid)
   if (!t_child->terminated)
   {
     t_parent->waiting = child_tid;
-<<<<<<< HEAD
-=======
 
->>>>>>> PJ-3-2
     sema_down (&t_parent->sema_exit);
   }
 
@@ -316,9 +308,6 @@ process_exit (void)
     {
       sema_up (&t_parent->sema_exit);
     }
-
-    // 수정해야함
-    hash_destroy (&curr->spage_table, hash_free_func);
 
     struct list_elem *t_elem;
     struct child_elem *t;
@@ -457,6 +446,9 @@ static bool load_segment (struct file *file, off_t ofs, uint8_t *upage,
    Stores the executable's entry point into *EIP
    and its initial stack pointer into *ESP.
    Returns true if successful, false otherwise. */
+/*
+  load 함수에서 pagedir ptr을 새로 할당받아온다.
+*/
 bool
 load (const char *file_name, void (**eip) (void), void **esp) 
 {
@@ -555,9 +547,7 @@ load (const char *file_name, void (**eip) (void), void **esp)
 
   /* Set up stack. */
   if (!setup_stack (esp))
-  {
     goto done;
-  }
 
   /* Start address. */
   *eip = (void (*) (void)) ehdr.e_entry;
@@ -668,67 +658,26 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
       struct frame *f = frame_allocate(spe, PAL_USER);
       uint8_t *kpage = f->addr;
 
-      // 수정해야함
-      // file도 넣어 주어야  하나??
-      // struct spage_entry *spe;
-      // spe = spage_insert_upage (upage, writable); // writable, upage가지는 놈 만듬
-      // if (spe == NULL) {
-      //   return false;
-      // }
-
       /* Get a page of memory. */
-<<<<<<< HEAD
-      uint8_t *kpage = allocate_frame (PAL_USER); // obtain frame, frame관련 작업을
-      // printf("%p\n",kpage);
-      if (kpage == NULL)
-      {
-        // printf("kpage is null\n");
-=======
       //uint8_t *kpage = palloc_get_page (PAL_USER);
       if (kpage == NULL)
       {
         ASSERT(0);
->>>>>>> PJ-3-2
         return false;
       }
 
       /* Load this page. */
       if (file_read (file, kpage, page_read_bytes) != (int) page_read_bytes)
-<<<<<<< HEAD
-        {
-          // frame 관련 작업
-          ASSERT(0);
-          free_frame (kpage);
-          palloc_free_page (kpage);
-          return false;
-        }
-=======
       {
         frame_free(f);
         lock_release(&page_lock);
         //palloc_free_page (kpage);
         return false; 
       }
->>>>>>> PJ-3-2
       memset (kpage + page_read_bytes, 0, page_zero_bytes);
 
       /* Add the page to the process's address space. */
       if (!install_page (upage, kpage, writable)) 
-<<<<<<< HEAD
-        {
-          // frame 관련 작업
-          ASSERT(0);
-          free_frame (kpage);
-          palloc_free_page (kpage);
-          return false; 
-        }
-      /* Advance. */
-      read_bytes -= page_read_bytes;
-      zero_bytes -= page_zero_bytes;
-      upage += PGSIZE;
-    }
-  // printf("loop end\n");
-=======
       {
         frame_free(f);
         //palloc_free_page (kpage);
@@ -742,7 +691,6 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
     upage += PGSIZE;
   }
   lock_release(&page_lock);
->>>>>>> PJ-3-2
   return true;
 }
 
@@ -756,9 +704,6 @@ setup_stack (void **esp)
   void *upage = ((uint8_t *) PHYS_BASE) - PGSIZE;
   if (upage == 0) ASSERT(0);
 
-<<<<<<< HEAD
-  kpage = allocate_frame (PAL_USER | PAL_ZERO);
-=======
   lock_acquire(&page_lock);
   struct spage *spe = spage_create(upage, PAGE, true);
   struct frame *f = frame_allocate(spe, PAL_USER | PAL_ZERO);
@@ -766,24 +711,11 @@ setup_stack (void **esp)
   kpage = f->addr;
 
   //kpage = palloc_get_page (PAL_USER | PAL_ZERO);
->>>>>>> PJ-3-2
   if (kpage != NULL) 
   {
     success = install_page (((uint8_t *) PHYS_BASE) - PGSIZE, kpage, true);
     if (success)
     {
-<<<<<<< HEAD
-      success = install_page (((uint8_t *) PHYS_BASE) - PGSIZE, kpage, true);
-      if (success)
-        *esp = PHYS_BASE;
-      else
-      {
-        free_frame (kpage);
-        palloc_free_page (kpage);
-      }
-    }
-  else ASSERT(0);
-=======
       *esp = PHYS_BASE;
     }
     else
@@ -792,7 +724,6 @@ setup_stack (void **esp)
   }
   lock_release(&page_lock);
 
->>>>>>> PJ-3-2
   return success;
 }
 
@@ -837,21 +768,14 @@ void validate_addr_syscall (struct intr_frame *f, void *fault_addr)
   if (fault_addr == NULL
     || !is_user_vaddr(fault_addr))
   {
-<<<<<<< HEAD
-=======
     if(lock_held_by_current_thread(&file_lock))
       lock_release(&file_lock);
->>>>>>> PJ-3-2
     syscall_exit (-1);
   }
 
   if (pagedir_get_page (curr->pagedir, fault_addr) == NULL)
   {
     if (fault_addr >= (f->esp - 32))
-<<<<<<< HEAD
-      stack_growth (fault_addr);
-=======
       stack_growth (rounded_addr);
->>>>>>> PJ-3-2
   }
 }
