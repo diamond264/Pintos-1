@@ -6,10 +6,14 @@
 #include <stdint.h>
 #include <hash.h>
 #include "synch.h"
+<<<<<<< HEAD
 #include "lib/kernel/hash.h"
 #include "vm/page.h"
 
 #define DEBUG true
+=======
+#include "vm/page.h"
+>>>>>>> origin/PJ-3-2
 
 /* States in a thread's life cycle. */
 enum thread_status
@@ -84,6 +88,7 @@ typedef int tid_t;
 struct file_elem {
   struct file *file;
   int fd;
+  char name[50];
   struct list_elem elem;
 };
 
@@ -108,6 +113,7 @@ struct thread
     /* Shared between thread.c and synch.c. */
     struct list_elem elem;              /* List element. */
 
+<<<<<<< HEAD
     /* Edited : Variables for donation */
     struct list acquired_locks;
     struct list lost_locks;
@@ -117,6 +123,8 @@ struct thread
     struct semaphore *sema_block;
     struct hash spage_table;
 
+=======
+>>>>>>> origin/PJ-3-2
 #ifdef USERPROG
     /* Owned by userprog/process.c. */
     uint32_t *pagedir;                  /* Page directory. */
@@ -136,6 +144,10 @@ struct thread
 #endif
 
     /* Owned by thread.c. */
+    struct hash spage_table;
+    struct list mmap_list;
+    int next_mapid;
+    void* esp;
     unsigned magic;                     /* Detects stack overflow. */
   };
 
