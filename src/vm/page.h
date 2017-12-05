@@ -36,7 +36,7 @@ struct mmap {
 	struct file *file;
 	void *addr;
 	uint32_t size;
-	struct thread *owner;x
+	struct thread *owner;
 };
 
 void spage_load (struct spage *spe);
