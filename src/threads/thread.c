@@ -30,10 +30,6 @@
    that are ready to run but not actually running. */
 static struct list ready_list;
 
-// Edited
-/* list of processes in THREAD_SLEEP state */
-static struct list sleep_list;
-
 /* Idle thread. */
 static struct thread *idle_thread;
 
@@ -216,8 +212,6 @@ thread_create (const char *name, int priority,
     t_elem->loaded = false;
     t_elem->exit_status = NULL;
     list_push_back (&curr->children, &t_elem->elem);
-
-    print_thread_children(curr);
   }
 
   /* Add to run queue. */
@@ -243,11 +237,15 @@ thread_block (void)
 /* Transitions a blocked thread T to the ready-to-run state.
    This is an error if T is not blocked.  (Use thread_yield() to
    make the running thread ready.)
+
    This function does not preempt the running thread.  This can
    be important: if the caller had disabled interrupts itself,
    it may expect that it can atomically unblock a thread and
    update other data. */
+<<<<<<< HEAD
 
+=======
+>>>>>>> PJ-3-2
 void
 thread_unblock (struct thread *t) 
 {
@@ -332,7 +330,10 @@ thread_yield (void)
   intr_set_level (old_level);
 }
 
+<<<<<<< HEAD
 // Edited
+=======
+>>>>>>> PJ-3-2
 /* Sets the current thread's priority to NEW_PRIORITY. */
 void
 thread_set_priority (int new_priority) 
@@ -464,14 +465,17 @@ init_thread (struct thread *t, const char *name, int priority)
   t->stack = (uint8_t *) t + PGSIZE;
   t->priority = priority;
   t->magic = THREAD_MAGIC;
-  t->locked = NULL;
-  t->sema_block = NULL;
   t->next_fd = (int) 2;
+<<<<<<< HEAD
   t->waiting = NULL;
+=======
+  t->next_mapid = (int) 2;
+>>>>>>> PJ-3-2
   sema_init(&t->sema_start, 0);
   sema_init(&t->sema_exit, 0);
   list_init (&t->children);
   list_init (&t->files);
+  list_init (&t->mmap_list);
 }
 
 /* Allocates a SIZE-byte frame at the top of thread T's stack and
@@ -586,6 +590,7 @@ allocate_tid (void)
 
 /* Offset of `stack' member within `struct thread'.
    Used by switch.S, which can't figure it out on its own. */
+<<<<<<< HEAD
 uint32_t thread_stack_ofs = offsetof (struct thread, stack);
 
 int print_thread_children(struct thread *t)
@@ -605,3 +610,6 @@ int print_thread_children(struct thread *t)
 
   return length;
 }
+=======
+uint32_t thread_stack_ofs = offsetof (struct thread, stack);
+>>>>>>> PJ-3-2

@@ -45,12 +45,18 @@ pagedir_destroy (uint32_t *pd)
           {
             free_frame (pte_get_page (*pte));
             palloc_free_page (pte_get_page (*pte));
+<<<<<<< HEAD
           }
         free_frame (pt);
+=======
+            //frame_free_with_addr (pte_get_page (*pte));
+        //frame_free_with_addr (pt);
+>>>>>>> PJ-3-2
         palloc_free_page (pt);
       }
   free_frame (pd);
   palloc_free_page (pd);
+  //frame_free_with_addr (pd);
 }
 
 /* Returns the address of the page table entry for virtual
