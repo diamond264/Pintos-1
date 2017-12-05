@@ -13,6 +13,7 @@ static void syscall_handler (struct intr_frame *);
 
 struct lock file_lock;
 extern struct lock page_lock;
+extern struct semaphore page_sema;
 
 void syscall_exit (int status);
 tid_t syscall_exec (const char *cmd_line);
@@ -426,7 +427,8 @@ int syscall_mmap (int fd, void *addr)
 
   void *fp;
   // 파일 사이즈만큼 페이지가 늘어날 때 까지 for문 돌면서 할당
-  lock_acquire(&page_lock);
+  //lock_acquire(&page_lock);
+  //sema_down(&page_sema);
 
   for(fp = addr; fp <= addr + length - PGSIZE; fp += PGSIZE)
   {
@@ -447,7 +449,7 @@ int syscall_mmap (int fd, void *addr)
     spe->is_over = true;
     spe->length_over = length % PGSIZE;
   }
-  lock_release(&page_lock);
+  //lock_release(&page_lock);
   
   mapping->file = mapped_file;
   mapping->addr = addr;
@@ -456,6 +458,8 @@ int syscall_mmap (int fd, void *addr)
   mapping->owner = curr;
 
   list_push_back(&curr->mmap_list, &mapping->elem);
+
+  //sema_up(&page_sema);
 
   return mapping->mapid;
 }
@@ -491,10 +495,12 @@ void syscall_unmap (int mapid)
 
   struct file *targetFile = mapping->file;
 
-  lock_acquire(&page_lock);
+  //lock_acquire(&page_lock);
+  
   int write_len = PGSIZE;
   while(size > 0)
   {
+    sema_down(&page_sema);
     if(size - PGSIZE < 0) write_len = size;
     struct spage *spe = find_spage(fp);
 
@@ -518,9 +524,10 @@ void syscall_unmap (int mapid)
 
     size -= PGSIZE;
     fp += PGSIZE;
+    sema_up(&page_sema);
   }
 
-  lock_release(&page_lock);
+  //lock_release(&page_lock);
 
   //syscall_close(mapping->fd);
 

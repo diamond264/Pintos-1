@@ -28,6 +28,7 @@ static bool load (const char *cmdline, void (**eip) (void), void **esp);
 
 extern struct lock page_lock;
 extern struct lock file_lock;
+extern struct semaphore page_sema;
 
 // parent thread의 chilren list에서 tid를 가지는 element를 꺼내오기 위한 함수
 struct child_elem* get_child(struct thread *parent, tid_t child_tid)
@@ -339,7 +340,8 @@ process_exit (void)
       free(m);
     }
     
-    lock_acquire (&page_lock);
+    //lock_acquire (&page_lock);
+    //sema_down(&page_sema);
 
     // spage table의 spage들을 모두 free.
     hash_destroy(&curr->spage_table, hash_free_func);
@@ -348,13 +350,10 @@ process_exit (void)
     pagedir_activate (NULL);
     pagedir_destroy (pd);
 
-    lock_release (&page_lock);
-  }
+    //sema_up(&page_sema);
 
-  if(lock_held_by_current_thread(&page_lock))
-    lock_release(&page_lock);
-  if(lock_held_by_current_thread(&file_lock))
-    lock_release(&file_lock);
+    //lock_release (&page_lock);
+  }
 }
 
 /* Sets up the CPU for running user code in the current
@@ -629,7 +628,7 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 
   file_seek (file, ofs);
 
-  lock_acquire(&page_lock);
+  //lock_acquire(&page_lock);
   while (read_bytes > 0 || zero_bytes > 0) 
   {
     /* Do calculate how to fill this page.
@@ -654,6 +653,8 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
     }
     else
     {
+      sema_down(&page_sema);
+
       spe = spage_create(upage, PAGE, writable);
       struct frame *f = frame_allocate(spe, PAL_USER);
       uint8_t *kpage = f->addr;
@@ -670,7 +671,8 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
       if (file_read (file, kpage, page_read_bytes) != (int) page_read_bytes)
       {
         frame_free(f);
-        lock_release(&page_lock);
+        //lock_release(&page_lock);
+        sema_up(&page_sema);
         //palloc_free_page (kpage);
         return false; 
       }
@@ -681,16 +683,19 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
       {
         frame_free(f);
         //palloc_free_page (kpage);
-        lock_release(&page_lock);
+        sema_up(&page_sema);
+        //lock_release(&page_lock);
         return false; 
       }
+
+      sema_up(&page_sema);
     }
     /* Advance. */
     read_bytes -= page_read_bytes;
     zero_bytes -= page_zero_bytes;
     upage += PGSIZE;
   }
-  lock_release(&page_lock);
+  //lock_release(&page_lock);
   return true;
 }
 
@@ -704,7 +709,8 @@ setup_stack (void **esp)
   void *upage = ((uint8_t *) PHYS_BASE) - PGSIZE;
   if (upage == 0) ASSERT(0);
 
-  lock_acquire(&page_lock);
+  //lock_acquire(&page_lock);
+  sema_down(&page_sema);
   struct spage *spe = spage_create(upage, PAGE, true);
   struct frame *f = frame_allocate(spe, PAL_USER | PAL_ZERO);
 
@@ -722,7 +728,8 @@ setup_stack (void **esp)
       //palloc_free_page (kpage);
       frame_free(f);
   }
-  lock_release(&page_lock);
+  //lock_release(&page_lock);
+  sema_up(&page_sema);
 
   return success;
 }

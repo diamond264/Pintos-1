@@ -11,6 +11,7 @@
 #define PAGE_SECTOR (PGSIZE / DISK_SECTOR_SIZE)
 
 struct lock page_lock;
+struct semaphore page_sema;
 extern struct lock file_lock;
 
 void
@@ -20,6 +21,7 @@ swap_init ()
 	swap_bitmap = bitmap_create (disk_size (swap_disk));
 
 	lock_init (&page_lock);
+	sema_init (&page_sema, 1);
 }
 
 void
