@@ -19,6 +19,7 @@ static void page_fault (struct intr_frame *);
 
 extern struct lock page_lock;
 extern struct lock file_lock;
+extern struct semaphore page_sema;
 
 /* Registers handlers for interrupts that can be caused by user
    programs.
@@ -170,7 +171,9 @@ page_fault (struct intr_frame *f)
 
     if (spe)
     {
-        lock_acquire(&page_lock);
+        //lock_acquire(&page_lock);
+        sema_down(&page_sema);
+        printf("sema get %d fault by %p\n", thread_current()->tid, rounded_addr);
         spe->vaddr = rounded_addr;
 
         if (spe->status == SWAP) // swap된 상태면 load
@@ -216,11 +219,24 @@ page_fault (struct intr_frame *f)
                 //pagedir_set_page (curr->pagedir, spe->vaddr, f->addr, true);
             }
         }
-        lock_release(&page_lock);
+        //lock_release(&page_lock);
+        sema_up(&page_sema);
+        printf("sema release %d\n", thread_current()->tid);
     }
     else if (fault_addr >= (f->esp - 32) && PHYS_BASE - fault_addr <= 262144)
     {
-        stack_growth (rounded_addr);
+        sema_down(&page_sema);
+
+        void *addr = rounded_addr;
+        struct spage *spe = spage_create (addr, PAGE, true);
+        struct frame *f = frame_allocate (spe, PAL_USER | PAL_ZERO);
+
+        //lock_release(&page_lock);
+        sema_up(&page_sema);
+
+        if(pagedir_get_page(thread_current ()->pagedir, addr)!=NULL 
+            || !pagedir_set_page(thread_current ()->pagedir, addr, f->addr, spe->writable))
+            ASSERT(0);
     }
     else {
         syscall_exit (-1);

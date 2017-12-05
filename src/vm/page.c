@@ -9,6 +9,7 @@
 #include <stdb.h>
 
 extern struct lock page_lock;
+extern struct semaphore page_sema;
 
 void spage_load (struct spage *spe)
 {
@@ -102,13 +103,15 @@ void hash_free_func (const struct hash_elem *e, void *aux UNUSED)
 
 void stack_growth (void *addr)
 {
-	lock_acquire(&page_lock);
+	//lock_acquire(&page_lock);
+	sema_down(&page_sema);
 	addr = pg_round_down (addr);
 	struct spage *spe = spage_create (addr, PAGE, true);
 	struct frame *f = frame_allocate (spe, PAL_USER | PAL_ZERO);
 	ASSERT(f && spe);
 
-	lock_release(&page_lock);
+	//lock_release(&page_lock);
+	sema_up(&page_sema);
 
 	if(pagedir_get_page(thread_current ()->pagedir, addr)!=NULL 
 		|| !pagedir_set_page(thread_current ()->pagedir, addr, f->addr, spe->writable))
