@@ -173,7 +173,6 @@ page_fault (struct intr_frame *f)
     {
         //lock_acquire(&page_lock);
         sema_down(&page_sema);
-        printf("sema get %d fault by %p\n", thread_current()->tid, rounded_addr);
         spe->vaddr = rounded_addr;
 
         if (spe->status == SWAP) // swap된 상태면 load
@@ -221,7 +220,6 @@ page_fault (struct intr_frame *f)
         }
         //lock_release(&page_lock);
         sema_up(&page_sema);
-        printf("sema release %d\n", thread_current()->tid);
     }
     else if (fault_addr >= (f->esp - 32) && PHYS_BASE - fault_addr <= 262144)
     {

@@ -26,7 +26,7 @@ test_main (void)
 
   /* Read back via read(). */
   read (handle, buf, strlen (sample));
-  CHECK (!memcmp (buf, sample, strlen (sample)),[종합]생리공결제_정지호_1차교정.docx
+  CHECK (!memcmp (buf, sample, strlen (sample)),
          "compare read data against written data");
   close (handle);
 }

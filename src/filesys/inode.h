@@ -5,6 +5,27 @@
 #include "filesys/off_t.h"
 #include "devices/disk.h"
 
+/* On-disk inode.
+Must be exactly DISK_SECTOR_SIZE bytes long. */
+struct inode_disk
+{
+    disk_sector_t start[100]; // 실제 데이터를 나타내는 부분.
+    off_t length;                       /* File size in bytes. */
+    unsigned magic;                     /* Magic number. */
+    uint32_t unused[125];               /* Not used. */
+};
+
+/* In-memory inode. */
+struct inode 
+{
+    struct list_elem elem;              /* Element in inode list. */
+    disk_sector_t sector;               /* Sector number of disk location. */
+    int open_cnt;                       /* Number of openers. */
+    bool removed;                       /* True if deleted, false otherwise. */
+    int deny_write_cnt;                 /* 0: writes ok, >0: deny writes. */
+    struct inode_disk data;             /* Inode content. */
+};
+
 struct bitmap;
 
 void inode_init (void);

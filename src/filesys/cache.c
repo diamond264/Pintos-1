@@ -1,27 +1,35 @@
 #include "filesys/cache.h"
 
+extern struct disk *filesys_disk;
+
 void init_buff_cache() {
 	list_init (&buff_list);
 	sema_init (&sema_cache, 1);
 	hand = NULL;
 }
 
-void free_buff_cache() {
+void destory_buff_cache() {
+	sema_down(&sema_cache);
+
 	while (!list_empty (&buff_list)) {
-		struct list_entry *elem = list_pop_front (&buff_list);
-		struct buffer *bf = list_entry (elem, struct buffer, elem);
+		struct list_elem *first_elem = list_pop_front (&buff_list);
+		struct buffer *bf = list_entry (first_elem, struct buffer, elem);
 
 		free_buff (bf);
 	}
 
 	hand = NULL;
+
+	sema_down(&sema_cache);
 }
 
+// cache list에서 빼는 작업은 안한다.
+// 그래서 sema가 필요없다.
 void free_buff(struct buffer *bf) {
+	// Write Back
 	if (bf->dirty) {
-		// 수정해야 함
-		// 섹터 사이즈만큼 쓰도록
-		disk_write (filesys_disk, bf->index, bf->addr);
+		buffer_write_back(bf);
+		//disk_write (filesys_disk, bf->index, bf->addr);
 	}
 
 	free (bf->addr);
@@ -34,9 +42,21 @@ void free_buff_with_elem(struct list_elem *bf_elem)
 	free_buff(bf);
 }
 
+void buffer_write_back(struct buffer *bf)
+{
+	disk_write (filesys_disk, bf->index, bf->addr);
+}
+
+
+/*
+	access 할 때 마다 캐시에서 버퍼를 검색하는건 비효율적이지 않을까?
+	생각해보자.
+*/
 void access_buff_cache(enum cache_access access, disk_sector_t index, void *addr, off_t offset, off_t size) {
 	struct list_elem *iter;
 	struct buffer *bf = NULL;
+
+	sema_down(&sema_cache);
 
 	for(iter = list_begin(&buff_list); iter != list_end(&buff_list); iter = list_next(iter)) {
 		bf = list_entry(iter, struct buffer, elem);
@@ -55,17 +75,6 @@ void access_buff_cache(enum cache_access access, disk_sector_t index, void *addr
 
 		insert_buff(bf);
 
-		/*if (hand == NULL) { // 캐시가 비어있던 경우
-			list_push_back (&buff_list, &bf->elem);
-			//if (list_size (&buff_list) == CACHE_FULL)
-			hand = list_begin (&buff_list);
-		}
-		else {
-			evict_buff_cache ();
-			list_insert (hand, &bf->elem);
-			hand = list_next(hand);
-		}*/
-
 		disk_read (filesys_disk, bf->index, bf->addr);
 	}
 
@@ -78,7 +87,8 @@ void access_buff_cache(enum cache_access access, disk_sector_t index, void *addr
 		bf->dirty = true;
 		memcpy(bf->addr+offset, addr, size);
 	}
-	else ASSERT(0);
+
+	sema_up(&sema_cache);
 }
 
 void insert_buff(struct buffer *bf)
@@ -105,11 +115,22 @@ void insert_buff(struct buffer *bf)
 			}
 			else
 			{
-				list_insert(hand, bf->elem);
+				list_insert(hand, &bf->elem);
 				free_buff_with_elem(hand);
+				break;
 			}
 		}
 	}
+}
+
+void read_buff(disk_sector_t index, void *addr, off_t offset, off_t size)
+{
+	access_buff_cache(READ, index, adddr, offset, size);
+}
+
+void write_buff(disk_sector_t index, void *addr, off_t offset, off_t size)
+{
+	access_buff_cache(WRITE, index, adddr, offset, size);
 }
 
 int get_cache_size()

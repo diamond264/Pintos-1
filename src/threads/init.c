@@ -33,6 +33,7 @@
 #include "devices/disk.h"
 #include "filesys/filesys.h"
 #include "filesys/fsutil.h"
+#include "filesys/cache.h"
 #endif
 #include "vm/frame.h"
 #include "vm/swap.h"
@@ -119,6 +120,7 @@ main (void)
   disk_init ();
   swap_init ();
   filesys_init (format_filesys);
+  init_buff_cache();
 #endif
 
   printf ("Boot complete.\n");
