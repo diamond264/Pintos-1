@@ -35,11 +35,11 @@ free_map_allocate (size_t cnt, disk_sector_t *sectorp)
     sector = bitmap_scan_and_flip (free_map, 0, 1, false);
     if (sector == BITMAP_ERROR)
     {
-      //for (j=0;j<i-1;j++)
-        bitmap_set_multiple (free_map, sector, 1, false);
+      ASSERT(0);
+      for (j=0;j<i-1;j++)
+        bitmap_set_multiple (free_map, sectorp[j], 1, false);
       return false;
     }
-    //printf("sector allocate sectorp[%d] = %d\n", i, sector);
     sectorp[i] = sector;
   }
 
@@ -47,8 +47,9 @@ free_map_allocate (size_t cnt, disk_sector_t *sectorp)
       && free_map_file != NULL
       && !bitmap_write (free_map, free_map_file))
   {
+    ASSERT(0);
     for (j=0;j<cnt;j++)
-        bitmap_set_multiple (free_map, sector, 1, false);
+        bitmap_set_multiple (free_map, sectorp[j], 1, false);
     return false;
   }
 

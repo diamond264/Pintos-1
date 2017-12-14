@@ -33,7 +33,6 @@
 #include "devices/disk.h"
 #include "filesys/filesys.h"
 #include "filesys/fsutil.h"
-#include "filesys/cache.h"
 #endif
 #include "vm/frame.h"
 #include "vm/swap.h"

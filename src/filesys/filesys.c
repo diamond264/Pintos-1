@@ -6,6 +6,7 @@
 #include "filesys/free-map.h"
 #include "filesys/inode.h"
 #include "filesys/directory.h"
+#include "filesys/cache.h"
 #include "devices/disk.h"
 
 /* The disk that contains the file system. */
@@ -18,13 +19,15 @@ static void do_format (void);
 void
 filesys_init (bool format) 
 {
+  // initiation of buffer cache
+  init_buff_cache();
+
   filesys_disk = disk_get (0, 1);
   if (filesys_disk == NULL)
     PANIC ("hd0:1 (hdb) not present, file system initialization failed");
 
   inode_init ();
   free_map_init ();
-  init_buff_cache();
 
   if (format) 
     do_format ();
@@ -54,9 +57,8 @@ filesys_create (const char *name, off_t initial_size)
                   && free_map_allocate (1, &inode_sector)
                   && inode_create (inode_sector, initial_size, LV2, FILE)
                   && dir_add (dir, name, inode_sector));
-  if (!success && inode_sector != 0){
+  if (!success && inode_sector != 0) 
     free_map_release (&inode_sector, 1);
-  }
   dir_close (dir);
 
   return success;

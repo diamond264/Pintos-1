@@ -3,9 +3,9 @@
 
 #include <stdbool.h>
 #include <list.h>
-#include "threads/synch.h"
 #include "filesys/off_t.h"
 #include "devices/disk.h"
+#include "threads/synch.h"
 
 static const int FILE = 0;
 static const int DIR = 1;
@@ -28,8 +28,9 @@ struct inode_disk
     unsigned magic;                     /* Magic number. 파일 포맷의 종류를 나타낸다. */
     int depth; // 0이면 root, 1이면 indirect node, 2면 doubly indirect node.
     int is_dir; // directory면 1. 아니면 0.
+    size_t num_sector;
     // 4*100 + 4*5 = 420
-    uint32_t unused[23]; // 512 bytes 할당하기 위한 offset.
+    uint32_t unused[22]; // 512 bytes 할당하기 위한 offset.
 };
 
 /* In-memory inode. */

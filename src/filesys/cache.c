@@ -1,3 +1,5 @@
+#include <stdlib.h>
+#include <stdio.h>
 #include "filesys/cache.h"
 
 extern struct disk *filesys_disk;
@@ -63,7 +65,7 @@ void access_buff_cache(enum cache_access access, disk_sector_t index, void *addr
 	    bf = NULL;
 	}
 
-	if (bf == NULL) {
+	if (bf == NULL || iter == list_end(&buff_list)) {
 		bf = malloc (sizeof (struct buffer));
 		bf->addr = malloc (DISK_SECTOR_SIZE);
 		bf->index = index;
