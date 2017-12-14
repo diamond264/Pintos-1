@@ -5,6 +5,7 @@
 #include "filesys/filesys.h"
 #include "filesys/inode.h"
 #include "threads/malloc.h"
+#include "threads/thread.h"
 
 /* A directory. */
 struct dir 
@@ -47,6 +48,14 @@ dir_open (struct inode *inode)
       free (dir);
       return NULL; 
     }
+}
+
+void dir_set_parent (disk_sector_t child, disk_sector_t parent)
+{
+  struct inode *child_inode = inode_open (child);
+  child_inode->data.parent = parent;
+  write_buff (child_inode->sector, &child_inode->data, 0, DISK_SECTOR_SIZE);
+  inode_close (child_inode);
 }
 
 /* Opens the root directory and returns a directory for it.
@@ -123,12 +132,19 @@ dir_lookup (const struct dir *dir, const char *name,
 
   ASSERT (dir != NULL);
   ASSERT (name != NULL);
-
-  if (lookup (dir, name, &e, NULL))
+  if(strcmp(name, ".") == 0){
+    *inode = inode_reopen(dir->inode);
+    return true;
+  }
+  if(strcmp(name, "..") == 0){
+    *inode = inode_open(dir->inode->data.parent);
+    return true;
+  }
+  if (lookup (dir, name, &e, NULL)){
     *inode = inode_open (e.inode_sector);
+  }
   else
     *inode = NULL;
-
   return *inode != NULL;
 }
 
@@ -233,4 +249,161 @@ dir_readdir (struct dir *dir, char name[NAME_MAX + 1])
         } 
     }
   return false;
+}
+
+struct dir *parse_directory (char *path)
+{
+    struct dir *curr;
+    char *buff, *token, *save_ptr;
+    int length = strlen (path);
+    struct inode *inode;
+
+    if(path == NULL || path == '\0') return NULL;
+
+    buff = malloc (length+1);
+    memcpy (buff, path, length+1);
+    if (path[0] == '/') { // 절대경로
+        curr = dir_open_root ();
+        token = strtok_r (buff+1, "/", &save_ptr);
+    }
+    else { // 상대경로
+        struct thread *t = thread_current();
+
+        if (t->curr_dir == NULL) 
+            curr = dir_open_root ();
+        else
+            curr = dir_reopen (t->curr_dir);
+
+        token = strtok_r (buff, "/", &save_ptr);
+
+        if(strcmp(token, "..") == 0) // 부모를 찾을 경우 상위 디렉토리 로드한다.
+        {
+            inode = inode_open((dir_get_inode(curr))->data.parent);
+            dir_close(curr);
+            curr = dir_open(inode);
+        }
+    }
+    printf("path : %s\n", token);
+
+    // 파싱했는데 NULL이면 현재 경로 리턴
+    if(token == NULL) return curr;
+
+    while(true)
+    {
+        token = strtok_r(NULL, "/", &save_ptr);
+        printf("path : %s\n", token);
+
+        if(token == NULL) break;
+        
+        if(strcmp(token, "..") == 0) // 부모를 찾을 경우 상위 디렉토리 로드한다.
+        {
+            inode = inode_open((dir_get_inode(curr))->data.parent);
+            dir_close(curr);
+            curr = dir_open(inode);
+        }
+        else
+        {
+            inode = NULL;
+            if(dir_lookup(curr, token, &inode))
+            {
+                dir_close(curr);
+                if(inode->data.is_dir == DIR)
+                {
+                    curr = dir_open(inode);
+                }
+                else
+                {
+                    inode_close(inode);
+                    return NULL;
+                }
+            }
+            else
+            {
+                dir_close(curr);
+                return NULL;
+            }
+        }
+    }
+
+  // 선생님
+  /*char *word;
+  while (1) {
+    word = token;
+    if(word == NULL) break;
+    token = strtok_r(NULL, "/", &save_point);
+    if(token == NULL) break;
+    if(strcmp(word,"")==0);
+    else if(strcmp(word,".")==0);
+    else if(strcmp(word,"..")==0){
+      inode = inode_open((dir_get_inode(curr))->data.parent);
+      dir_close(curr);
+      curr = dir_open(inode);
+    }
+    else{
+      inode = NULL;
+      if(dir_lookup(curr, word, &inode)){
+        dir_close(curr);
+        if(inode->data.is_dir == DIR)
+          curr = dir_open(inode);
+        else{
+          inode_close(inode);
+          free(buff_first);
+          return NULL;
+        }
+      }
+      else{
+        dir_close(curr);
+        free(buff_first);
+        return NULL;
+      }
+    }
+  }*/
+    // for (token; token; token = strtok_r (NULL, "/", &save_point))
+  // {
+  //   if (!dir_lookup (curr, token, &inode)) {
+  //     dir_close (curr);
+  //     free (buff_first);
+  //     return NULL;
+  //   }
+
+  //   if (inode->data.is_dir != DIR) {
+  //     dir_close (curr);
+  //     free (buff_first);
+  //     return NULL;
+  //   }
+
+  //   dir_close (curr);
+  //   curr = dir_open (inode);
+  // }
+    return curr;
+}
+
+char *parse_name (char *path)
+{
+    char *buff, token, *save_ptr;
+
+    int length = strlen(length);
+    buff = malloc (length+1);
+    memcpy (buff, path, length+1);
+
+    char *name = NULL;
+    for (token = strtok_r (buff, "/", &save_ptr); token != NULL; token = strtok_r (NULL, "/", &save_ptr))
+    {
+        name = token;
+    }
+    
+    free(buff);
+
+    if(name == NULL){
+        char *file_name = malloc(1);
+        *file_name = '\0';
+        return file_name;
+    }
+    else
+    {
+        length = strlen(name);
+        char *file_name = malloc(length + 1);
+        memcpy(file_name, name, length + 1);
+        return file_name;
+    }
 }

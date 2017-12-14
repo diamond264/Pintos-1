@@ -83,6 +83,7 @@ struct file_elem {
   int fd;
   char name[50];
   struct list_elem elem;
+  struct dir *dir;
 };
 
 struct child_elem {
@@ -130,6 +131,8 @@ struct thread
     int next_mapid;
     void* esp;
     unsigned magic;                     /* Detects stack overflow. */
+
+    struct dir *curr_dir;
   };
 
 /* If false (default), use round-robin scheduler.

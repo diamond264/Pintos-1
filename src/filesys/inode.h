@@ -23,7 +23,7 @@ Must be exactly DISK_SECTOR_SIZE=512 bytes long. */
 struct inode_disk
 {
     disk_sector_t start[100]; // 실제 데이터 or sector pointer를 나타내는 부분. 위치 계산 쉽게 하기 위해 100 size.
-  	disk_sector_t parent; // parent sector를 가리킨다.
+    disk_sector_t parent; // parent sector를 가리킨다.
     off_t length;                       /* File size in bytes. */
     unsigned magic;                     /* Magic number. 파일 포맷의 종류를 나타낸다. */
     int depth; // 0이면 root, 1이면 indirect node, 2면 doubly indirect node.
@@ -42,7 +42,7 @@ struct inode
     bool removed;                       /* True if deleted, false otherwise. */
     int deny_write_cnt;                 /* 0: writes ok, >0: deny writes. */
     struct inode_disk data;             /* Inode content. */
-   	struct semaphore sema_inode; // inode semaphore.
+    struct semaphore sema_inode; // inode semaphore.
 };
 
 struct bitmap;

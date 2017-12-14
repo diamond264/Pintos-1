@@ -4,6 +4,8 @@
 #include "threads/interrupt.h"
 #include "threads/thread.h"
 #include "filesys/off_t.h"
+#include "filesys/file.h"
+#include "filesys/inode.h"
 #include "threads/vaddr.h"
 #include "vm/page.h"
 #include "vm/swap.h"
@@ -27,6 +29,11 @@ int syscall_write (struct intr_frame *f, int fd, const void *buffer, unsigned si
 void syscall_seek (int fd, unsigned position);
 unsigned syscall_tell (int fd);
 void syscall_close (int fd);
+int syscall_inumber (int fd);
+bool syscall_isdir (int fd);
+bool syscall_readdir (int fd, char *name);
+bool syscall_chdir (const char *dir);
+bool syscall_mkdir (const char *dir);
 
 uint32_t
 get_argument (uint32_t *sp) {
@@ -160,6 +167,27 @@ syscall_handler (struct intr_frame *f)
       syscall_unmap ((int) *argv[0]);
       break;
 
+    case SYS_CHDIR :
+      argv[0] = get_argument (sp);
+      f->eax = syscall_chdir ((const char *) *argv[0]);
+
+    case SYS_MKDIR :
+      argv[0] = get_argument (sp);
+      f->eax = syscall_mkdir ((const char *) *argv[0]);
+
+    case SYS_READDIR : 
+      argv[0] = get_argument (sp);
+      argv[1] = get_argument (sp+1);
+      f->eax = syscall_readdir ((int) *argv[0], (char *) *argv[1]);
+
+    case SYS_ISDIR : 
+      argv[0] = get_argument (sp);
+      f->eax = syscall_isdir ((int) *argv[0]);
+
+    case SYS_INUMBER :
+      argv[0] = get_argument (sp);
+      f->eax = syscall_inumber ((int) *argv[0]);
+
     default :
       break;
   }
@@ -167,6 +195,7 @@ syscall_handler (struct intr_frame *f)
 
 void
 syscall_exit (int status) {
+  ASSERT(0);
   struct thread *curr;
   curr = thread_current ();
   curr->exit_status = status;
@@ -243,6 +272,10 @@ syscall_open (const char *filename) {
   if (f->file == NULL) {
     return -1;
   }
+
+  struct inode *inode = file_get_inode (f->file);
+  if (inode->data.is_dir == DIR) f->dir = dir_open (inode_reopen (inode));
+  else f->dir = NULL;
 
   f->fd = t->next_fd;
   //printf("%s %d\n", filename, strlen(filename));
@@ -321,12 +354,12 @@ syscall_write (struct intr_frame *f, int fd, const void *buffer, unsigned size) 
     putbuf (buffer, size);
     value = size;
   } else {
-    if (get_file (fd) == NULL)
-    {
-      syscall_exit (-1);
-    }
+    struct file *targetFile = get_file(fd);
+    if (targetFile == NULL) syscall_exit (-1);
+    if (targetFile->inode->data.is_dir == DIR) return -1;
+
     lock_acquire (&file_lock);
-    value  = file_write(get_file(fd), buffer, (off_t) size);
+    value  = file_write(targetFile, buffer, (off_t) size);
     lock_release(&file_lock);
   }
   return value;
@@ -383,6 +416,8 @@ syscall_close (int fd) {
 
   lock_acquire (&file_lock);
   file_close (f);
+  if(f_elem->dir != NULL)
+    dir_close (f_elem->dir);
   lock_release (&file_lock);
 
   free (f_elem);
@@ -538,4 +573,97 @@ void syscall_unmap (int mapid)
   }
 }
 
+
+bool syscall_chdir (const char *dir)
+{
+  lock_acquire(&file_lock);
+
+  struct inode *inode;
+  struct dir *curr;
+
+  curr = parse_directory (dir);
+  if (curr == NULL)
+  {
+    lock_release(&file_lock);
+    return false;
+  }
+
+  if (thread_current ()->curr_dir) dir_close (thread_current ()->curr_dir);
+  thread_current ()->curr_dir = curr;
+
+  lock_release(&file_lock);
+  return true;
+}
+
+bool syscall_mkdir (const char *dir)
+{
+  lock_acquire(&file_lock);
+
+  if(dir == '\0') return false;
+
+  struct dir *parent_dir = parse_directory(dir);
+  if(parent_dir == NULL){
+    lock_release(&file_lock);
+    return false;
+  }
+
+  char *new_dir_name = parse_name(dir);
+  if(*new_dir_name == '\0'){
+    dir_close(parent_dir);
+    free(new_dir_name);
+    lock_release(&file_lock);
+    return false;
+  }
+
+  bool success = true;
+
+  disk_sector_t inode_sector = -1;
+  struct inode *inode;
+  if(!dir_lookup(parent_dir, new_dir_name, &inode)
+    && free_map_allocate (1, &inode_sector)
+    && dir_create(inode_sector, 16)
+    && dir_add (parent_dir, new_dir_name, inode_sector));
+  else
+  {
+    free_map_release(&inode_sector, 1);
+    success = false;
+  }
+
+  struct inode *pinode = dir_get_inode(parent_dir);
+  dir_set_parent (inode_sector, pinode->sector);
+
+  dir_close(parent_dir);
+  free(new_dir_name);
+
+  lock_release(&file_lock);
+  
+  return success;
+}
+
+bool syscall_readdir (int fd, char *name)
+{
+  struct file_elem *f = get_file_elem (fd);
+  struct dir *dir = f->dir;
+
+  if (dir == NULL) return false;
+  if (f->file == NULL) return false;
+  return dir_readdir (dir, name);
+}
+
+bool syscall_isdir (int fd)
+{
+  struct file_elem *f = get_file_elem (fd);
+  if (f->file == NULL) return false;
+  if (f->dir == NULL) return false;
+  return true;
+}
+
+int syscall_inumber (int fd)
+{
+  struct file *file = get_file (fd);
+  if (file == NULL) return -1;
+  struct inode *inode = file_get_inode(file);
+
+  return inode->sector;
+}
 

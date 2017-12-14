@@ -184,6 +184,12 @@ thread_create (const char *name, int priority,
   init_thread (t, name, priority);
   tid = t->tid = allocate_tid ();
 
+  // thread 만들 때 dir reopen 해준다.di
+  if(thread_current()->curr_dir != NULL)
+    t->curr_dir = dir_reopen(thread_current()->curr_dir);
+  else
+    t->curr_dir = NULL;
+
   /* Stack frame for kernel_thread(). */
   kf = alloc_frame (t, sizeof *kf);
   kf->eip = NULL;
