@@ -9,7 +9,6 @@
 #define MAX_CACHE_SIZE 64 // 최대 64개의 섹터가 캐싱된다.
 
 struct list buff_list;
-static struct list_elem *hand;
 struct semaphore sema_cache;
 
 enum cache_access {

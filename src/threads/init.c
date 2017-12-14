@@ -120,7 +120,6 @@ main (void)
   disk_init ();
   swap_init ();
   filesys_init (format_filesys);
-  init_buff_cache();
 #endif
 
   printf ("Boot complete.\n");

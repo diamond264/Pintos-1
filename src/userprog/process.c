@@ -473,7 +473,8 @@ load (const char *file_name, void (**eip) (void), void **esp)
     }
 
   /* Read and verify executable header. */
-  if (file_read (file, &ehdr, sizeof ehdr) != sizeof ehdr
+  int read_bytes = file_read (file, &ehdr, sizeof ehdr);
+  if (read_bytes != sizeof ehdr
       || memcmp (ehdr.e_ident, "\177ELF\1\1\1", 7)
       || ehdr.e_type != 2
       || ehdr.e_machine != 3
@@ -629,6 +630,7 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
   file_seek (file, ofs);
 
   //lock_acquire(&page_lock);
+  sema_down(&page_sema);
   while (read_bytes > 0 || zero_bytes > 0) 
   {
     /* Do calculate how to fill this page.
@@ -653,8 +655,6 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
     }
     else
     {
-      sema_down(&page_sema);
-
       spe = spage_create(upage, PAGE, writable);
       struct frame *f = frame_allocate(spe, PAL_USER);
       uint8_t *kpage = f->addr;
@@ -664,6 +664,7 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
       if (kpage == NULL)
       {
         ASSERT(0);
+        sema_up(&page_sema);
         return false;
       }
 
@@ -687,14 +688,13 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
         //lock_release(&page_lock);
         return false; 
       }
-
-      sema_up(&page_sema);
     }
     /* Advance. */
     read_bytes -= page_read_bytes;
     zero_bytes -= page_zero_bytes;
     upage += PGSIZE;
   }
+  sema_up(&page_sema);
   //lock_release(&page_lock);
   return true;
 }

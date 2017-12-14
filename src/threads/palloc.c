@@ -91,7 +91,9 @@ palloc_get_multiple (enum palloc_flags flags, size_t page_cnt)
   if (page_idx != BITMAP_ERROR)
     pages = pool->base + PGSIZE * page_idx;
   else
+  {
     pages = NULL;
+  }
 
   if (pages != NULL) 
     {
@@ -129,7 +131,9 @@ palloc_free_multiple (void *pages, size_t page_cnt)
 
   ASSERT (pg_ofs (pages) == 0);
   if (pages == NULL || page_cnt == 0)
+  {
     return;
+  }
 
   if (page_from_pool (&kernel_pool, pages))
     pool = &kernel_pool;

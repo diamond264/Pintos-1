@@ -5,7 +5,6 @@ extern struct disk *filesys_disk;
 void init_buff_cache() {
 	list_init (&buff_list);
 	sema_init (&sema_cache, 1);
-	hand = NULL;
 }
 
 void destory_buff_cache() {
@@ -18,9 +17,7 @@ void destory_buff_cache() {
 		free_buff (bf);
 	}
 
-	hand = NULL;
-
-	sema_down(&sema_cache);
+	sema_up(&sema_cache);
 }
 
 // cache list에서 빼는 작업은 안한다.
@@ -98,39 +95,40 @@ void insert_buff(struct buffer *bf)
 	if(cache_size < MAX_CACHE_SIZE)
 	{
 		list_push_back(&buff_list, &bf->elem);
-
-		if(hand == NULL) hand = list_front(&buff_list);
 	}
 	else
 	{
-		while(true)
-		{
-			struct buffer *iter = list_entry(hand, struct buffer, elem);
-			if(iter->access)
-			{
-				iter->access = 0;
+		struct list_elem *hand = list_pop_front(&buff_list);
+		struct buffer *victim = list_entry(hand, struct buffer, elem);
 
-				if(hand == list_end(&buff_list)) hand = list_front(&buff_list);
-				else hand = list_next(hand);
-			}
-			else
-			{
-				list_insert(hand, &bf->elem);
-				free_buff_with_elem(hand);
-				break;
-			}
+		list_push_back(&buff_list, &bf->elem);
+		free_buff(victim);
+		/*if(iter->access)
+		{
+			iter->access = 0;
+
+			if(hand == list_end(&buff_list)) hand = list_front(&buff_list);
+			else hand = list_next(hand);
 		}
+		else
+		{
+			list_insert(hand, &bf->elem);
+			list_remove(hand);
+			free_buff_with_elem(hand);
+			hand = &bf->elem;
+			break;
+		}*/
 	}
 }
 
 void read_buff(disk_sector_t index, void *addr, off_t offset, off_t size)
 {
-	access_buff_cache(READ, index, adddr, offset, size);
+	access_buff_cache(READ, index, addr, offset, size);
 }
 
 void write_buff(disk_sector_t index, void *addr, off_t offset, off_t size)
 {
-	access_buff_cache(WRITE, index, adddr, offset, size);
+	access_buff_cache(WRITE, index, addr, offset, size);
 }
 
 int get_cache_size()
