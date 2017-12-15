@@ -11,11 +11,6 @@
 static void syscall_handler (struct intr_frame *);
 
 struct lock file_lock;
-<<<<<<< HEAD
-extern struct lock page_lock;
-extern struct semaphore page_sema;
-=======
->>>>>>> origin/PJ-4
 
 void syscall_exit (int status);
 tid_t syscall_exec (const char *cmd_line);
@@ -419,26 +414,6 @@ syscall_close (int fd) {
 bool syscall_chdir (const char *dir)
 {
   lock_acquire(&file_lock);
-<<<<<<< HEAD
-  struct file *mapped_file = filesys_open(get_file_elem(fd)->name);
-  int length = file_length(mapped_file);
-  lock_release(&file_lock);
-
-  if (!is_user_vaddr (addr + length) || length == 0 || mapped_file == NULL)
-    return -1;
-
-  struct mmap *mapping = (struct mmap*)malloc(sizeof (struct mmap));
-
-  void *fp;
-  // 파일 사이즈만큼 페이지가 늘어날 때 까지 for문 돌면서 할당
-  //lock_acquire(&page_lock);
-  //sema_down(&page_sema);
-
-  for(fp = addr; fp <= addr + length - PGSIZE; fp += PGSIZE)
-  {
-    struct spage *spe = spage_create(fp, LAZY, true);
-=======
->>>>>>> origin/PJ-4
 
   struct inode *inode;
   struct dir *curr;
@@ -449,28 +424,12 @@ bool syscall_chdir (const char *dir)
     lock_release(&file_lock);
     return false;
   }
-<<<<<<< HEAD
-  //lock_release(&page_lock);
-  
-  mapping->file = mapped_file;
-  mapping->addr = addr;
-  mapping->size = length;
-  mapping->mapid = curr->next_mapid++;
-  mapping->owner = curr;
-=======
->>>>>>> origin/PJ-4
 
   if (thread_current ()->curr_dir) dir_close (thread_current ()->curr_dir);
   thread_current ()->curr_dir = curr;
 
-<<<<<<< HEAD
-  //sema_up(&page_sema);
-
-  return mapping->mapid;
-=======
   lock_release(&file_lock);
   return true;
->>>>>>> origin/PJ-4
 }
 
 bool syscall_mkdir (const char *dir)
@@ -500,16 +459,6 @@ bool syscall_mkdir (const char *dir)
 
   bool success = true;
 
-<<<<<<< HEAD
-  //lock_acquire(&page_lock);
-  
-  int write_len = PGSIZE;
-  while(size > 0)
-  {
-    sema_down(&page_sema);
-    if(size - PGSIZE < 0) write_len = size;
-    struct spage *spe = find_spage(fp);
-=======
   disk_sector_t inode_sector = -1;
   struct inode *inode;
   if(!dir_lookup(parent_dir, new_dir_name, &inode)
@@ -521,7 +470,6 @@ bool syscall_mkdir (const char *dir)
     //free_map_release(&inode_sector, 1);
     return false;
   }
->>>>>>> origin/PJ-4
 
   struct inode *pinode = dir_get_inode(parent_dir);
   dir_set_parent (inode_sector, pinode->sector);
@@ -541,21 +489,12 @@ bool syscall_readdir (int fd, char *name)
 
   struct dir *dir = f->dir;
 
-<<<<<<< HEAD
-    size -= PGSIZE;
-    fp += PGSIZE;
-    sema_up(&page_sema);
-  }
-
-  //lock_release(&page_lock);
-=======
   if (dir == NULL) return false;
   if (f->file == NULL) return false;
 
   lock_acquire(&file_lock);
   bool rv = dir_readdir (dir, name);
   lock_release(&file_lock);
->>>>>>> origin/PJ-4
 
   return rv;
 }

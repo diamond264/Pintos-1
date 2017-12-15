@@ -11,13 +11,6 @@ static long long page_fault_cnt;
 static void kill (struct intr_frame *);
 static void page_fault (struct intr_frame *);
 
-<<<<<<< HEAD
-extern struct lock page_lock;
-extern struct lock file_lock;
-extern struct semaphore page_sema;
-
-=======
->>>>>>> origin/PJ-4
 /* Registers handlers for interrupts that can be caused by user
    programs.
 
@@ -157,84 +150,7 @@ page_fault (struct intr_frame *f)
   write = (f->error_code & PF_W) != 0;
   user = (f->error_code & PF_U) != 0;
 
-<<<<<<< HEAD
-    if (spe)
-    {
-        //lock_acquire(&page_lock);
-        sema_down(&page_sema);
-        printf("sema get %d fault by %p\n", thread_current()->tid, rounded_addr);
-        spe->vaddr = rounded_addr;
-
-        if (spe->status == SWAP) // swap된 상태면 load
-        {
-            spage_load (spe);
-            spe->status = PAGE;
-        }
-        else if(spe->status == LAZY || spe->status == SWAP_MM)
-        {
-            struct frame *f;
-            if(spe->is_zero)
-            {
-                f = frame_allocate(spe, PAL_USER | PAL_ZERO);
-                spe->status = PAGE;
-                pagedir_set_page (curr->pagedir, spe->vaddr, f->addr, spe->writable);
-            }
-            else
-            {
-                f = frame_allocate(spe, PAL_USER);
-
-                struct file *targetFile;
-                int read_len = PGSIZE;
-
-                if(spe->file == NULL) // executable file
-                {
-                    targetFile = curr->program;
-                    spe->status = PAGE;
-                }
-                else // opened file
-                {
-                    targetFile = spe->file;
-                    spe->status = MM_FILE;
-
-                    if(spe->is_over)
-                        read_len = spe->length_over;
-                }
-
-                lock_acquire(&file_lock);
-                file_read_at (targetFile, f->addr, read_len, spe->offset);
-                lock_release(&file_lock);
-
-                pagedir_set_page (curr->pagedir, spe->vaddr, f->addr, spe->file != NULL);
-                //pagedir_set_page (curr->pagedir, spe->vaddr, f->addr, true);
-            }
-        }
-        //lock_release(&page_lock);
-        sema_up(&page_sema);
-        printf("sema release %d\n", thread_current()->tid);
-    }
-    else if (fault_addr >= (f->esp - 32) && PHYS_BASE - fault_addr <= 262144)
-    {
-        sema_down(&page_sema);
-
-        void *addr = rounded_addr;
-        struct spage *spe = spage_create (addr, PAGE, true);
-        struct frame *f = frame_allocate (spe, PAL_USER | PAL_ZERO);
-
-        //lock_release(&page_lock);
-        sema_up(&page_sema);
-
-        if(pagedir_get_page(thread_current ()->pagedir, addr)!=NULL 
-            || !pagedir_set_page(thread_current ()->pagedir, addr, f->addr, spe->writable))
-            ASSERT(0);
-    }
-    else {
-        syscall_exit (-1);
-    }
-
-    /* To implement virtual memory, delete the rest of the function
-=======
   /* To implement virtual memory, delete the rest of the function
->>>>>>> origin/PJ-4
      body, and replace it with code that brings in the page to
      which fault_addr refers. */
   printf ("Page fault at %p: %s error %s page in %s context.\n",

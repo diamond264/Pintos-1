@@ -324,23 +324,6 @@ process_exit (void)
       free (f);
     }
 
-<<<<<<< HEAD
-    while(!list_empty(&curr->mmap_list))
-    {
-      m_elem = list_pop_front(&curr->mmap_list);
-      m = list_entry(m_elem, struct mmap, elem);
-      syscall_unmap(m->mapid);
-      free(m);
-    }
-    
-    //lock_acquire (&page_lock);
-    //sema_down(&page_sema);
-
-    // spage table의 spage들을 모두 free.
-    hash_destroy(&curr->spage_table, hash_free_func);
-
-=======
->>>>>>> origin/PJ-4
     curr->pagedir = NULL;
     pagedir_activate (NULL);
     pagedir_destroy (pd);
@@ -622,38 +605,13 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
   ASSERT (ofs % PGSIZE == 0);
 
   file_seek (file, ofs);
-<<<<<<< HEAD
-
-  //lock_acquire(&page_lock);
-=======
->>>>>>> origin/PJ-4
   while (read_bytes > 0 || zero_bytes > 0) 
     {
-<<<<<<< HEAD
-      spe = spage_create(upage, LAZY, writable);
-      spe->is_zero = true;
-    }
-    else if(PGSIZE == page_read_bytes)
-    {
-      spe = spage_create(upage, LAZY, writable);
-      //printf("VADDR = %p OFFSET : %d\n", upage, file_tell(file));
-      spe->offset = file_tell(file); // 현재 파일 포인터 저장
-      file_seek(file, file_tell(file) + PGSIZE);
-    }
-    else
-    {
-      sema_down(&page_sema);
-
-      spe = spage_create(upage, PAGE, writable);
-      struct frame *f = frame_allocate(spe, PAL_USER);
-      uint8_t *kpage = f->addr;
-=======
       /* Do calculate how to fill this page.
          We will read PAGE_READ_BYTES bytes from FILE
          and zero the final PAGE_ZERO_BYTES bytes. */
       size_t page_read_bytes = read_bytes < PGSIZE ? read_bytes : PGSIZE;
       size_t page_zero_bytes = PGSIZE - page_read_bytes;
->>>>>>> origin/PJ-4
 
       /* Get a page of memory. */
       uint8_t *kpage = palloc_get_page (PAL_USER);
@@ -662,42 +620,14 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 
       /* Load this page. */
       if (file_read (file, kpage, page_read_bytes) != (int) page_read_bytes)
-<<<<<<< HEAD
-      {
-        frame_free(f);
-        //lock_release(&page_lock);
-        sema_up(&page_sema);
-        //palloc_free_page (kpage);
-        return false; 
-      }
-=======
         {
           palloc_free_page (kpage);
           return false; 
         }
->>>>>>> origin/PJ-4
       memset (kpage + page_read_bytes, 0, page_zero_bytes);
 
       /* Add the page to the process's address space. */
       if (!install_page (upage, kpage, writable)) 
-<<<<<<< HEAD
-      {
-        frame_free(f);
-        //palloc_free_page (kpage);
-        sema_up(&page_sema);
-        //lock_release(&page_lock);
-        return false; 
-      }
-
-      sema_up(&page_sema);
-    }
-    /* Advance. */
-    read_bytes -= page_read_bytes;
-    zero_bytes -= page_zero_bytes;
-    upage += PGSIZE;
-  }
-  //lock_release(&page_lock);
-=======
         {
           palloc_free_page (kpage);
           return false; 
@@ -708,7 +638,6 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
       zero_bytes -= page_zero_bytes;
       upage += PGSIZE;
     }
->>>>>>> origin/PJ-4
   return true;
 }
 
@@ -720,18 +649,7 @@ setup_stack (void **esp)
   uint8_t *kpage;
   bool success = false;
 
-<<<<<<< HEAD
-  //lock_acquire(&page_lock);
-  sema_down(&page_sema);
-  struct spage *spe = spage_create(upage, PAGE, true);
-  struct frame *f = frame_allocate(spe, PAL_USER | PAL_ZERO);
-
-  kpage = f->addr;
-
-  //kpage = palloc_get_page (PAL_USER | PAL_ZERO);
-=======
   kpage = palloc_get_page (PAL_USER | PAL_ZERO);
->>>>>>> origin/PJ-4
   if (kpage != NULL) 
     {
       success = install_page (((uint8_t *) PHYS_BASE) - PGSIZE, kpage, true);
@@ -740,16 +658,6 @@ setup_stack (void **esp)
       else
         palloc_free_page (kpage);
     }
-<<<<<<< HEAD
-    else
-      //palloc_free_page (kpage);
-      frame_free(f);
-  }
-  //lock_release(&page_lock);
-  sema_up(&page_sema);
-
-=======
->>>>>>> origin/PJ-4
   return success;
 }
 
