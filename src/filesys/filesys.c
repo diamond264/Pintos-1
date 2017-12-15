@@ -52,7 +52,7 @@ bool
 filesys_create (const char *name, off_t initial_size) 
 {
   disk_sector_t inode_sector = 0;
-  struct dir *dir = parse_directory(name);
+  struct dir *dir = parse_directory(name, true);
 
   if(dir == NULL)
     return false;
@@ -88,7 +88,7 @@ filesys_open (const char *name)
   if(strcmp(name, "/") == 0)
     return file_open(inode_open(ROOT_DIR_SECTOR));
 
-  struct dir *dir = parse_directory (name);
+  struct dir *dir = parse_directory (name, true);
   if(dir == NULL) return NULL;
 
   char *filename = parse_name(name);
@@ -117,7 +117,7 @@ filesys_open (const char *name)
 bool
 filesys_remove (const char *name) 
 {
-  struct dir *dir = parse_directory(name);
+  struct dir *dir = parse_directory(name, true);
 
   if(dir == NULL)
     return false;
@@ -137,6 +137,7 @@ filesys_remove (const char *name)
 
   return success;
 }
+
 
 /* Formats the file system. */
 static void

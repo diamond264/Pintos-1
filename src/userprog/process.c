@@ -707,9 +707,4 @@ void validate_addr_syscall (struct intr_frame *f, void *fault_addr)
     syscall_exit (-1);
   }
 
-  /*if (pagedir_get_page (curr->pagedir, fault_addr) == NULL)
-  {
-    if (fault_addr >= (f->esp - 32))
-      stack_growth (rounded_addr);
-  }*/
 }

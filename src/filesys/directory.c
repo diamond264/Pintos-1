@@ -208,13 +208,9 @@ dir_remove (struct dir *dir, const char *name)
     ASSERT (dir != NULL);
     ASSERT (name != NULL);
 
-    // printf("remove target : %s\n", name);
-
     /* Find directory entry. */
     if (!lookup (dir, name, &e, &ofs))
         goto done;
-
-    //printf("P1\n");
 
     /* Open inode. */
     inode = inode_open (e.inode_sector);
@@ -251,7 +247,6 @@ dir_remove (struct dir *dir, const char *name)
 
             if(pe.in_use)
             {
-                // printf("P6\n");
                 isEmpty = false;
                 break;
             }
@@ -260,11 +255,9 @@ dir_remove (struct dir *dir, const char *name)
     
         if (!isEmpty)
         {
-            // printf("P7\n");
             dir_close (d_ptr);
             goto done;
         }
-         //printf("P8\n");
         dir_close (d_ptr);
     }
 
@@ -274,7 +267,6 @@ dir_remove (struct dir *dir, const char *name)
         goto done;
 
     /* Remove inode. */
-    // printf("remove까지 도달\n");
     inode_remove (inode);
     success = true;
 
@@ -303,7 +295,7 @@ dir_readdir (struct dir *dir, char name[NAME_MAX + 1])
   return false;
 }
 
-struct dir *parse_directory (char *path)
+struct dir *parse_directory (char *path, bool not_use_last) // 마지막 segment를 사용할 지 말지 t/f로 받는다.
 {
     struct dir *curr;
     char *buff, *token, *save_ptr;
@@ -315,7 +307,9 @@ struct dir *parse_directory (char *path)
     buff = malloc (length+1);
     memcpy (buff, path, length+1);
 
-    // printf("parse target : %s\n", path);
+    char *last; // /.../...에서 마지막 부분
+
+    bool is_realname = false;
 
     if (path[0] == '/') { // 절대경로
         curr = dir_open_root ();
@@ -332,27 +326,17 @@ struct dir *parse_directory (char *path)
         token = strtok_r (buff, "/", &save_ptr);
     }
 
-    // printf("path : %s\n", token);
-
     // 파싱했는데 NULL이면 현재 경로 리턴
     if(token == NULL || strlen(token) == 0 || token == '\0') return NULL;
 
-    char *d_ptr; // 현재 디렉토리 스트링 포인터
-    while(true)
+    char *d_ptr = token; // 현재 디렉토리 스트링 포인터
+    for(token = strtok_r(NULL, "/", &save_ptr);
+        !((token == NULL || strlen(token) == 0 || token == '\0') && not_use_last);
+        token = strtok_r(NULL, "/", &save_ptr))
     {
-        // printf("path : %s\n", token);
-        d_ptr = token;
         if(d_ptr == NULL) break;
 
-        token = strtok_r(NULL, "/", &save_ptr);
-
-        if(token == NULL || strlen(token) == 0 || token == '\0')
-        {
-            break;
-        }
-        
-        if(strcmp(d_ptr, "") == 0);
-        if(strcmp(d_ptr, ".") == 0);
+        if(strcmp(d_ptr, "") == 0 || strcmp(d_ptr, ".") == 0);
         else if(strcmp(d_ptr, "..") == 0) // 부모를 찾을 경우 상위 디렉토리 로드한다.
         {
             inode = inode_open((dir_get_inode(curr))->data.parent);
@@ -381,11 +365,12 @@ struct dir *parse_directory (char *path)
                 return NULL;
             }
         }
+
+        d_ptr = token;
     }
 
     if((curr->inode)->removed)
     {
-        // printf("여기 들어감\n");
         return NULL;
     }
 

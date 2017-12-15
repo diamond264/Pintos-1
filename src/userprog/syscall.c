@@ -418,7 +418,7 @@ bool syscall_chdir (const char *dir)
   struct inode *inode;
   struct dir *curr;
 
-  curr = parse_directory (dir);
+  curr = parse_directory (dir, false);
   if (curr == NULL)
   {
     lock_release(&file_lock);
@@ -442,7 +442,7 @@ bool syscall_mkdir (const char *dir)
   }
   if(dir == '\0') return false;
 
-  struct dir *parent_dir = parse_directory(dir);
+  struct dir *parent_dir = parse_directory(dir, true);
   if(parent_dir == NULL){
     lock_release(&file_lock);
     return false;

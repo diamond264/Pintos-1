@@ -1,0 +1,476 @@
+       	       	     +-------------------------+
+		     |	 2017  fall  CS 330   		 |
+		     | PROJECT 4: FILE SYSTEMS 	|
+		     |	   DESIGN DOCUMENT     |
+		     +-------------------------+
+
+---- GROUP ----
+
+>> Fill in the names and email addresses of your group members.
+>> You can write this document in Korean! (We recommend!)
+
+HyungJun Yoon <diamond264@kaist.ac.kr>
+SangHyeon Lee <leesh6796@kaist.ac.kr>
+
+5개의 토큰을 사용합니다.
+
+---- PRELIMINARIES ----
+
+>> If you have any preliminary comments on your submission, notes for the
+>> TAs, or extra credit, please give them here.
+
+>> Please cite any offline or online sources you consulted while
+>> preparing your submission, other than the Pintos documentation, course
+>> text, lecture notes, and course staff.
+
+		     INDEXED AND EXTENSIBLE FILES
+		     ============================
+
+---- DATA STRUCTURES ----
+
+>> A1: Copy here the declaration of each new or changed `struct' or
+>> `struct' member, global or static variable, `typedef', or
+>> enumeration.  Identify the purpose of each in 25 words or less.
+
+struct inode_disk
+{
+	...
+    disk_sector_t start[100]; // 실제 데이터 or sector pointer를 나타내는 부분. 위치 계산 쉽게 하기 위해 100 size.
+    int depth; // 0이면 root, 1이면 indirect node, 2면 doubly indirect node.
+    size_t num_sector;
+    uint32_t unused[22]; // 512 bytes 할당하기 위한 offset.
+};
+
+multilevel index를 위하여 기존 한 개의 섹터를 나타내던 start를 100개의 배열로 바꾸었다.
+이는 indirect inode가 가리킬 수 있는 disk sector의 수로, 계산을 깔끔하게 하기 위해 100으로 설정하였다.
+doubly indirect inode의 경우 2개 disk_sector를 사용하였고, 위에서 설명하였듯 direct와 indirect node의 경우 100개의
+sector들을 점유할 수 있도록 표시하기 위해 아래의 숫자들을 정의하였다.
+
+#define MAX_DIRECT 100
+#define MAX_INDIRECT 100
+#define MAX_DOUBLE 2
+
+depth는 해당 inode가 direct inode인지, indirect inode인지, doubly indirect inode인지를 가리킨다.
+이후 create와 expand에서 함수의 재귀적 사용을 편하게 하기 위해 각각의 크기가 1씩 차이나는 const int로 정의하였다.
+
+static const int LV0 = 0; --> direct inode
+static const int LV1 = 1; --> indirect inode
+static const int LV2 = 2; --> doubly indirect inode
+
+start 배열의 크기를 100으로 고정되게 설정하여 start만으로는 현재 inode가 몇 개의 disk sector를 차지하고 있는지 알 수 없다.
+create와 expand에서 iteration시 필요한 값이므로 추가하였다.
+
+또한 inode_disk의 크기를 512byte로 맞추기 위하여 (512 - 4*(100) - 4*(6))/4로 크기 22의 uint32_t 배열을 선언해 주었다.
+
+>> A2: What is the maximum size of a file supported by your inode
+>> structure?  Show your work.
+
+우리가 설계한 구조는 다음과 같다.
+
+root inode --> 2 doubly indirect inodes
+doubly indirect inode --> 100 indirect inodes
+indirect inode --> 100 direct inodes
+
+direct inode 하나의 크기가 512byte이므로 한 root에는 512 * 100 * 100 * 2 = 10240000byte로,
+약 9.77MB 크기의 파일을 지원한다.
+
+---- SYNCHRONIZATION ----
+
+>> A3: Explain how your code avoids a race if two processes attempt to
+>> extend a file at the same time.
+
+inode 관련 lock이나 semaphore를 구현하지 않아 race condition에 관한 관리가 이루어지지 않는다.
+대부분의 case에서는 이러한 이슈가 발생하지 않았지만, 엄밀한 프로그래밍을 위해서는
+extend가 일어나는 inode_write_at에 lock을 걸어 줌으로서 race condition을 관리하는 것이 좋다고 생각했다.
+
+>> A4: Suppose processes A and B both have file F open, both
+>> positioned at end-of-file.  If A reads and B writes F at the same
+>> time, A may read all, part, or none of what B writes.  However, A
+>> may not read data other than what B writes, e.g. if B writes
+>> nonzero data, A is not allowed to see all zeros.  Explain how your
+>> code avoids this race.
+
+inode 차원에서는 앞서 언급했듯이 synchronization을 위한 작업을 포함시키지 않았다.
+syscall에서 file read와 write시 file_lock을 통하여 한 file에서만 작업이 이루어 질 수 있도록 하였다.
+
+>> A5: Explain how your synchronization design provides "fairness".
+>> File access is "fair" if readers cannot indefinitely block writers
+>> or vice versa.  That is, many processes reading from a file cannot
+>> prevent forever another process from writing the file, and many
+>> processes writing to a file cannot prevent another process forever
+>> from reading the file.
+
+한 파일에 대하여 읽기 또는 쓰기 작업이 오랫동안 일어나는 경우는 고려하지 않았다.
+시간 제약을 걸어 동기화 문제를 해결하는 방법이 있을 수 있겠다고 생각하였다.
+
+---- RATIONALE ----
+
+>> A6: Is your inode structure a multilevel index?  If so, why did you
+>> choose this particular combination of direct, indirect, and doubly
+>> indirect blocks?  If not, why did you choose an alternative inode
+>> structure, and what advantages and disadvantages does your
+>> structure have, compared to a multilevel index?
+
+현재 상황에서는 8MB크기의 파일까지 사용할 수 있는 환경을 디자인하고자 한다.
+이렇게 큰 용량의 파일 관리를 구현하기 위해서는 multilevel index를 통하여
+filesystem 관련 작업을 하는 것이 효율적이라고 생각하였다.
+root가 doubly indirect를, doubly indirect가 indirect를, 이후 direct들이 leaf 역할을 하는
+tree구조가 512byte의 inode structure로 해당하는 파일 용량을 관리하기 쉽다고 생각했다.
+
+			    SUBDIRECTORIES
+			    ==============
+
+---- DATA STRUCTURES ----
+
+>> B1: Copy here the declaration of each new or changed `struct' or
+>> `struct' member, global or static variable, `typedef', or
+>> enumeration.  Identify the purpose of each in 25 words or less.
+
+struct inode_disk
+{
+	...
+    disk_sector_t parent; // parent sector를 가리킨다.
+    int is_dir; // directory면 1. 아니면 0.
+};
+
+is_dir는 inode가 의미하는 것이 파일인지, 디렉토리인지를 나타낸다.
+
+static const int FILE = 0; --> 파일
+static const int DIR = 1; --> 디렉토리
+
+parent는 subdirectory 구조를 implement할 시 상위 디렉토리의 inode sector를 가리킨다.
+
+struct thread {
+	...
+	struct dir *curr_dir;
+};
+
+struct file_elem {
+	...
+	struct dir *dir;
+};
+
+또한 thread가 작동하고 있는 directory를 나타내기 위하여 thread 구조체 안에 curr_dir를,
+file_ele에서도 같은 역할을 하는 dir를 추가하였다.
+
+---- ALGORITHMS ----
+
+>> B2: Describe your code for traversing a user-specified path.  How
+>> do traversals of absolute and relative paths differ?
+
+    if (path[0] == '/') { // 절대경로
+        curr = dir_open_root ();
+        token = strtok_r (buff+1, "/", &save_ptr);
+    }
+    else { // 상대경로
+        struct thread *t = thread_current();
+
+        if (t->curr_dir == NULL) 
+            curr = dir_open_root ();
+        else
+            curr = dir_reopen (t->curr_dir);
+
+        token = strtok_r (buff, "/", &save_ptr);
+    }
+
+    1. 일단 parameter로 받아온 path의 첫 번째 글자가 /면 absolute path, 아니면 relative path로 구분하였다.
+    absolute path면 root를 open하고, 아니면 thread의 curr_dir(현재 디렉토리)를 open한다.
+
+    
+    if(token == NULL || strlen(token) == 0 || token == '\0') return NULL;
+    2. 그 다음 strtok로 잘랐을 때 NULL 값이 오면 NULL을 return 해준다. (1차 체크)
+
+
+    char *d_ptr = token; // 현재 디렉토리 스트링 포인터
+    for(token = strtok_r(NULL, "/", &save_ptr);
+        !((token == NULL || strlen(token) == 0 || token == '\0') && not_use_last);
+        token = strtok_r(NULL, "/", &save_ptr))
+    {
+        if(d_ptr == NULL) break;
+
+        if(strcmp(d_ptr, "") == 0 || strcmp(d_ptr, ".") == 0);
+        else if(strcmp(d_ptr, "..") == 0) // 부모를 찾을 경우 상위 디렉토리 로드한다.
+        {
+            inode = inode_open((dir_get_inode(curr))->data.parent);
+            dir_close(curr);
+            curr = dir_open(inode);
+        }
+        else
+        {
+            inode = NULL;
+            if(dir_lookup(curr, d_ptr, &inode))
+            {
+                dir_close(curr);
+                if(inode->data.is_dir == DIR)
+                {
+                    curr = dir_open(inode);
+                }
+                else
+                {
+                    inode_close(inode);
+                    return NULL;
+                }
+            }
+            else
+            {
+                dir_close(curr);
+                return NULL;
+            }
+        }
+
+        d_ptr = token;
+    }
+    3. 그 다음 for문을 돌려가면서 더 이상의 /가 없을 때 까지 directory 구조를 찾아들어간다.
+    이 때 not_use_last가 true면, 마지막 / segment는 사용하지 않는 다는 것으로 간주하고, NULL일 때 for문을 탈출시킨다.
+    iter segment가 .나 공백이면 아무 작동을 하지 않고, ..이면 상위 폴더를 open한다.
+    그 이외의 경우에는 이름으로 폴더를 지칭하는 경우이므로, dir_lookup을 통해 해당 폴더의 inode를 찾고, open한다.
+    마지막으로 해당 inode가 remove 됐을 경우, 그 폴더는 사용할 수 없으므로 NULL을 return 해준다.
+
+
+>> B3: Look over "pwd.c" in src/examples.  Briefly explain how it
+>> determines the present working directory.
+
+main 함수 내에 cwd buffer에 string을 저장하는 getcwd 함수가 존재하고,getcwd 안에서 
+
+/* Get inumber for current directory. */
+if (!get_inumber (".", &child_inum))
+	return false;
+
+부분이 현재 working directory의 sector number를 받아온다.
+
+static bool
+get_inumber (const char *file_name, int *inum) 
+{
+  int fd = open (file_name);
+  if (fd >= 0) 
+    {
+      *inum = inumber (fd);
+      close (fd);
+      return true;
+    }
+  else
+    return false;
+}
+
+함수는 위와 같은데, file name "."는 현재 디렉토리를 의미하여 디렉토리의 fd를 가져오고,
+inumber (fd)에서 fd값을 가지는 file을 불러오고, file에 붙은 inode, 해당 inode에 붙은
+sector number를 연쇄적으로 가져와 working directory sector를 알아낼 수 있다.
+
+---- SYNCHRONIZATION ----
+
+>> B4: How do you prevent races on directory entries?  For example,
+>> only one of two simultaneous attempts to remove a single file
+>> should succeed, as should only one of two simultaneous attempts to
+>> create a file with the same name, and so on.
+
+directory와 관련된 함수들 내부에 semaphore와 lock을 이용하여 synchronization을 관리하지 못하였다.
+inode_write_at을 통하여 덮어씌우는 과정이 중복될 수 있다.
+
+>> B5: Does your implementation allow a directory to be removed if it
+>> is open by a process or if it is in use as a process's current
+>> working directory?  If so, what happens to that process's future
+>> file system operations?  If not, how do you prevent it?
+
+dir_remove 내부의,
+
+while(true) {
+    bool escape = !(inode_read_at(d_ptr->inode, &pe, sizeof pe, iter) == sizeof pe);
+    if(escape) {
+        break;
+    }
+    if(pe.in_use) {
+        isEmpty = false;
+        break;
+    }
+    iter += sizeof pe;
+}
+if (!isEmpty) {
+    dir_close (d_ptr);
+    goto done;
+}
+
+는 directory 내부에 사용 중인 것이 있을 경우 remove 작업이 일어나지 못하도록 한다.
+이는 한 directory 내부에서 작업이 오랫동안 일어날 경우 starvation을 야기할 수 있다.
+
+---- RATIONALE ----
+
+>> B6: Explain why you chose to represent the current directory of a
+>> process the way you did.
+
+우리의 pintos implement는 기본적으로 하나의 프로세스에 하나의 스레드가 매핑되도록 되어 있다.
+thread 구조체 안에 curr_dir를 추가함으로서 스레드가 작동하고 있는 directory를 알 수 있도록 하였다.
+
+			     BUFFER CACHE
+			     ============
+
+---- DATA STRUCTURES ----
+
+>> C1: Copy here the declaration of each new or changed `struct' or
+>> `struct' member, global or static variable, `typedef', or
+>> enumeration.  Identify the purpose of each in 25 words or less.
+
+buffer cache entry를 나타내는 구조체는 다음과 같다.
+
+struct buffer {
+	struct list_elem elem; // entry
+
+	bool access; // 접근하면 1
+	bool dirty; // 쓰면 1
+
+	disk_sector_t index; // sector number
+	void *addr; // sector data가 저장된 memory 상 주소
+};
+
+struct list buff_list;
+
+이들 entry는 list를 이용하여 관리된다. cache의 limit가 64로 크지 않고,
+implement하기가 쉬웠던 것이 그 이유이다.
+
+이후의 write back 메소드를 구현하기 위하여 수정되었는지를 의미하는 dirty bit와 같은 역할로
+boolean값 dirty를 이용하였다.
+
+index는 사용된 inode의 sector number를 의미하며, addr는 해당 sector이 가지는 실제 값이
+저장된 포인터를 나타낸다.
+
+cache list에 entry가 저장되는 경우는 두 가지가 있는데,
+read를 통하여 접근할 때와 chaching된 sector에 write를 통해 수정이 일어나는 경우이다.
+
+enum cache_access {
+	READ,
+	WRITE
+};
+
+이들 경우를 구분하기 위하여 enum READ와 WRITE를 선언하여 사용하였다.
+synchroniztion 문제를 해결하기 위한 semaphore로,
+struct semaphore sema_cache를 선언하여 사용하였다.
+
+---- ALGORITHMS ----
+
+>> C2: Describe how your cache replacement algorithm chooses a cache
+>> block to evict.
+
+if(cache_size < MAX_CACHE_SIZE)
+{
+	list_push_back(&buff_list, &bf->elem);
+}
+else
+{
+	struct list_elem *hand = list_pop_front(&buff_list);
+	struct buffer *victim = list_entry(hand, struct buffer, elem);
+
+	list_push_back(&buff_list, &bf->elem);
+	free_buff(victim);
+	/*
+	if(iter->access)
+	{
+		iter->access = 0;
+
+		if(hand == list_end(&buff_list)) hand = list_front(&buff_list);
+		else hand = list_next(hand);
+	}
+	else
+	{
+		list_insert(hand, &bf->elem);
+		list_remove(hand);
+		free_buff_with_elem(hand);
+		hand = &bf->elem;
+		break;
+	}
+	*/
+}
+
+초기에 global 변수 hand를 선언하고, access bit를 buffer cache 구조체 내부의 boolean 값으로
+구현하여 second chance algorithm을 구현하였으나, extensible file과 subdirectory 구현 중
+안정성을 위하여 FIFO 알고리즘을 사용하였다.
+
+캐시에 등록할 때는 push back을 통하여 삽입하고, 캐시에서 제거될 때는 pop front를 이용하여 제거한다.
+이후의 테스트들에서 속도가 느린 점을 제외하고는 안정적으로 작동이 되어 해당 방법을 채택하였다.
+
+>> C3: Describe your implementation of write-behind.
+
+cache 안에서 eviction이 일어날 시 캐시에서 내릴 때 write가 일어나도록 구현하여야 한다.
+우리의 write back implementation은 '캐시에서 내리는 부분'에 집중하였다.
+buffer cache 구조체가 free되기 전에 dirty boolean value를 확인하여 수정된 흔적이 있을 경우
+
+void free_buff(struct buffer *bf) {
+	// Write Back
+	if (bf->dirty) {
+		buffer_write_back(bf);
+		//disk_write (filesys_disk, bf->index, bf->addr) 와 같다.
+	}
+
+	free (bf->addr);
+	free (bf);
+}
+
+이 코드와 같이 write를 함으로서 write back을 구현하였다.
+이후 inode 내부의 함수들에서 disk read/write관련 함수를 사용하여 바로 write가 일어나느 부분들을
+write back을 포함하는 access_buff_cache함수로 대체하여 문제를 해결하였다.
+
+>> C4: Describe your implementation of read-ahead.
+
+read ahead와 관련한 알고리즘은 implement하지 않았다.
+
+---- SYNCHRONIZATION ----
+
+>> C5: When one process is actively reading or writing data in a
+>> buffer cache block, how are other processes prevented from evicting
+>> that block?
+
+void access_buff_cache(enum cache_access access, disk_sector_t index, void *addr, off_t offset, off_t size) {
+	struct list_elem *iter;
+	struct buffer *bf = NULL;
+
+	sema_down(&sema_cache);
+
+	...
+
+	sema_up(&sema_cache);
+}
+
+disk read/write와 관련된 작업을 access_buff_cache로 통합하여 대체하였다.
+access_buff_cache에서는 enum READ, WRITE를 이용하여 어떤 작업이 일어나는가를 구분한다.
+이후 함수 내부에서 semaphore sema_cache를 내려줌으로서 다른 작업이 일어나지 못하도록 하였다.
+작업이 끝나면 sema_up을 통하여 기다리던 작업이 일어날 수 있도록 하였다.
+
+>> C6: During the eviction of a block from the cache, how are other
+>> processes prevented from attempting to access the block?
+
+cache에서의 eviction은 우리의 구현에서 insert_buff함수 내부에서 일어난다.
+insert_buff함수는 access_buff_cache 내부에서 일어나므로 위 C5와 같은 방식으로
+synchronization 문제를 해결하였다.
+
+---- RATIONALE ----
+
+>> C7: Describe a file workload likely to benefit from buffer caching,
+>> and workloads likely to benefit from read-ahead and write-behind.
+
+우선 write behind의 경우 disk에 접근하여 I/O 작업이 일어날 때의 overhead를 감소시킬 수 있다.
+자주 일어나는 disk에 대한 접근을 캐시에서 내릴 때 까지 최후로 미루어 최소화할 수 있다.
+
+read ahead는 disk에서 read 작업을 할 시 주변의 block들을 같이 읽어와 caching 작업에
+있어서 locality를 높일 수 있다는 장점이 있다.
+
+			   SURVEY QUESTIONS
+			   ================
+
+Answering these questions is optional, but it will help us improve the
+course in future quarters.  Feel free to tell us anything you
+want--these questions are just to spur your thoughts.  You may also
+choose to respond anonymously in the course evaluations at the end of
+the quarter.
+
+>> In your opinion, was this assignment, or any one of the three problems
+>> in it, too easy or too hard?  Did it take too long or too little time?
+
+>> Did you find that working on a particular part of the assignment gave
+>> you greater insight into some aspect of OS design?
+
+>> Is there some particular fact or hint we should give students in
+>> future quarters to help them solve the problems?  Conversely, did you
+>> find any of our guidance to be misleading?
+
+>> Do you have any suggestions for the TAs to more effectively assist
+>> students in future quarters?
+
+>> Any other comments?
