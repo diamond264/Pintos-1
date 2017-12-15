@@ -7,15 +7,10 @@
 #include "filesys/file.h"
 #include "filesys/inode.h"
 #include "threads/vaddr.h"
-#include "vm/page.h"
-#include "vm/swap.h"
-#include "vm/frame.h"
 
 static void syscall_handler (struct intr_frame *);
 
 struct lock file_lock;
-extern struct lock page_lock;
-extern struct semaphore page_sema;
 
 void syscall_exit (int status);
 tid_t syscall_exec (const char *cmd_line);
@@ -156,37 +151,31 @@ syscall_handler (struct intr_frame *f)
       syscall_close ((int) *argv[0]);
       break;
 
-    case SYS_MMAP :
-     argv[0] = get_argument (sp);
-     argv[1] = get_argument (sp+1);
-     f->eax = syscall_mmap ((int) *argv[0], (void *) *argv[1]);
-    break;
-
-    case SYS_MUNMAP :
-      argv[0] = get_argument (sp);
-      syscall_unmap ((int) *argv[0]);
-      break;
-
     case SYS_CHDIR :
       argv[0] = get_argument (sp);
       f->eax = syscall_chdir ((const char *) *argv[0]);
+      break;
 
     case SYS_MKDIR :
       argv[0] = get_argument (sp);
       f->eax = syscall_mkdir ((const char *) *argv[0]);
+      break;
 
     case SYS_READDIR : 
       argv[0] = get_argument (sp);
       argv[1] = get_argument (sp+1);
       f->eax = syscall_readdir ((int) *argv[0], (char *) *argv[1]);
+      break;
 
     case SYS_ISDIR : 
       argv[0] = get_argument (sp);
       f->eax = syscall_isdir ((int) *argv[0]);
+      break;
 
     case SYS_INUMBER :
       argv[0] = get_argument (sp);
       f->eax = syscall_inumber ((int) *argv[0]);
+      break;
 
     default :
       break;
@@ -195,7 +184,6 @@ syscall_handler (struct intr_frame *f)
 
 void
 syscall_exit (int status) {
-  ASSERT(0);
   struct thread *curr;
   curr = thread_current ();
   curr->exit_status = status;
@@ -222,13 +210,6 @@ syscall_exit (int status) {
       free (f);
     }
 
-    while(!list_empty(&curr->mmap_list))
-    {
-      m_elem = list_front(&curr->mmap_list);
-      m = list_entry(m_elem, struct mmap, elem);
-      syscall_unmap(m->mapid);
-      //free(m);
-    }
   thread_exit ();
 }
 
@@ -254,8 +235,11 @@ syscall_create (const char *file, unsigned initial_size) {
 
 bool
 syscall_remove (const char *file) {
+  lock_acquire(&file_lock);
   validate_addr ((void *) file);
-  return filesys_remove (file);
+  bool success = filesys_remove (file);
+  lock_release(&file_lock);
+  return success;
 }
 
 int
@@ -345,6 +329,8 @@ syscall_write (struct intr_frame *f, int fd, const void *buffer, unsigned size) 
   }
   validate_addr_syscall (f, (void *) buffer);
   validate_addr_syscall (f, (void *)(buffer + size));
+  validate_addr((void*)buffer);
+  validate_addr((void*)(buffer + size)); 
 
   int value = -1;
 
@@ -424,155 +410,6 @@ syscall_close (int fd) {
 
 }
 
-int syscall_mmap (int fd, void *addr)
-{
-  if (fd == 1 || fd == 0 || !addr || pg_ofs(addr) != 0)
-    return -1;
-
-  // addr이 이미 프레임과 매핑되어 있으면 return -1
-  struct list_elem *iter;
-  struct thread *curr = thread_current();
-
-  // over mapping을 검사한다.
-  struct spage *overlap = find_spage(addr);
-  if(overlap != NULL)
-    return -1;
-  /*for(iter = list_begin(&curr->mmap_list); iter != list_end(&curr->mmap_list); iter = list_next(iter))
-  {
-    printf("test\n");
-    struct mmap *m = list_entry(iter, struct mmap, elem);
-    printf("test 3 %p %p\n", m->addr, addr);
-    printf("test 4 %p %p\n", m->addr, pg_round_down(addr));
-    if(m->addr == pg_round_down(addr))
-    {
-      printf("overlapping\n");
-      return -1;
-    }
-  }*/
-
-  lock_acquire(&file_lock);
-  struct file *mapped_file = filesys_open(get_file_elem(fd)->name);
-  int length = file_length(mapped_file);
-  lock_release(&file_lock);
-
-  if (!is_user_vaddr (addr + length) || length == 0 || mapped_file == NULL)
-    return -1;
-
-  struct mmap *mapping = (struct mmap*)malloc(sizeof (struct mmap));
-
-  void *fp;
-  // 파일 사이즈만큼 페이지가 늘어날 때 까지 for문 돌면서 할당
-  //lock_acquire(&page_lock);
-  //sema_down(&page_sema);
-
-  for(fp = addr; fp <= addr + length - PGSIZE; fp += PGSIZE)
-  {
-    struct spage *spe = spage_create(fp, LAZY, true);
-
-    // 파일 이름을 가져온다.
-    // 원래 thread의 파일을 쓰려했는데, close 한 후에도 사용할 수 있어야 하므로 새로 오픈한다.
-    spe->file = mapped_file;
-    spe->offset = fp - addr;
-  }
-
-  if(length % PGSIZE != 0) // 파일이 페이지 사이즈만큼 안떨어지고 조금 삐져나오면
-  {
-    struct spage *spe = spage_create(fp, LAZY, true);
-
-    spe->file = mapped_file;
-    spe->offset = fp - addr;
-    spe->is_over = true;
-    spe->length_over = length % PGSIZE;
-  }
-  //lock_release(&page_lock);
-  
-  mapping->file = mapped_file;
-  mapping->addr = addr;
-  mapping->size = length;
-  mapping->mapid = curr->next_mapid++;
-  mapping->owner = curr;
-
-  list_push_back(&curr->mmap_list, &mapping->elem);
-
-  //sema_up(&page_sema);
-
-  return mapping->mapid;
-}
-
-void syscall_unmap (int mapid)
-{
-  struct thread *curr = thread_current ();
-  struct list_elem *iter;
-  struct mmap *mapping;
-
-  bool exists = false;
-
-  for(iter = list_begin(&curr->mmap_list); iter != list_end(&curr->mmap_list); iter = list_next(iter))
-  {
-    mapping = list_entry(iter, struct mmap, elem);
-
-    if (mapping->mapid == mapid)
-    {
-      list_remove (iter);
-      exists = true;
-      break;
-    }
-  }
-
-  if (mapping == NULL)
-  {
-    syscall_exit (-1);
-  }
-
-  // 여기서 뭐 해야함
-  int size = mapping->size;;
-  void *fp = mapping->addr;
-
-  struct file *targetFile = mapping->file;
-
-  //lock_acquire(&page_lock);
-  
-  int write_len = PGSIZE;
-  while(size > 0)
-  {
-    sema_down(&page_sema);
-    if(size - PGSIZE < 0) write_len = size;
-    struct spage *spe = find_spage(fp);
-
-    //printf("T or F : %d %p\n", spe == NULL, spe->vaddr);
-    struct frame *f = find_frame(spe);
-
-    if(spe->status == MM_FILE || spe->status == SWAP_MM)
-    {
-      if(pagedir_is_dirty(curr->pagedir, spe->vaddr))
-      {
-        lock_acquire(&file_lock);
-        file_write_at(targetFile, f->addr, write_len, spe->offset);
-        lock_release(&file_lock);
-      }
-
-      pagedir_clear_page (curr->pagedir, spe->vaddr);
-      frame_free(f);
-    }
-
-    spage_free(spe);
-
-    size -= PGSIZE;
-    fp += PGSIZE;
-    sema_up(&page_sema);
-  }
-
-  //lock_release(&page_lock);
-
-  //syscall_close(mapping->fd);
-
-  if(exists)
-  {
-    file_close (mapping->file);
-    free (mapping);
-  }
-}
-
 
 bool syscall_chdir (const char *dir)
 {
@@ -599,6 +436,10 @@ bool syscall_mkdir (const char *dir)
 {
   lock_acquire(&file_lock);
 
+  if(strlen(dir) == 0)
+  {
+    return false;
+  }
   if(dir == '\0') return false;
 
   struct dir *parent_dir = parse_directory(dir);
@@ -608,7 +449,8 @@ bool syscall_mkdir (const char *dir)
   }
 
   char *new_dir_name = parse_name(dir);
-  if(*new_dir_name == '\0'){
+  if(strlen(new_dir_name) == 0)
+  {
     dir_close(parent_dir);
     free(new_dir_name);
     lock_release(&file_lock);
@@ -625,8 +467,8 @@ bool syscall_mkdir (const char *dir)
     && dir_add (parent_dir, new_dir_name, inode_sector));
   else
   {
-    free_map_release(&inode_sector, 1);
-    success = false;
+    //free_map_release(&inode_sector, 1);
+    return false;
   }
 
   struct inode *pinode = dir_get_inode(parent_dir);
@@ -643,11 +485,18 @@ bool syscall_mkdir (const char *dir)
 bool syscall_readdir (int fd, char *name)
 {
   struct file_elem *f = get_file_elem (fd);
+  if(f == NULL) return false;
+
   struct dir *dir = f->dir;
 
   if (dir == NULL) return false;
   if (f->file == NULL) return false;
-  return dir_readdir (dir, name);
+
+  lock_acquire(&file_lock);
+  bool rv = dir_readdir (dir, name);
+  lock_release(&file_lock);
+
+  return rv;
 }
 
 bool syscall_isdir (int fd)

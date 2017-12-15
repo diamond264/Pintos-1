@@ -54,20 +54,14 @@ sort_chunks (const char *subprocess, int exit_status)
       create (fn, CHUNK_SIZE);
       quiet = true;
       CHECK ((handle = open (fn)) > 1, "open \"%s\"", fn);
-      //msg("write는 뜨나?");
       write (handle, buf1 + CHUNK_SIZE * i, CHUNK_SIZE);
       close (handle);
-
-      //msg("흠");
 
       /* Sort with subprocess. */
       snprintf (cmd, sizeof cmd, "%s %s", subprocess, fn);
       CHECK ((children[i] = exec (cmd)) != -1, "exec \"%s\"", cmd);
-      //msg("일단 여기 넘어와");
       quiet = false;
     }
-
-  //msg("여긴 오나?");
 
   for (i = 0; i < CHUNK_CNT; i++) 
     {

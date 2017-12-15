@@ -13,7 +13,6 @@ test_main (void)
   char *actual = (char *) 0x54321000;
   int handle;
   pid_t child;
-  int res = 0;
 
   /* Open file, map, verify data. */
   CHECK ((handle = open ("sample.txt")) > 1, "open \"sample.txt\"");
@@ -24,8 +23,9 @@ test_main (void)
   /* Spawn child and wait. */
   CHECK ((child = exec ("child-inherit")) != -1, "exec \"child-inherit\"");
   quiet = true;
-  CHECK ((res = wait (child)) == -1, "wait for child (should return -1)");
+  CHECK (wait (child) == -1, "wait for child (should return -1)");
   quiet = false;
+
   /* Verify data again. */
   CHECK (!memcmp (actual, sample, strlen (sample)),
          "checking that mmap'd file still has same data");

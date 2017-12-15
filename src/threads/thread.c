@@ -459,12 +459,10 @@ init_thread (struct thread *t, const char *name, int priority)
   t->priority = priority;
   t->magic = THREAD_MAGIC;
   t->next_fd = (int) 2;
-  t->next_mapid = (int) 2;
   sema_init(&t->sema_start, 0);
   sema_init(&t->sema_exit, 0);
   list_init (&t->children);
   list_init (&t->files);
-  list_init (&t->mmap_list);
 }
 
 /* Allocates a SIZE-byte frame at the top of thread T's stack and
