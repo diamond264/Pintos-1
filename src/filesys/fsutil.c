@@ -108,6 +108,13 @@ fsutil_put (char **argv)
   size = ((int32_t *) buffer)[1];
   if (size < 0)
     PANIC ("%s: invalid file size %d", file_name, size);
+
+  //char *rooted_file_name = malloc(strlen(file_name) + 2);
+  //snprintf(rooted_file_name, strlen(file_name) + 2, "/%s", file_name);
+  //snprintf(rooted_file_name, strlen(file_name) + 1, "%s", file_name);
+  //printf("%s %d\n", rooted_file_name, strlen(rooted_file_name));
+  //printf("%s\n", rooted_file_name);
+  //printf("%s\n", file_name);
   
   /* Create destination file. */
   if (!filesys_create (file_name, size))
@@ -115,6 +122,8 @@ fsutil_put (char **argv)
   dst = filesys_open (file_name);
   if (dst == NULL)
     PANIC ("%s: open failed", file_name);
+
+  //free(rooted_file_name);
 
   /* Do copy. */
   while (size > 0)

@@ -26,25 +26,47 @@ free_map_init (void)
 bool
 free_map_allocate (size_t cnt, disk_sector_t *sectorp) 
 {
-  disk_sector_t sector = bitmap_scan_and_flip (free_map, 0, cnt, false);
+  // 원래는 cnt만큼의 연속된 false공간을 찾아 할당한다
+  // allocation을 효율적으로 하기 위해 cnt개의 1개씩 빈 공간을 찾아 준다
+
+  size_t i, j;
+  disk_sector_t sector;
+  for(i=0;i<cnt;i++) {
+    sector = bitmap_scan_and_flip (free_map, 0, 1, false);
+    if (sector == BITMAP_ERROR)
+    {
+      ASSERT(0);
+      for (j=0;j<i-1;j++)
+        bitmap_set_multiple (free_map, sectorp[j], 1, false);
+      return false;
+    }
+    sectorp[i] = sector;
+  }
+
   if (sector != BITMAP_ERROR
       && free_map_file != NULL
       && !bitmap_write (free_map, free_map_file))
-    {
-      bitmap_set_multiple (free_map, sector, cnt, false); 
-      sector = BITMAP_ERROR;
-    }
-  if (sector != BITMAP_ERROR)
-    *sectorp = sector;
-  return sector != BITMAP_ERROR;
+  {
+    ASSERT(0);
+    for (j=0;j<cnt;j++)
+        bitmap_set_multiple (free_map, sectorp[j], 1, false);
+    return false;
+  }
+
+  return true;
 }
 
 /* Makes CNT sectors starting at SECTOR available for use. */
 void
-free_map_release (disk_sector_t sector, size_t cnt)
+free_map_release (disk_sector_t *sector, size_t cnt)
 {
-  ASSERT (bitmap_all (free_map, sector, cnt));
-  bitmap_set_multiple (free_map, sector, cnt, false);
+  ASSERT (bitmap_all (free_map, *sector, cnt));
+  size_t i;
+
+  for (i=0;i<cnt;i++) {
+    bitmap_set_multiple (free_map, sector[i], 1, false);
+  }
+  // bitmap_set_multiple (free_map, sector, cnt, false);
   bitmap_write (free_map, free_map_file);
 }
 
@@ -72,7 +94,7 @@ void
 free_map_create (void) 
 {
   /* Create inode. */
-  if (!inode_create (FREE_MAP_SECTOR, bitmap_file_size (free_map)))
+  if (!inode_create (FREE_MAP_SECTOR, bitmap_file_size (free_map), LV2, FILE))
     PANIC ("free map creation failed");
 
   /* Write bitmap to file. */
